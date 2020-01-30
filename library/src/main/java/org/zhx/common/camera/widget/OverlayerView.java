@@ -116,9 +116,6 @@ public class OverlayerView extends AppCompatImageView {
 				mCenterRect.right + 2, mCenterRect.top, paint);// 右上 顶部
 		canvas.drawRect(mCenterRect.right, mCenterRect.top,
 				mCenterRect.right + 2, mCenterRect.top + 50, paint);// 右上 右侧
-
-		// 绘制目标透明区域
-		canvas.drawRect(mCenterRect, mLinePaint);
 		super.onDraw(canvas);
 	}
 

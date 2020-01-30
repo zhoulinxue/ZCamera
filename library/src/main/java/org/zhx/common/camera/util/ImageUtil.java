@@ -33,15 +33,11 @@ public class ImageUtil {
 	 * @throws Exception
 	 * @author zhx
 	 */
-	public static Bitmap getRectBmp(Rect rect, Bitmap bm, Point p) {
+	public static Bitmap getRectBmp(Bitmap bm, Point p,int width,int height) {
 		// TODO Auto-generated method stub
-		int width = rect.right - rect.left;
-		int hight = rect.bottom - rect.top;
 		Bitmap bitmap = resizeImage(bm, p.x, p.y);
-		Log.i(TAG, hight + "@" + width + "@" + bitmap.getHeight() + "@" + bitmap.getWidth());
-
-		Bitmap rectbitmap = Bitmap.createBitmap(bitmap, rect.left, rect.top, width,
-				hight);
+		Bitmap rectbitmap = Bitmap.createBitmap(bitmap, (p.x-width)/2, (p.y-height)/2, width,
+				height);
 		return rectbitmap;
 	}
 
