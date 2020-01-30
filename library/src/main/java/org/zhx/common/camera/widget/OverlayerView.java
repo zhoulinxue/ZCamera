@@ -86,36 +86,36 @@ public class OverlayerView extends AppCompatImageView {
 			return;
 
 		// 绘制四周阴影区域
-		canvas.drawRect(0, 0, width, mCenterRect.top - 2, mAreaPaint);
-		canvas.drawRect(0, mCenterRect.bottom + 2, width, height,
+		canvas.drawRect(0, 0, width, (height-mCenterRect.height())/2 - 2, mAreaPaint);
+		canvas.drawRect(0, (height+mCenterRect.height())/2 + 2, width, height,
 				mAreaPaint);
-		canvas.drawRect(0, mCenterRect.top - 2, mCenterRect.left - 2,
-				mCenterRect.bottom + 2, mAreaPaint);
-		canvas.drawRect(mCenterRect.right + 2, mCenterRect.top - 2,
-				width, mCenterRect.bottom + 2, mAreaPaint);
+		canvas.drawRect(0, (height-mCenterRect.height())/2 - 2, mCenterRect.left - 2,
+				(height+mCenterRect.height())/2 + 2, mAreaPaint);
+		canvas.drawRect(mCenterRect.right + 2, (height-mCenterRect.height())/2 - 2,
+				width, (height+mCenterRect.height())/2 + 2, mAreaPaint);
 
 		paint.setColor(Color.WHITE);
 		paint.setAlpha(150);
+		
+		canvas.drawRect(mCenterRect.left - 2, (height+mCenterRect.height())/2,
+				mCenterRect.left + 50, (height+mCenterRect.height())/2 + 2, paint);// 左下 底部
 
-		canvas.drawRect(mCenterRect.left - 2, mCenterRect.bottom,
-				mCenterRect.left + 50, mCenterRect.bottom + 2, paint);// 左下 底部
+		canvas.drawRect(mCenterRect.left - 2, (height+mCenterRect.height())/2-50,
+				mCenterRect.left, (height+mCenterRect.height())/2 , paint);// 左下 左侧
 
-		canvas.drawRect(mCenterRect.left - 2, mCenterRect.bottom-50,
-				mCenterRect.left, mCenterRect.bottom , paint);// 左下 左侧
+		canvas.drawRect(mCenterRect.right - 50, (height+mCenterRect.height())/2,
+				mCenterRect.right + 2, (height+mCenterRect.height())/2 + 2, paint);// 右下 右侧
+		canvas.drawRect(mCenterRect.right, (height+mCenterRect.height())/2-50,
+				mCenterRect.right + 2, (height+mCenterRect.height())/2, paint);// 右下 底部
 
-		canvas.drawRect(mCenterRect.right - 50, mCenterRect.bottom,
-				mCenterRect.right + 2, mCenterRect.bottom + 2, paint);// 右下 右侧
-		canvas.drawRect(mCenterRect.right, mCenterRect.bottom-50,
-				mCenterRect.right + 2, mCenterRect.bottom, paint);// 右下 底部
-
-		canvas.drawRect(mCenterRect.left - 2, mCenterRect.top - 2,
-				mCenterRect.left + 50, mCenterRect.top, paint);// 左上 顶部
-		canvas.drawRect(mCenterRect.left - 2, mCenterRect.top,
-				mCenterRect.left, mCenterRect.top + 50, paint);// 左上 侧边
-		canvas.drawRect(mCenterRect.right - 50, mCenterRect.top - 2,
-				mCenterRect.right + 2, mCenterRect.top, paint);// 右上 顶部
-		canvas.drawRect(mCenterRect.right, mCenterRect.top,
-				mCenterRect.right + 2, mCenterRect.top + 50, paint);// 右上 右侧
+		canvas.drawRect(mCenterRect.left - 2, (height-mCenterRect.height())/2 - 2,
+				mCenterRect.left + 50, (height-mCenterRect.height())/2, paint);// 左上 顶部
+		canvas.drawRect(mCenterRect.left - 2, (height-mCenterRect.height())/2,
+				mCenterRect.left, (height-mCenterRect.height())/2 + 50, paint);// 左上 侧边
+		canvas.drawRect(mCenterRect.right - 50, (height-mCenterRect.height())/2 - 2,
+				mCenterRect.right + 2, (height-mCenterRect.height())/2, paint);// 右上 顶部
+		canvas.drawRect(mCenterRect.right, (height-mCenterRect.height())/2,
+				mCenterRect.right + 2, (height-mCenterRect.height())/2 + 50, paint);// 右上 右侧
 		super.onDraw(canvas);
 	}
 
