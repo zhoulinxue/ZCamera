@@ -19,11 +19,10 @@ import android.os.Handler;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import org.zhx.common.camera.AutoFocusManager;
 import org.zhx.common.camera.util.DisplayUtil;
 import org.zhx.common.camera.util.ImageUtil;
 import org.zhx.common.camera.util.PermissionsUtil;
@@ -68,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
     private boolean isFrontCamera = false;
     int modelIndex=0;
     private final int CAMERA =10;
+    private AutoFocusManager autoFocusManager;
 
     protected void onCreate(android.os.Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
         super.onPause();
         if (mCamera != null) {
             if (isPreview) {
-                mCamera.stopPreview();
+                stopPreview();
                 mCamera.release();
                 mCamera = null;
                 isPreview = false;
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
     void releaseCamera() {
         if (mCamera != null) {
             if (isPreview) {
-                mCamera.stopPreview();
+               stopPreview();
             }
             mCamera.release();
             mCamera = null;
@@ -233,8 +233,7 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
                 // 通过SurfaceView显示取景画面
                 mCamera.setPreviewDisplay(mHolder);
                 // 开始预览
-                mCamera.startPreview();
-                isPreview = true;
+               restartPreview();
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -344,8 +343,25 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
         ImageUtil.recycleBitmap(bm);
         showImg.setImageBitmap(bitmap);
         if (mCamera != null) {
+            stopPreview();
+            restartPreview();
+        }
+    }
+
+    private void stopPreview() {
+        if(mCamera!=null) {
             mCamera.stopPreview();
+            if (autoFocusManager != null) {
+                autoFocusManager.stop();
+                autoFocusManager = null;
+            }
+        }
+    }
+
+    private void restartPreview() {
+        if(mCamera!=null){
             mCamera.startPreview();
+            autoFocusManager =new AutoFocusManager(this,mCamera);
             isPreview = true;
         }
     }
