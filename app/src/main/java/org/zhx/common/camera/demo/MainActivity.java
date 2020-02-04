@@ -222,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
                 Camera.Parameters parameters = mCamera.getParameters();
                 // 设置闪光灯为自动 前置摄像头时 不能设置
                 if (!isFrontCamera) {
-                    parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
+                    parameters.setFlashMode(flashMedols[modelIndex]);
                 }
 
                 resetCameraSize(parameters);
@@ -284,7 +284,6 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
             case R.id.z_take_pictrue_img:
                 // 拍照前 线对焦 对焦后 拍摄（适用于自动对焦）
                 isTake = true;
-//			    mCamera.autoFocus(autoFocusCallback);
                 // 手动对焦
                 mCamera.takePicture(null, null, MainActivity.this);
                 break;
@@ -365,17 +364,4 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
             isPreview = true;
         }
     }
-
-    Camera.AutoFocusCallback autoFocusCallback = new Camera.AutoFocusCallback() {
-
-        @Override
-        public void onAutoFocus(boolean success, Camera camera) {
-            // TODO Auto-generated method stub
-            if (isTake) {
-                // 点击拍照按钮 对焦 后 拍照
-                // 第一个参数 是拍照的声音，未压缩的数据，压缩后的数据
-                mCamera.takePicture(null, null, MainActivity.this);
-            }
-        }
-    };
 }

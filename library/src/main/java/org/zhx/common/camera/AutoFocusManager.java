@@ -48,7 +48,6 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback {
 
  public AutoFocusManager(Context context, Camera camera) {
     this.camera = camera;
-    SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
     String currentFocusMode = camera.getParameters().getFocusMode();
     useAutoFocus =FOCUS_MODES_CALLING_AF.contains(currentFocusMode);
     Log.i(TAG, "Current focus mode '" + currentFocusMode + "'; use auto focus? " + useAutoFocus);
