@@ -16,6 +16,7 @@ import android.graphics.Rect;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Handler;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -31,15 +32,15 @@ import org.zhx.common.camera.widget.OverlayerView;
 import java.io.IOException;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements Camera.PictureCallback,
+public class CameraActivity extends AppCompatActivity implements Camera.PictureCallback,
         SurfaceHolder.Callback, View.OnClickListener {
-    private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String TAG = CameraActivity.class.getSimpleName();
 
     public static BitmapFactory.Options opt;
     static {
         // 缩小原图片大小
         opt = new BitmapFactory.Options();
-        opt.inSampleSize = 2;
+        opt.inSampleSize = 1;
     }
 
     private SurfaceView mPreView;
@@ -102,21 +103,6 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
     public void surfaceCreated(SurfaceHolder holder) {
         // TODO Auto-generated method stub
         openCamera();
-    }
-
-    @Override
-    protected void onPause() {
-        // TODO Auto-generated method stub
-        super.onPause();
-        if (mCamera != null) {
-            if (isPreview) {
-                stopPreview();
-                mCamera.release();
-                mCamera = null;
-                isPreview = false;
-            }
-
-        }
     }
 
     @Override
@@ -190,7 +176,7 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
           @Override
           public void run() {
               mHolder = mPreView.getHolder();
-              mHolder.addCallback(MainActivity.this);
+              mHolder.addCallback(CameraActivity.this);
               mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
               restartCamera();
           }
@@ -262,17 +248,10 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
         } else {
             mCamera.setDisplayOrientation(0);
         }
-        List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();
-        if (sizeList.size() > 0) {
-            Camera.Size cameraSize = sizeList.get(0);
-            // 设置预览图片大小 为设备长宽
-            parameters.setPreviewSize(cameraSize.width, cameraSize.height);
-        }
-        sizeList = parameters.getSupportedPictureSizes();
+        List<Camera.Size>  sizeList = parameters.getSupportedPictureSizes();
         if (sizeList.size() > 0) {
             Camera.Size cameraSize = sizeList.get(0);
             for (Camera.Size size : sizeList) {
-
                 if (size.width * size.height == displayPx.x * displayPx.y) {
                     cameraSize = size;
                     break;
@@ -292,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
                 // 拍照前 线对焦 对焦后 拍摄（适用于自动对焦）
                 isTake = true;
                 // 手动对焦
-                mCamera.takePicture(null, null, MainActivity.this);
+                mCamera.takePicture(null, null, CameraActivity.this);
                 break;
             case R.id.btn_switch_camera:
                 try {
@@ -326,21 +305,19 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
         // TODO Auto-generated method stub
         isTake = false;
         // 拍照回掉回来的 图片数据。
-        Bitmap bitmap = BitmapFactory
-                .decodeByteArray(data, 0, data.length, opt);
-        Bitmap bm = null;
+        Bitmap bitmap =getBitmap(data);
+        Bitmap bm=null;
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             Matrix matrix = new Matrix();
             matrix.setRotate(90, 0.1f, 0.1f);
-            bm = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
+            bm = Bitmap.createBitmap(bitmap, 0, 0,bitmap.getWidth(),
                     bitmap.getHeight(), matrix, false);
             if (isFrontCamera) {
                 //前置摄像头旋转图片270度。
-                matrix.setRotate(270);
+                matrix.setRotate(-90);
                 bm = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
+                Log.e(TAG,bm.getWidth()+"!!"+bm.getHeight());
             }
-        } else {
-            bm = bitmap;
         }
 
         if (rect != null) {
@@ -352,6 +329,32 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
             stopPreview();
             restartPreview();
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mCamera != null) {
+            if (isPreview) {
+                stopPreview();
+                mCamera.release();
+                mCamera = null;
+                isPreview = false;
+            }
+
+        }
+    }
+
+    private Bitmap getBitmap(byte[] data) {
+        //只请求图片宽高，不解析图片像素(请求图片属性但不申请内存，解析bitmap对象，该对象不占内存)
+        opt.inJustDecodeBounds = true;
+        //String path = Environment.getExternalStorageDirectory() + "/dog.jpg";
+        BitmapFactory.decodeByteArray(data,0,data.length, opt);
+        int imageWidth = opt.outWidth;
+        int imageHeight = opt.outHeight;
+        Log.e(TAG,imageWidth+"!!@"+imageHeight);
+        opt.inJustDecodeBounds=false;
+      return BitmapFactory.decodeByteArray(data, 0, data.length, opt);
     }
 
     private void stopPreview() {
