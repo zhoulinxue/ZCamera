@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             PermissionsUtil.checkPermission(this, Manifest.permission.CAMERA, CAMERA);
         }else {
+            // 如果是 Android 6.0 以下 请手动打开 权限 或者 使用第三方库 统一申请权限并成功后调用
             showCameraDelay(500);
         }
     }
