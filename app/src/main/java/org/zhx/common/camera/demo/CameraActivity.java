@@ -331,7 +331,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
         isTake = false;
         // 拍照回掉回来的 图片数据。
         Bitmap bitmap =getBitmap(data);
-        Bitmap bm=null;
+        Bitmap bm=bitmap;
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             Matrix matrix = new Matrix();
             matrix.setRotate(90, 0.1f, 0.1f);
@@ -345,7 +345,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
             }
         }
 
-        if (rect != null) {
+        if (rect != null&&bm!=null) {
             bitmap = ImageUtil.cropBitmap(bm, rect.width(),rect.height());
         }
         ImageUtil.recycleBitmap(bm);
