@@ -353,6 +353,20 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
         int imageWidth = opt.outWidth;
         int imageHeight = opt.outHeight;
         Log.e(TAG,imageWidth+"!!@"+imageHeight);
+        int scale = 1;
+        int scaleX = imageWidth / displayPx.x;
+        int scaleY = imageHeight / displayPx.y;
+        if(scaleX >= scaleY && scaleX > 1){
+            scale = scaleX;
+        }else if(scaleX < scaleY && scaleY > 1){
+            scale = scaleY;
+        }
+
+        System.out.println(scale);
+
+        //按照缩放比例加载图片
+        //设置缩放比例
+        opt.inSampleSize = scale;
         opt.inJustDecodeBounds=false;
       return BitmapFactory.decodeByteArray(data, 0, data.length, opt);
     }
