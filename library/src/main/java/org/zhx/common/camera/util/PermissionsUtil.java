@@ -2,7 +2,9 @@ package org.zhx.common.camera.util;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.os.Build;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -15,7 +17,8 @@ import androidx.core.content.ContextCompat;
  */
 public class PermissionsUtil {
 
-    public static void checkPermission(Activity context,String permission,int requestCode){
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public static void checkPermission(Activity context, String permission, int requestCode){
 
         // Here, thisActivity is the current activity(Manifest.permission.READ_CONTACTS)
         if (ContextCompat.checkSelfPermission(context,permission)
@@ -24,7 +27,7 @@ public class PermissionsUtil {
 
         } else {
             // Permission has already been granted
-            context.onRequestPermissionsResult(requestCode,new String[]{permission},new int[]{PackageManager.PERMISSION_GRANTED});
+                context.onRequestPermissionsResult(requestCode,new String[]{permission},new int[]{PackageManager.PERMISSION_GRANTED});
         }
 
     }

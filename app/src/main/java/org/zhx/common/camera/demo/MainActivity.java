@@ -90,7 +90,11 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
         saveBtn.setOnClickListener(this);
         showImg.setOnClickListener(this);
         tpImg.setOnClickListener(this);
-        PermissionsUtil.checkPermission(this, Manifest.permission.CAMERA, CAMERA);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PermissionsUtil.checkPermission(this, Manifest.permission.CAMERA, CAMERA);
+        }else {
+            showCameraDelay(500);
+        }
     }
 
     @Override
@@ -168,16 +172,7 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            mHolder = mPreView.getHolder();
-                            mHolder.addCallback(MainActivity.this);
-                            mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-                            restartCamera();
-                        }
-                    },500);
-
+                    showCameraDelay(500);
                 } else {
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
@@ -189,6 +184,17 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
             // permissions this app might request.
         }
     }
+  private void  showCameraDelay(long time){
+      new Handler().postDelayed(new Runnable() {
+          @Override
+          public void run() {
+              mHolder = mPreView.getHolder();
+              mHolder.addCallback(MainActivity.this);
+              mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+              restartCamera();
+          }
+      },time);
+  }
 
     @TargetApi(Build.VERSION_CODES.GINGERBREAD)
     void openCamera() {
