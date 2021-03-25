@@ -69,6 +69,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
     int modelIndex=0;
     private final int CAMERA =10;
     private AutoFocusManager autoFocusManager;
+    private boolean isSurfaceDestoryed=false;
 
     protected void onCreate(android.os.Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,22 +101,43 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
     }
 
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        // TODO Auto-generated method stub
-        openCamera();
+    protected void onRestart() {
+        super.onRestart();
+        Log.e(TAG,"onRestart");
+        if(!isSurfaceDestoryed)
+        restartCamera();
     }
 
     @Override
-    protected void onRestart() {
-        // TODO Auto-generated method stub
-        super.onRestart();
-        initCamera();
+    protected void onResume() {
+        super.onResume();
+        Log.e(TAG,"onResume");
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.e(TAG,"onStop");
+        releaseCamera();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.e(TAG,"onPause");
+    }
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        // TODO Auto-generated method stub
+        Log.e(TAG,"surfaceCreated");
+        openCamera();
+        isSurfaceDestoryed=false;
+    }
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width,
                                int height) {
         // TODO Auto-generated method stub
+        Log.e(TAG,"surfaceChanged");
         initCamera();
     }
 
@@ -123,8 +145,9 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
     public void surfaceDestroyed(SurfaceHolder holder) {
         // TODO Auto-generated method stub
         // 当holder被回收时 释放硬件
+        Log.e(TAG,"surfaceDestroyed");
         releaseCamera();
-
+        isSurfaceDestoryed=true;
     }
 
     void releaseCamera() {
@@ -172,6 +195,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
         }
     }
   private void  showCameraDelay(long time){
+      Log.e(TAG,"showCameraDelay");
       new Handler().postDelayed(new Runnable() {
           @Override
           public void run() {
@@ -236,6 +260,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
         }
 
     }
+
 
     /**
      * 旋转相机和设置预览大小
@@ -328,20 +353,6 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
         if (mCamera != null) {
             stopPreview();
             restartPreview();
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mCamera != null) {
-            if (isPreview) {
-                stopPreview();
-                mCamera.release();
-                mCamera = null;
-                isPreview = false;
-            }
-
         }
     }
 
