@@ -88,6 +88,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
         rect = DisplayUtil.createCenterScreenRect(this, new Rect(50, 100, 50,
                 200));
         mLayer.setCenterRect(rect);
+        mLayer.showScan(true);
 
         saveBtn.setOnClickListener(this);
         showImg.setOnClickListener(this);
@@ -98,6 +99,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
             // 如果是 Android 6.0 以下 请手动打开 权限 或者 使用第三方库 统一申请权限并成功后调用
             showCameraDelay(500);
         }
+        getLifecycle().addObserver(mLayer);
     }
 
     @Override
