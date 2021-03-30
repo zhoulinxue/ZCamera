@@ -53,7 +53,6 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
     private Button saveBtn;
     // 取景框
     private OverlayerView mLayer;
-    private Rect rect;
     private boolean isTake = false;
     private String[] flashMedols={Camera.Parameters.FLASH_MODE_AUTO, Camera.Parameters.FLASH_MODE_ON, Camera.Parameters.FLASH_MODE_OFF, Camera.Parameters.FLASH_MODE_TORCH};
     private int[]    modelResId={org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_auto_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_on_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_off_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_torch_normal};
@@ -84,10 +83,8 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
         swImg.setOnClickListener(this);
         flashModelImg= (ImageView) findViewById(org.zhx.common.camera.R.id.btn_flash_mode);
         flashModelImg.setOnClickListener(this);
-        // 设置取景框的 magin 这里最好 将 这些从dp 转化为px; 距 左 、上 、右、下的 距离 单位是dp
-        rect = DisplayUtil.createCenterScreenRect(this, new Rect(50, 100, 50,
-                200));
-        mLayer.setCenterRect(rect);
+        int rectwidth=DisplayUtil.dip2px(this, 200);
+        mLayer.setCenterRect(rectwidth,rectwidth);
         mLayer.showScan(true);
 
         saveBtn.setOnClickListener(this);
@@ -347,8 +344,8 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
             }
         }
 
-        if (rect != null&&bm!=null) {
-            bitmap = ImageUtil.cropBitmap(bm, rect.width(),rect.height());
+        if (mLayer.getCenterRect() != null&&bm!=null) {
+            bitmap = ImageUtil.cropBitmap(this,bm, mLayer.getCenterRect().width(),mLayer.getCenterRect().height());
         }
         ImageUtil.recycleBitmap(bm);
         showImg.setImageBitmap(bitmap);
@@ -400,5 +397,11 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
             autoFocusManager =new AutoFocusManager(this,mCamera);
             isPreview = true;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        releaseCamera();
     }
 }

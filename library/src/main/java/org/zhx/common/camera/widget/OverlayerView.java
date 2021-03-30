@@ -102,6 +102,12 @@ public class OverlayerView extends AppCompatImageView implements LifecycleObserv
 		postInvalidate();
 	}
 
+	public void setCenterRect(int width,int height) {
+		Log.i(TAG, "setCenterRect...");
+		this.mCenterRect = new Rect((this.width-width)/2,(this.height-height)/2,(this.width+width)/2,(this.height+height)/2);
+		postInvalidate();
+	}
+
 	public void clearCenterRect(Rect r) {
 		this.mCenterRect = null;
 	}
