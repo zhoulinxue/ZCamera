@@ -78,10 +78,10 @@ public class ImageUtil {
 		}
 	}
 
-	public static Bitmap cropBitmap(Context context,Bitmap bitmap, int width, int height) {//从中间截取一个正方形
+	public static Bitmap cropBitmap(Bitmap bitmap, int width, int height) {//从中间截取一个正方形
 		Log.e(TAG,bitmap.getWidth()+"!!!"+width);
 		return Bitmap.createBitmap(bitmap, (bitmap.getWidth() - width) / 2,
-				(bitmap.getHeight()- DisplayUtil.getStatusBarHeight(context) - height) / 2, width, height);
+				(bitmap.getHeight()- height) / 2, width, height);
 	}
 
 }

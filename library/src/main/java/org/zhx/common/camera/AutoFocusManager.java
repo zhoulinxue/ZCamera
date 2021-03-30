@@ -32,7 +32,7 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback {
 
   private static final String TAG = AutoFocusManager.class.getSimpleName();
 
-  private static final long AUTO_FOCUS_INTERVAL_MS = 2000L;
+  private static final long AUTO_FOCUS_INTERVAL_MS = 5000L;
   private static final Collection<String> FOCUS_MODES_CALLING_AF;
   static {
     FOCUS_MODES_CALLING_AF = new ArrayList<>(2);
@@ -89,7 +89,11 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback {
     }
   }
 
-  private synchronized void cancelOutstandingTask() {
+    public boolean isFocusing() {
+        return focusing;
+    }
+
+    private synchronized void cancelOutstandingTask() {
     if (outstandingTask != null) {
       if (outstandingTask.getStatus() != AsyncTask.Status.FINISHED) {
         outstandingTask.cancel(true);

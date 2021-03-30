@@ -20,6 +20,8 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 
@@ -73,6 +75,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
     protected void onCreate(android.os.Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.zcamera_base_layout);
+        getWindow().addFlags((WindowManager.LayoutParams.FLAG_FULLSCREEN));
         displayPx = DisplayUtil.getScreenMetrics(this);
         mPreView = (SurfaceView) findViewById(org.zhx.common.camera.R.id.z_base_camera_preview);
         tpImg = (ImageView) findViewById(org.zhx.common.camera.R.id.z_take_pictrue_img);
@@ -345,7 +348,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
         }
 
         if (mLayer.getCenterRect() != null&&bm!=null) {
-            bitmap = ImageUtil.cropBitmap(this,bm, mLayer.getCenterRect().width(),mLayer.getCenterRect().height());
+            bitmap = ImageUtil.cropBitmap(bm, mLayer.getCenterRect().width(),mLayer.getCenterRect().height());
         }
         ImageUtil.recycleBitmap(bm);
         showImg.setImageBitmap(bitmap);
