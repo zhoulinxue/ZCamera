@@ -1,4 +1,4 @@
-package org.zhx.common.camera.util;
+package org.zhx.common.util;
 
 import android.content.Context;
 import android.content.res.Resources;

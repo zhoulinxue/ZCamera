@@ -12,7 +12,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Handler;
@@ -20,15 +19,14 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 
 import org.zhx.common.camera.AutoFocusManager;
-import org.zhx.common.camera.util.DisplayUtil;
-import org.zhx.common.camera.util.ImageUtil;
-import org.zhx.common.camera.util.PermissionsUtil;
+import org.zhx.common.util.DisplayUtil;
+import org.zhx.common.util.ImageUtil;
+import org.zhx.common.util.PermissionsUtil;
 import org.zhx.common.camera.widget.OverlayerView;
 
 import java.io.IOException;
@@ -39,6 +37,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
     private static final String TAG = CameraActivity.class.getSimpleName();
 
     public static BitmapFactory.Options opt;
+
     static {
         // 缩小原图片大小
         opt = new BitmapFactory.Options();
@@ -56,8 +55,8 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
     // 取景框
     private OverlayerView mLayer;
     private boolean isTake = false;
-    private String[] flashMedols={Camera.Parameters.FLASH_MODE_AUTO, Camera.Parameters.FLASH_MODE_ON, Camera.Parameters.FLASH_MODE_OFF, Camera.Parameters.FLASH_MODE_TORCH};
-    private int[]    modelResId={org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_auto_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_on_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_off_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_torch_normal};
+    private String[] flashMedols = {Camera.Parameters.FLASH_MODE_AUTO, Camera.Parameters.FLASH_MODE_ON, Camera.Parameters.FLASH_MODE_OFF, Camera.Parameters.FLASH_MODE_TORCH};
+    private int[] modelResId = {org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_auto_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_on_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_off_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_torch_normal};
     /**
      * 切换摄像头
      */
@@ -67,10 +66,10 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
      * 当前是否是前置摄像头
      */
     private boolean isFrontCamera = false;
-    int modelIndex=0;
-    private final int CAMERA =10;
+    int modelIndex = 0;
+    private final int CAMERA = 10;
     private AutoFocusManager autoFocusManager;
-    private boolean isSurfaceDestoryed=false;
+    private boolean isSurfaceDestoryed = false;
 
     protected void onCreate(android.os.Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,10 +83,10 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
         mLayer = (OverlayerView) findViewById(org.zhx.common.camera.R.id.z_base_camera_over_img);
         swImg = (ImageView) findViewById(org.zhx.common.camera.R.id.btn_switch_camera);
         swImg.setOnClickListener(this);
-        flashModelImg= (ImageView) findViewById(org.zhx.common.camera.R.id.btn_flash_mode);
+        flashModelImg = (ImageView) findViewById(org.zhx.common.camera.R.id.btn_flash_mode);
         flashModelImg.setOnClickListener(this);
-        int rectwidth=DisplayUtil.dip2px(this, 200);
-        mLayer.setCenterRect(rectwidth,rectwidth);
+        int rectwidth = DisplayUtil.dip2px(this, 200);
+        mLayer.setCenterRect(rectwidth, rectwidth);
         mLayer.showScan(true);
 
         saveBtn.setOnClickListener(this);
@@ -95,7 +94,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
         tpImg.setOnClickListener(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             PermissionsUtil.checkPermission(this, Manifest.permission.CAMERA, CAMERA);
-        }else {
+        } else {
             // 如果是 Android 6.0 以下 请手动打开 权限 或者 使用第三方库 统一申请权限并成功后调用
             showCameraDelay(500);
         }
@@ -105,41 +104,43 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
     @Override
     protected void onRestart() {
         super.onRestart();
-        Log.e(TAG,"onRestart");
-        if(!isSurfaceDestoryed)
-        restartCamera();
+        Log.e(TAG, "onRestart");
+        if (!isSurfaceDestoryed)
+            restartCamera();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.e(TAG,"onResume");
+        Log.e(TAG, "onResume");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.e(TAG,"onStop");
+        Log.e(TAG, "onStop");
         releaseCamera();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.e(TAG,"onPause");
+        Log.e(TAG, "onPause");
     }
+
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         // TODO Auto-generated method stub
-        Log.e(TAG,"surfaceCreated");
+        Log.e(TAG, "surfaceCreated");
         openCamera();
-        isSurfaceDestoryed=false;
+        isSurfaceDestoryed = false;
     }
+
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width,
                                int height) {
         // TODO Auto-generated method stub
-        Log.e(TAG,"surfaceChanged");
+        Log.e(TAG, "surfaceChanged");
         initCamera();
     }
 
@@ -147,15 +148,15 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
     public void surfaceDestroyed(SurfaceHolder holder) {
         // TODO Auto-generated method stub
         // 当holder被回收时 释放硬件
-        Log.e(TAG,"surfaceDestroyed");
+        Log.e(TAG, "surfaceDestroyed");
         releaseCamera();
-        isSurfaceDestoryed=true;
+        isSurfaceDestoryed = true;
     }
 
     void releaseCamera() {
         if (mCamera != null) {
             if (isPreview) {
-               stopPreview();
+                stopPreview();
             }
             mCamera.release();
             mCamera = null;
@@ -166,7 +167,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
     void switchCamera() throws Exception {
         isFrontCamera = !isFrontCamera;
         releaseCamera();
-       restartCamera();
+        restartCamera();
     }
 
     private void restartCamera() {
@@ -196,18 +197,19 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
             // permissions this app might request.
         }
     }
-  private void  showCameraDelay(long time){
-      Log.e(TAG,"showCameraDelay");
-      new Handler().postDelayed(new Runnable() {
-          @Override
-          public void run() {
-              mHolder = mPreView.getHolder();
-              mHolder.addCallback(CameraActivity.this);
-              mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-              restartCamera();
-          }
-      },time);
-  }
+
+    private void showCameraDelay(long time) {
+        Log.e(TAG, "showCameraDelay");
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mHolder = mPreView.getHolder();
+                mHolder.addCallback(CameraActivity.this);
+                mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+                restartCamera();
+            }
+        }, time);
+    }
 
     @TargetApi(Build.VERSION_CODES.GINGERBREAD)
     void openCamera() {
@@ -228,7 +230,6 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
     }
 
     /**
-     *
      * @param
      * @return
      * @throws Exception
@@ -252,7 +253,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
                 // 通过SurfaceView显示取景画面
                 mCamera.setPreviewDisplay(mHolder);
                 // 开始预览
-               restartPreview();
+                restartPreview();
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -275,7 +276,7 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
         } else {
             mCamera.setDisplayOrientation(0);
         }
-        List<Camera.Size>  sizeList = parameters.getSupportedPictureSizes();
+        List<Camera.Size> sizeList = parameters.getSupportedPictureSizes();
         if (sizeList.size() > 0) {
             Camera.Size cameraSize = sizeList.get(0);
             for (Camera.Size size : sizeList) {
@@ -310,12 +311,12 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
                 break;
             case R.id.btn_flash_mode:
                 modelIndex++;
-                if(modelIndex>=flashMedols.length){
-                    modelIndex=0;
+                if (modelIndex >= flashMedols.length) {
+                    modelIndex = 0;
                 }
-                Camera.Parameters parameters=mCamera.getParameters();
-                List<String> flashmodels=parameters.getSupportedFlashModes();
-                if(flashmodels.contains(flashMedols[modelIndex])){
+                Camera.Parameters parameters = mCamera.getParameters();
+                List<String> flashmodels = parameters.getSupportedFlashModes();
+                if (flashmodels.contains(flashMedols[modelIndex])) {
                     parameters.setFlashMode(flashMedols[modelIndex]);
                     flashModelImg.setImageResource(modelResId[modelIndex]);
                 }
@@ -332,23 +333,23 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
         // TODO Auto-generated method stub
         isTake = false;
         // 拍照回掉回来的 图片数据。
-        Bitmap bitmap =getBitmap(data);
-        Bitmap bm=bitmap;
+        Bitmap bitmap = getBitmap(data);
+        Bitmap bm = bitmap;
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             Matrix matrix = new Matrix();
             matrix.setRotate(90, 0.1f, 0.1f);
-            bm = Bitmap.createBitmap(bitmap, 0, 0,bitmap.getWidth(),
+            bm = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
                     bitmap.getHeight(), matrix, false);
             if (isFrontCamera) {
                 //前置摄像头旋转图片270度。
                 matrix.setRotate(-90);
                 bm = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
-                Log.e(TAG,bm.getWidth()+"!!"+bm.getHeight());
+                Log.e(TAG, bm.getWidth() + "!!" + bm.getHeight());
             }
         }
 
-        if (mLayer.getCenterRect() != null&&bm!=null) {
-            bitmap = ImageUtil.cropBitmap(bm, mLayer.getCenterRect().width(),mLayer.getCenterRect().height());
+        if (mLayer.getCenterRect() != null && bm != null) {
+            bitmap = ImageUtil.cropBitmap(bm, mLayer.getCenterRect().width(), mLayer.getCenterRect().height());
         }
         ImageUtil.recycleBitmap(bm);
         showImg.setImageBitmap(bitmap);
@@ -362,16 +363,16 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
         //只请求图片宽高，不解析图片像素(请求图片属性但不申请内存，解析bitmap对象，该对象不占内存)
         opt.inJustDecodeBounds = true;
         //String path = Environment.getExternalStorageDirectory() + "/dog.jpg";
-        BitmapFactory.decodeByteArray(data,0,data.length, opt);
+        BitmapFactory.decodeByteArray(data, 0, data.length, opt);
         int imageWidth = opt.outWidth;
         int imageHeight = opt.outHeight;
-        Log.e(TAG,imageWidth+"!!@"+imageHeight);
+        Log.e(TAG, imageWidth + "!!@" + imageHeight);
         int scale = 1;
         int scaleX = imageWidth / displayPx.x;
         int scaleY = imageHeight / displayPx.y;
-        if(scaleX >= scaleY && scaleX > 1){
+        if (scaleX >= scaleY && scaleX > 1) {
             scale = scaleX;
-        }else if(scaleX < scaleY && scaleY > 1){
+        } else if (scaleX < scaleY && scaleY > 1) {
             scale = scaleY;
         }
 
@@ -380,12 +381,12 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
         //按照缩放比例加载图片
         //设置缩放比例
         opt.inSampleSize = scale;
-        opt.inJustDecodeBounds=false;
-      return BitmapFactory.decodeByteArray(data, 0, data.length, opt);
+        opt.inJustDecodeBounds = false;
+        return BitmapFactory.decodeByteArray(data, 0, data.length, opt);
     }
 
     private void stopPreview() {
-        if(mCamera!=null) {
+        if (mCamera != null) {
             mCamera.stopPreview();
             if (autoFocusManager != null) {
                 autoFocusManager.stop();
@@ -395,9 +396,9 @@ public class CameraActivity extends AppCompatActivity implements Camera.PictureC
     }
 
     private void restartPreview() {
-        if(mCamera!=null){
+        if (mCamera != null) {
             mCamera.startPreview();
-            autoFocusManager =new AutoFocusManager(this,mCamera);
+            autoFocusManager = new AutoFocusManager(mCamera, null);
             isPreview = true;
         }
     }

@@ -18,12 +18,11 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 
-import org.zhx.common.camera.util.DisplayUtil;
+import org.zhx.common.util.DisplayUtil;
 
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.OnLifecycleEvent;
 
 /**

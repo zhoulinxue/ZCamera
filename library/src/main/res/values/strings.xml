@@ -1,5 +1,7 @@
 <resources>
 
     <string name="app_name">ZCamera1.0</string>
+    <string name="preview_error_string">拍照失败，预览出错</string>
+    <string name="focus_error">拍照失败，对焦出错</string>
 
 </resources>
