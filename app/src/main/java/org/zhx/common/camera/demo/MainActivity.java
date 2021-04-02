@@ -28,10 +28,12 @@ import org.zhx.common.util.ImageUtil;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements CameraModel.view<Camera>, View.OnClickListener, SurfaceHolder.Callback {
-    private ImageView mShowImage, mShutterImg;
+    private ImageView mShowImage, mShutterImg, mFlashImg;
     private SurfaceView mSurfaceView;
     private SurfaceHolder mHolder;
     private CameraPresenter mPresenter;
+    private int[] modelResId = {org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_auto_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_on_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_off_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_torch_normal};
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,6 +44,8 @@ public class MainActivity extends AppCompatActivity implements CameraModel.view<
         mShutterImg = findViewById(R.id.z_take_pictrue_img);
         mSurfaceView = findViewById(R.id.z_base_camera_preview);
         findViewById(R.id.btn_switch_camera).setOnClickListener(this);
+        mFlashImg = findViewById(R.id.btn_flash_mode);
+        mFlashImg.setOnClickListener(this);
         mShutterImg.setOnClickListener(this);
         initHolder();
     }
@@ -82,6 +86,10 @@ public class MainActivity extends AppCompatActivity implements CameraModel.view<
                 break;
             case R.id.btn_switch_camera:
                 mPresenter.switchCamera();
+                break;
+            case R.id.btn_flash_mode:
+                int position = mPresenter.chanageFlashMode();
+                mFlashImg.setImageResource(modelResId[position]);
                 break;
         }
     }

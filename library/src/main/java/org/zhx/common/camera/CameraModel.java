@@ -18,6 +18,8 @@ public interface CameraModel {
         public void switchCamera();
 
         public void takePictrue();
+
+        public int chanageFlashMode();
     }
 
     public interface view<T> {

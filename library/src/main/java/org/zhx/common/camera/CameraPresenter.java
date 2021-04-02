@@ -193,6 +193,21 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     }
 
     @Override
+    public int chanageFlashMode() {
+        Camera.Parameters parameters = mCamera.getParameters();
+        List<String> flashmodels = parameters.getSupportedFlashModes();
+        if (flashmodels.contains(flashMedols[modelIndex])) {
+            modelIndex++;
+            if (modelIndex >= flashMedols.length) {
+                modelIndex = 0;
+            }
+            parameters.setFlashMode(flashMedols[modelIndex]);
+            mCamera.setParameters(parameters);
+        }
+        return modelIndex;
+    }
+
+    @Override
     public void onAutoFocus(boolean success, Camera camera) {
         Log.e(TAG, "....Camera...onAutoFocus......." + success);
         if (success) {
