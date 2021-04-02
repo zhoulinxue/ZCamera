@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.animation.AccelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -28,7 +30,7 @@ import org.zhx.common.util.ImageUtil;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements CameraModel.view<Camera>, View.OnClickListener, SurfaceHolder.Callback {
-    private ImageView mShowImage, mShutterImg, mFlashImg;
+    private ImageView mShowImage, mShutterImg, mFlashImg, mThumImag;
     private SurfaceView mSurfaceView;
     private SurfaceHolder mHolder;
     private CameraPresenter mPresenter;
@@ -40,11 +42,13 @@ public class MainActivity extends AppCompatActivity implements CameraModel.view<
         super.onCreate(savedInstanceState);
         mPresenter = new CameraPresenter(this);
         setContentView(R.layout.activity_main);
+        getWindow().addFlags((WindowManager.LayoutParams.FLAG_FULLSCREEN));
         mShowImage = findViewById(R.id.z_base_camera_showImg);
         mShutterImg = findViewById(R.id.z_take_pictrue_img);
         mSurfaceView = findViewById(R.id.z_base_camera_preview);
         findViewById(R.id.btn_switch_camera).setOnClickListener(this);
         mFlashImg = findViewById(R.id.btn_flash_mode);
+        mThumImag = findViewById(R.id.z_thumil_img);
         mFlashImg.setOnClickListener(this);
         mShutterImg.setOnClickListener(this);
         initHolder();
@@ -112,6 +116,16 @@ public class MainActivity extends AppCompatActivity implements CameraModel.view<
             ImageUtil.recycleBitmap(bitmap);
         }
         mShowImage.setImageBitmap(bm);
+
+        mShowImage.animate()
+                .translationX(-(mShowImage.getX() - mThumImag.getX()))
+                .translationY(mShowImage.getY() - mThumImag.getY())
+                .scaleX(0.1f)
+                .scaleY(0.1f)
+                .setDuration(200)
+                .setInterpolator(new AccelerateInterpolator())
+                .withLayer()
+                .start();
     }
 
     @Override
