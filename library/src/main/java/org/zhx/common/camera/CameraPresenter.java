@@ -179,6 +179,13 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     }
 
     @Override
+    public void switchCamera() {
+        isFrontCamera = !isFrontCamera;
+        releaseCamera(CameraAction.SWITCH_CAMERA);
+        startCamera(CameraAction.SWITCH_CAMERA);
+    }
+
+    @Override
     public void takePictrue() {
         if (autoFocusManager != null) {
             autoFocusManager.start();
@@ -195,6 +202,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                     public void onPictureTaken(byte[] data, Camera camera) {
                         Log.e(TAG, "....Camera...takePicture.......................");
                         mView.onPictrueCallback(data, isFrontCamera);
+                        mCamera.startPreview();
                     }
                 });
             } else {

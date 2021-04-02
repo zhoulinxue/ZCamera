@@ -15,6 +15,8 @@ public interface CameraModel {
 
         public void releaseCamera(CameraAction action);
 
+        public void switchCamera();
+
         public void takePictrue();
     }
 
@@ -26,7 +28,7 @@ public interface CameraModel {
 
         public void onCameraCreate(CameraProxy<T> proxy) throws IOException;
 
-        public void onPictrueCallback(byte[] data,boolean isFrontCamera);
+        public void onPictrueCallback(byte[] data, boolean isFrontCamera);
 
     }
 }

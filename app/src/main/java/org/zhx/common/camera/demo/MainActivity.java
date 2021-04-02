@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements CameraModel.view<
         mShowImage = findViewById(R.id.z_base_camera_showImg);
         mShutterImg = findViewById(R.id.z_take_pictrue_img);
         mSurfaceView = findViewById(R.id.z_base_camera_preview);
+        findViewById(R.id.btn_switch_camera).setOnClickListener(this);
         mShutterImg.setOnClickListener(this);
         initHolder();
     }
@@ -78,6 +79,9 @@ public class MainActivity extends AppCompatActivity implements CameraModel.view<
             case R.id.z_take_pictrue_img:
                 mShutterImg.setEnabled(false);
                 mPresenter.takePictrue();
+                break;
+            case R.id.btn_switch_camera:
+                mPresenter.switchCamera();
                 break;
         }
     }
