@@ -184,16 +184,15 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (v == mSurfaceView) {
-            int x = (int) (event.getX() / v.getWidth() * 2000) - 1000; // 获取映射区域的X坐标
-            int y = (int) (event.getY() / v.getWidth() * 2000) - 1000; // 获取映射区域的Y坐标
-            Point point = new Point(x, y);
             if (mFocusView == null) {
                 mFocusView = new FocusRectView(this);
                 addView(mRootView.getChildCount(), mFocusView, new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
             }
-            mFocusView.setVisibility(View.VISIBLE);
-            mFocusView.setTouchFoucusRect(event.getX(), event.getY());
-            mPresenter.focusArea(mFocusView, point);
+            if (!mPresenter.isFocusing()) {
+                mFocusView.setVisibility(View.VISIBLE);
+                mFocusView.setTouchFoucusRect(event.getX(), event.getY());
+                mPresenter.focusArea(event.getX(), event.getY(), mFocusView);
+            }
         }
         return false;
     }

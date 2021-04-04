@@ -25,7 +25,9 @@ public interface CameraModel {
 
         public int chanageFlashMode();
 
-        public void focusArea(View focus, Point point);
+        public void focusArea(float x, float y,View focus);
+
+        boolean isFocusing();
     }
 
     public interface view<T> {

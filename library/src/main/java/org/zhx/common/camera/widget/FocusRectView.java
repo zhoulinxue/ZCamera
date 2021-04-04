@@ -6,8 +6,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import androidx.appcompat.widget.AppCompatImageView;
+
+import org.zhx.common.util.ImageUtil;
 
 /**
  * 对焦 区域
@@ -16,6 +19,9 @@ import androidx.appcompat.widget.AppCompatImageView;
 public class FocusRectView extends AppCompatImageView {
     private Rect touchFocusRect;//焦点附近设置矩形区域作为对焦区域
     private Paint touchFocusPaint;//新建画笔
+    private float radius;
+    private float x, y;
+    private int maxWidth;
 
     public FocusRectView(Context context) {
         this(context, null, 0);
@@ -33,16 +39,23 @@ public class FocusRectView extends AppCompatImageView {
     private void init(Context context) {
         //画笔设置
         touchFocusPaint = new Paint();
+        touchFocusPaint.setAntiAlias(false);
         touchFocusPaint.setColor(Color.GREEN);
         touchFocusPaint.setStyle(Paint.Style.STROKE);
-        touchFocusPaint.setStrokeWidth(3);
+        touchFocusPaint.setStrokeWidth(5);
     }
 
     //对焦并绘制对焦矩形框
     public void setTouchFoucusRect(float x, float y) {
+        this.x = x;
+        this.y = y;
+        maxWidth = 80;
         //以焦点为中心，宽度为200的矩形框
-        touchFocusRect = new Rect((int) (x - 100), (int) (y - 100), (int) (x + 100), (int) (y + 100));
-        postInvalidate();//刷新界面，调用onDraw(Canvas canvas)函数绘制矩形框
+        touchFocusRect = new Rect((int) (x - maxWidth), (int) (y - maxWidth), (int) (x + maxWidth), (int) (y + maxWidth));
+        maxWidth = (touchFocusRect.right - touchFocusRect.left);
+        isScal = false;
+        radius = maxWidth / 2;
+        loop(0);
     }
 
     @Override
@@ -53,20 +66,52 @@ public class FocusRectView extends AppCompatImageView {
 
     private void drawTouchFocusRect(Canvas canvas) {
         if (null != touchFocusRect) {
-            //根据对焦区域targetFocusRect，绘制自己想要的对焦框样式，本文在矩形四个角取L形状
-            //左下角
-            canvas.drawRect(touchFocusRect.left - 2, touchFocusRect.bottom, touchFocusRect.left + 20, touchFocusRect.bottom + 2, touchFocusPaint);
-            canvas.drawRect(touchFocusRect.left - 2, touchFocusRect.bottom - 20, touchFocusRect.left, touchFocusRect.bottom, touchFocusPaint);
-            //左上角
-            canvas.drawRect(touchFocusRect.left - 2, touchFocusRect.top - 2, touchFocusRect.left + 20, touchFocusRect.top, touchFocusPaint);
-            canvas.drawRect(touchFocusRect.left - 2, touchFocusRect.top, touchFocusRect.left, touchFocusRect.top + 20, touchFocusPaint);
-            //右上角
-            canvas.drawRect(touchFocusRect.right - 20, touchFocusRect.top - 2, touchFocusRect.right + 2, touchFocusRect.top, touchFocusPaint);
-            canvas.drawRect(touchFocusRect.right, touchFocusRect.top, touchFocusRect.right + 2, touchFocusRect.top + 20, touchFocusPaint);
-            //右下角
-            canvas.drawRect(touchFocusRect.right - 20, touchFocusRect.bottom, touchFocusRect.right + 2, touchFocusRect.bottom + 2, touchFocusPaint);
-            canvas.drawRect(touchFocusRect.right, touchFocusRect.bottom - 20, touchFocusRect.right + 2, touchFocusRect.bottom, touchFocusPaint);
+//            canvas.drawRect(touchFocusRect, touchFocusPaint);
+//            if (!isRect) {
+            canvas.drawCircle(x, y, radius, touchFocusPaint);
+//            } else {
+            ImageUtil.drawRectCorner(canvas, touchFocusRect, touchFocusPaint, 2);
+//            }
         }
+    }
+
+    @Override
+    public void setVisibility(int visibility) {
+        if (visibility == GONE) {
+            removeCallbacks(cicleRunable);
+            postInvalidate();
+        }
+        super.setVisibility(visibility);
+    }
+
+    private boolean isScal = false;
+    Runnable cicleRunable = new Runnable() {
+        @Override
+        public void run() {
+            int time = 2;
+            float bounds = maxWidth / 2 * 1.2f;
+            if (radius < maxWidth / 2 * 0.8f) {
+                setVisibility(GONE);
+            } else {
+                if (radius < bounds && !isScal) {
+                    radius += 10;
+                } else if (radius > bounds) {
+                    isScal = true;
+                    radius -= 2;
+                } else if (radius > maxWidth / 2 * 0.8f) {
+                    time = 20;
+                    radius -= 2;
+                }
+                touchFocusRect = new Rect((int) (x - radius), (int) (y - radius), (int) (x + radius), (int) (y + radius));
+                invalidate();
+                loop(time);
+            }
+
+        }
+    };
+
+    private void loop(int time) {
+        postDelayed(cicleRunable, time);
     }
 
 }

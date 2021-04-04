@@ -19,6 +19,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 
 import org.zhx.common.util.DisplayUtil;
+import org.zhx.common.util.ImageUtil;
 
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.lifecycle.Lifecycle;
@@ -69,11 +70,24 @@ public class OverlayerView extends AppCompatImageView implements LifecycleObserv
         public void run() {
             Log.e(TAG, "loop");
             if (isShowScan()) {
+                if (startY == 0 || startY >= (height + mCenterRect.height()) / 2 + 2) {
+                    startY = (height - mCenterRect.height()) / 2 - 2;
+                } else {
+                    startY += 2;
+                }
                 invalidate();
                 loop();
             }
         }
     };
+
+    @Override
+    public void setVisibility(int visibility) {
+        super.setVisibility(visibility);
+        if (visibility == GONE) {
+            removeCallbacks(lineRunable);
+        }
+    }
 
     private void initPaint() {
         // 绘制中间透明区域矩形边界的Paint
@@ -92,18 +106,6 @@ public class OverlayerView extends AppCompatImageView implements LifecycleObserv
         mPaint.setColor(Color.GREEN);
         mPaint.setAlpha(150);
 
-    }
-
-
-    public void setCenterRect(Rect r) {
-        Log.i(TAG, "setCenterRect...");
-        this.mCenterRect = r;
-        postInvalidate();
-    }
-
-    public void setTouchRect(Point point, int width, int height) {
-        mCenterRect = new Rect(point.x - width / 2, (point.y - height / 2), point.x + width / 2, point.y + height / 2);
-        postInvalidate();
     }
 
     public void setCenterRect(int width, int height) {
@@ -125,42 +127,10 @@ public class OverlayerView extends AppCompatImageView implements LifecycleObserv
         Log.i(TAG, "onDraw...");
         if (mCenterRect == null)
             return;
-
-        if (startY == 0 || startY >= (height + mCenterRect.height()) / 2 + 2) {
-            startY = (height - mCenterRect.height()) / 2 - 2;
-        } else {
-            startY += 2;
-        }
-
         // 绘制四周阴影区域
-        canvas.drawRect(0, 0, width, (height - mCenterRect.height()) / 2 - 2, mAreaPaint);
-        canvas.drawRect(0, (height + mCenterRect.height()) / 2 + 2, width, height,
-                mAreaPaint);
-        canvas.drawRect(0, (height - mCenterRect.height()) / 2 - 2, mCenterRect.left - 2,
-                (height + mCenterRect.height()) / 2 + 2, mAreaPaint);
-        canvas.drawRect(mCenterRect.right + 2, (height - mCenterRect.height()) / 2 - 2,
-                width, (height + mCenterRect.height()) / 2 + 2, mAreaPaint);
-
-
-        canvas.drawRect(mCenterRect.left - 2, (height + mCenterRect.height()) / 2,
-                mCenterRect.left + 50, (height + mCenterRect.height()) / 2 + 2, mPaint);// 左下 底部
-
-        canvas.drawRect(mCenterRect.left - 2, (height + mCenterRect.height()) / 2 - 50,
-                mCenterRect.left, (height + mCenterRect.height()) / 2, mPaint);// 左下 左侧
-
-        canvas.drawRect(mCenterRect.right - 50, (height + mCenterRect.height()) / 2,
-                mCenterRect.right + 2, (height + mCenterRect.height()) / 2 + 2, mPaint);// 右下 右侧
-        canvas.drawRect(mCenterRect.right, (height + mCenterRect.height()) / 2 - 50,
-                mCenterRect.right + 2, (height + mCenterRect.height()) / 2, mPaint);// 右下 底部
-
-        canvas.drawRect(mCenterRect.left - 2, (height - mCenterRect.height()) / 2 - 2,
-                mCenterRect.left + 50, (height - mCenterRect.height()) / 2, mPaint);// 左上 顶部
-        canvas.drawRect(mCenterRect.left - 2, (height - mCenterRect.height()) / 2,
-                mCenterRect.left, (height - mCenterRect.height()) / 2 + 50, mPaint);// 左上 侧边
-        canvas.drawRect(mCenterRect.right - 50, (height - mCenterRect.height()) / 2 - 2,
-                mCenterRect.right + 2, (height - mCenterRect.height()) / 2, mPaint);// 右上 顶部
-        canvas.drawRect(mCenterRect.right, (height - mCenterRect.height()) / 2,
-                mCenterRect.right + 2, (height - mCenterRect.height()) / 2 + 50, mPaint);// 右上 右侧
+        ImageUtil.drawRectOutter(width, height, canvas, mCenterRect, mAreaPaint, 2);
+        // 绘制 4个倒角
+        ImageUtil.drawRectCorner(canvas, mCenterRect, mPaint, 2);
         if (isShowScan())
             canvas.drawLine(mCenterRect.left - 2, startY, mCenterRect.right, startY, mPaint);
         super.onDraw(canvas);

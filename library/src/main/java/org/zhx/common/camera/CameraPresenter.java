@@ -16,6 +16,7 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 
 import org.zhx.common.util.DisplayUtil;
+import org.zhx.common.util.ImageUtil;
 import org.zhx.common.util.PermissionsUtil;
 
 import java.io.IOException;
@@ -194,8 +195,11 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
 
     @Override
     public void takePictrue() {
-        if (isFocus&&autoFocusManager != null && !autoFocusManager.isFocusing()) {
+        if (isFocus && autoFocusManager != null && !autoFocusManager.isFocusing()) {
             if (previewSuc) {
+                if (mFocusView != null) {
+                    mFocusView.setVisibility(View.GONE);
+                }
                 mCamera.takePicture(null, null, new Camera.PictureCallback() {
                     @Override
                     public void onPictureTaken(byte[] data, Camera camera) {
@@ -237,8 +241,8 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     }
 
     @Override
-    public void focusArea(View focusView, Point point) {
-        if (!previewSuc) {
+    public void focusArea(float x, float y, View focusView) {
+        if (!previewSuc || mCamera == null || autoFocusManager == null) {
             return;
         }
         this.mFocusView = focusView;
@@ -246,8 +250,8 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         List<Camera.Area> areas = new ArrayList<Camera.Area>();
         List<Camera.Area> areasMetrix = new ArrayList<Camera.Area>();
         Camera.Size previewSize = parameters.getPreviewSize();
-        Rect focusRect = calculateTapArea(point.x, point.y, 1.0f, previewSize);
-        Rect metrixRect = calculateTapArea(point.x, point.y, 1.5f, previewSize);
+        Rect focusRect = ImageUtil.calculateTapArea(mView.getContext(), x, y, 1.0f);
+        Rect metrixRect = ImageUtil.calculateTapArea(mView.getContext(), x, y, 1.5f);
         areas.add(new Camera.Area(focusRect, 1000));
         areasMetrix.add(new Camera.Area(metrixRect, 1000));
         parameters.setMeteringAreas(areasMetrix);
@@ -263,36 +267,16 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     }
 
     @Override
+    public boolean isFocusing() {
+        return autoFocusManager != null && autoFocusManager.isFocusing();
+    }
+
+    @Override
     public void onAutoFocus(boolean success, Camera camera) {
         Log.e(TAG, "....Camera...onAutoFocus......." + success);
         isFocus = success;
         if (mFocusView != null) {
             mFocusView.setVisibility(View.GONE);
         }
-    }
-
-
-    private Rect calculateTapArea(float x, float y, float coefficient, Camera.Size previewSize) {
-        float focusAreaSize = 300;
-        int areaSize = Float.valueOf(focusAreaSize * coefficient).intValue();
-        int centerY = 0;
-        int centerX = 0;
-        centerY = (int) (x / DisplayUtil.getScreenMetrics(mView.getContext()).x * 2000 - 1000);
-        centerX = (int) (y / DisplayUtil.getScreenMetrics(mView.getContext()).y * 2000 - 1000);
-        int left = clamp(centerX - areaSize / 2, -1000, 1000);
-        int top = clamp(centerY - areaSize / 2, -1000, 1000);
-
-        RectF rectF = new RectF(left, top, left + areaSize, top + areaSize);
-        return new Rect(Math.round(rectF.left), Math.round(rectF.top), Math.round(rectF.right), Math.round(rectF.bottom));
-    }
-
-    private static int clamp(int x, int min, int max) {
-        if (x > max) {
-            return max;
-        }
-        if (x < min) {
-            return min;
-        }
-        return x;
     }
 }

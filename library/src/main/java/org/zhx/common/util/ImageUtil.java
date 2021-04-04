@@ -11,8 +11,13 @@ package org.zhx.common.util;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.hardware.Camera;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -114,4 +119,71 @@ public class ImageUtil {
         byte[] data = baos.toByteArray();
         return data;
     }
+
+    /**
+     * 绘制Rect 倒角
+     *
+     * @param canvas
+     * @param rect
+     * @param paint
+     */
+    public static void drawRectCorner(Canvas canvas, Rect rect, Paint paint, int stroke) {
+        //左下角
+        canvas.drawRect(rect.left - stroke, rect.bottom, rect.left + 20, rect.bottom + stroke, paint);
+        canvas.drawRect(rect.left - stroke, rect.bottom - 20, rect.left, rect.bottom, paint);
+        //左上角
+        canvas.drawRect(rect.left - stroke, rect.top - stroke, rect.left + 20, rect.top, paint);
+        canvas.drawRect(rect.left - stroke, rect.top, rect.left, rect.top + 20, paint);
+        //右上角
+        canvas.drawRect(rect.right - 20, rect.top - stroke, rect.right + stroke, rect.top, paint);
+        canvas.drawRect(rect.right, rect.top, rect.right + stroke, rect.top + 20, paint);
+        //右下角
+        canvas.drawRect(rect.right - 20, rect.bottom, rect.right + stroke, rect.bottom + stroke, paint);
+        canvas.drawRect(rect.right, rect.bottom - 20, rect.right + stroke, rect.bottom, paint);
+    }
+
+    /**
+     * 绘制Rect 以外的区域
+     *
+     * @param width
+     * @param height
+     * @param canvas
+     * @param mCenterRect
+     * @param mAreaPaint
+     * @param stroke
+     */
+    public static void drawRectOutter(int width, int height, Canvas canvas, Rect mCenterRect, Paint mAreaPaint, int stroke) {
+        canvas.drawRect(0, 0, width, (height - mCenterRect.height()) / 2 - stroke, mAreaPaint);
+        canvas.drawRect(0, (height + mCenterRect.height()) / 2 + stroke, width, height,
+                mAreaPaint);
+        canvas.drawRect(0, (height - mCenterRect.height()) / 2 - stroke, mCenterRect.left - stroke,
+                (height + mCenterRect.height()) / 2 + stroke, mAreaPaint);
+        canvas.drawRect(mCenterRect.right + stroke, (height - mCenterRect.height()) / 2 - stroke,
+                width, (height + mCenterRect.height()) / 2 + stroke, mAreaPaint);
+    }
+
+    public static Rect calculateTapArea(Context context, float x, float y, float coefficient) {
+        float focusAreaSize = 300;
+        int areaSize = Float.valueOf(focusAreaSize * coefficient).intValue();
+        int centerY = 0;
+        int centerX = 0;
+        centerY = (int) (x / DisplayUtil.getScreenMetrics(context).x * 2000 - 1000);
+        centerX = (int) (y / DisplayUtil.getScreenMetrics(context).y * 2000 - 1000);
+        int left = clamp(centerX - areaSize / 2, -1000, 1000);
+        int top = clamp(centerY - areaSize / 2, -1000, 1000);
+
+        RectF rectF = new RectF(left, top, left + areaSize, top + areaSize);
+        return new Rect(Math.round(rectF.left), Math.round(rectF.top), Math.round(rectF.right), Math.round(rectF.bottom));
+    }
+
+    private static int clamp(int x, int min, int max) {
+        if (x > max) {
+            return max;
+        }
+        if (x < min) {
+            return min;
+        }
+        return x;
+    }
+
 }
