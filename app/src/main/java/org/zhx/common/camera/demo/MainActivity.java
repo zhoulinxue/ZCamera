@@ -8,13 +8,13 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -43,16 +43,14 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     private int[] modelResId = {org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_auto_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_on_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_off_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_torch_normal};
     private RelativeLayout.LayoutParams showLp;
     private RelativeLayout mRootView;
-    private Handler mHandler;
     Point screenP;
     FocusRectView mFocusView;
-    private Bitmap mThumilImage;
+    private Bitmap mThumilBitmap;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mPresenter = new CameraPresenter(this);
-        mHandler = new Handler();
         screenP = DisplayUtil.getScreenMetrics(this);
         setContentView(R.layout.activity_main);
         getWindow().addFlags((WindowManager.LayoutParams.FLAG_FULLSCREEN));
@@ -114,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 break;
             case R.id.z_thumil_img:
                 Intent i = new Intent(this, ShowImageActivity.class);
-                i.putExtra("bitmap", mThumilImage);
+                i.putExtra("bitmap", mThumilBitmap);
                 ActivityOptionsCompat optionsCompat =
                         ActivityOptionsCompat.makeSceneTransitionAnimation(this, mThumImag, "image");
                 startActivity(i, optionsCompat.toBundle());
@@ -127,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         mShutterImg.setEnabled(true);
         final Bitmap bitmap = ImageUtil.getBitmap(this, data, false);
         mShowImage.setImageBitmap(bitmap);
-        mThumilImage = ImageUtil.getThumilImage(this, data);
+        mThumilBitmap = ImageUtil.getThumilImage(this, data);
         mShowImage.animate()
                 .translationX(-(screenP.x / 2 - 2 * mThumImag.getX()))
                 .translationY(screenP.y / 2 - 2 * mThumImag.getY())
@@ -141,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                         mRootView.removeView(mShowImage);
                         mShowImage.setImageBitmap(null);
                         ImageUtil.recycleBitmap(bitmap);
-                        mThumImag.setImageBitmap(mThumilImage);
+                        mThumImag.setImageBitmap(mThumilBitmap);
                         mShowImage = new ImageView(MainActivity.this);
                         mShowImage.setId(R.id.z_base_camera_showImg);
                         addView(1, mShowImage, showLp);

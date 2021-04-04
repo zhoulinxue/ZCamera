@@ -30,14 +30,17 @@
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/z_thumil_img"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:layout_marginLeft="20dp"
-            android:src="@drawable/btn_shutter_background" />
+            android:scaleType="centerCrop"
+            android:src="@drawable/btn_shutter_background"
+            app:civ_border_color="#FFFFFFFF"
+            app:civ_border_width="2dp" />
 
         <ImageView
             android:id="@+id/z_take_pictrue_img"
