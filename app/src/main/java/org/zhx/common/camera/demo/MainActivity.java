@@ -69,6 +69,10 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     }
 
     private void initHolder() {
+        RelativeLayout.LayoutParams preViewLp = (RelativeLayout.LayoutParams) mSurfaceView.getLayoutParams();
+        preViewLp.width = screenP.x;
+        preViewLp.height = screenP.y * 3 / 4;
+        mSurfaceView.setLayoutParams(preViewLp);
         mHolder = mSurfaceView.getHolder();
         mHolder.addCallback(this);
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
@@ -82,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
     @Override
     public void onError(int msg) {
+        mShutterImg.setEnabled(true);
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
@@ -186,7 +191,9 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         if (v == mSurfaceView) {
             if (mFocusView == null) {
                 mFocusView = new FocusRectView(this);
-                addView(mRootView.getChildCount(), mFocusView, new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
+                RelativeLayout.LayoutParams focusLp = new RelativeLayout.LayoutParams(screenP.x, screenP.y * 3 / 4);
+                focusLp.addRule(RelativeLayout.CENTER_IN_PARENT);
+                addView(mRootView.getChildCount(), mFocusView, focusLp);
             }
             if (!mPresenter.isFocusing()) {
                 mFocusView.setVisibility(View.VISIBLE);

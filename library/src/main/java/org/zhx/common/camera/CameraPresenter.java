@@ -132,20 +132,48 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
      * @param parameters
      */
     public void setCameraSize(Camera.Parameters parameters) {
-        List<Camera.Size> sizeList = parameters.getSupportedPictureSizes();
-        if (sizeList.size() > 0) {
-            Camera.Size cameraSize = sizeList.get(0);
-            for (Camera.Size size : sizeList) {
-                if (size.width * size.height == displayPx.x * displayPx.y) {
-                    cameraSize = size;
-                    break;
-                }
-            }
-            // 设置图片大小 为设备长宽
-            parameters.setPictureSize(cameraSize.width, cameraSize.height);
-        }
-
+        Point point = findBestPreviewSizeValue(parameters, new Point(displayPx.x, displayPx.y), true);
+        // 设置图片大小 为设备长宽
+        parameters.setPictureSize(point.x, point.y);
+        parameters.setPreviewFpsRange(point.x, point.y);
     }
+
+    private static final int MIN_PREVIEW_PIXELS = 320 * 240; // small screen
+    private static final int MAX_PREVIEW_PIXELS = 800 * 480; // large/HD screen
+
+    private static Point findBestPreviewSizeValue(Camera.Parameters parameters,
+                                                  Point screenResolution,
+                                                  boolean portrait) {
+        Point bestSize = null;
+        int diff = Integer.MAX_VALUE;
+        for (Camera.Size supportedPreviewSize : parameters.getSupportedPreviewSizes()) {
+            int pixels = supportedPreviewSize.height * supportedPreviewSize.width;
+            //预先设置大小
+            if (pixels < MIN_PREVIEW_PIXELS || pixels > MAX_PREVIEW_PIXELS) {
+                continue;
+            }
+            int supportedWidth = portrait ? supportedPreviewSize.height : supportedPreviewSize.width;
+            int supportedHeight = portrait ? supportedPreviewSize.width : supportedPreviewSize.height;
+            //不太理解为啥要交叉相乘，总之是比较差值
+            int newDiff = Math.abs(screenResolution.x * supportedHeight - supportedWidth * screenResolution.y);
+            if (newDiff == 0) {
+                bestSize = new Point(supportedWidth, supportedHeight);
+                break;
+            }
+            //更新最小差值
+            if (newDiff < diff) {
+                bestSize = new Point(supportedWidth, supportedHeight);
+                diff = newDiff;
+            }
+        }
+        //如果还没找到，就使用预览值
+        if (bestSize == null) {
+            Camera.Size defaultSize = parameters.getPreviewSize();
+            bestSize = new Point(defaultSize.width, defaultSize.height);
+        }
+        return bestSize;
+    }
+
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     public void onResume() {
@@ -249,7 +277,6 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         Camera.Parameters parameters = mCamera.getParameters();
         List<Camera.Area> areas = new ArrayList<Camera.Area>();
         List<Camera.Area> areasMetrix = new ArrayList<Camera.Area>();
-        Camera.Size previewSize = parameters.getPreviewSize();
         Rect focusRect = ImageUtil.calculateTapArea(mView.getContext(), x, y, 1.0f);
         Rect metrixRect = ImageUtil.calculateTapArea(mView.getContext(), x, y, 1.5f);
         areas.add(new Camera.Area(focusRect, 1000));

@@ -132,7 +132,7 @@ public class ImageUtil {
             scale = scaleY;
         }
         //设置缩放比例
-        opt.inSampleSize = scale * 2;
+        opt.inSampleSize = scale * 4;
         opt.inJustDecodeBounds = false;
         return BitmapFactory.decodeByteArray(data, 0, data.length, opt);
     }
