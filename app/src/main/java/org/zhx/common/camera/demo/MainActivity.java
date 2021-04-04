@@ -1,5 +1,6 @@
 package org.zhx.common.camera.demo;
 
+import android.animation.Animator;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -7,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -14,6 +16,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -35,17 +38,22 @@ public class MainActivity extends AppCompatActivity implements CameraModel.view<
     private SurfaceHolder mHolder;
     private CameraPresenter mPresenter;
     private int[] modelResId = {org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_auto_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_on_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_off_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_torch_normal};
-
+    private RelativeLayout.LayoutParams showLp;
+    private RelativeLayout mRootView;
+    private Handler mHandler;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mPresenter = new CameraPresenter(this);
+        mHandler = new Handler();
         setContentView(R.layout.activity_main);
         getWindow().addFlags((WindowManager.LayoutParams.FLAG_FULLSCREEN));
         mShowImage = findViewById(R.id.z_base_camera_showImg);
+        showLp = (RelativeLayout.LayoutParams) mShowImage.getLayoutParams();
         mShutterImg = findViewById(R.id.z_take_pictrue_img);
         mSurfaceView = findViewById(R.id.z_base_camera_preview);
+        mRootView = findViewById(R.id.root_layout);
         findViewById(R.id.btn_switch_camera).setOnClickListener(this);
         mFlashImg = findViewById(R.id.btn_flash_mode);
         mThumImag = findViewById(R.id.z_thumil_img);
@@ -116,16 +124,26 @@ public class MainActivity extends AppCompatActivity implements CameraModel.view<
             ImageUtil.recycleBitmap(bitmap);
         }
         mShowImage.setImageBitmap(bm);
-
+        final Bitmap thumil = bm;
         mShowImage.animate()
-                .translationX(-(mShowImage.getX() - mThumImag.getX()))
-                .translationY(mShowImage.getY() - mThumImag.getY())
-                .scaleX(0.1f)
-                .scaleY(0.1f)
-                .setDuration(200)
-                .setInterpolator(new AccelerateInterpolator())
+                .translationX(-(mShowImage.getX() - 2 * mThumImag.getX()))
+                .translationY(mShowImage.getY() - 2 * mThumImag.getY())
+                .scaleX(0.01f)
+                .scaleY(0.01f)
+                .setDuration(150)
                 .withLayer()
-                .start();
+                .withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        mRootView.removeView(mShowImage);
+                        mShowImage.setImageBitmap(null);
+                        mThumImag.setImageBitmap(thumil);
+                        mShowImage = new ImageView(MainActivity.this);
+                        mShowImage.setId(R.id.z_base_camera_showImg);
+                        mRootView.addView(mShowImage, 1, showLp);
+                    }
+                })
+                .setInterpolator(new AccelerateInterpolator()).start();
     }
 
     @Override
