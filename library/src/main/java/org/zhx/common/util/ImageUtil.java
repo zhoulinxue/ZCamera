@@ -113,6 +113,30 @@ public class ImageUtil {
         return BitmapFactory.decodeByteArray(data, 0, data.length, opt);
     }
 
+    public static Bitmap getThumilImage(Context context, byte[] data) {
+        Point displayPx = DisplayUtil.getScreenMetrics(context);
+        BitmapFactory.Options opt = new BitmapFactory.Options();
+        opt.inJustDecodeBounds = true;
+        //String path = Environment.getExternalStorageDirectory() + "/dog.jpg";
+        BitmapFactory.decodeByteArray(data, 0, data.length, opt);
+        int imageWidth = opt.outWidth;
+        int imageHeight = opt.outHeight;
+        int x = displayPx.x;
+        int y = displayPx.y;
+        int scale = 1;
+        int scaleX = imageWidth / x;
+        int scaleY = imageHeight / y;
+        if (scaleX >= scaleY && scaleX > 1) {
+            scale = scaleX;
+        } else if (scaleX < scaleY && scaleY > 1) {
+            scale = scaleY;
+        }
+        //设置缩放比例
+        opt.inSampleSize = scale * 2;
+        opt.inJustDecodeBounds = false;
+        return BitmapFactory.decodeByteArray(data, 0, data.length, opt);
+    }
+
     public static byte[] bitmap2Bytes(Bitmap bm) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);

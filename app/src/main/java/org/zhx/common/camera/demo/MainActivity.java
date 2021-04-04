@@ -1,23 +1,18 @@
 package org.zhx.common.camera.demo;
 
-import android.animation.Animator;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
 import android.graphics.Point;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.ImageView;
@@ -27,6 +22,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityOptionsCompat;
 
 import org.zhx.common.camera.CameraAction;
 import org.zhx.common.camera.CameraModel;
@@ -34,13 +30,10 @@ import org.zhx.common.camera.CameraPresenter;
 import org.zhx.common.camera.CameraProxy;
 import org.zhx.common.camera.Constants;
 import org.zhx.common.camera.widget.FocusRectView;
-import org.zhx.common.camera.widget.OverlayerView;
 import org.zhx.common.util.DisplayUtil;
 import org.zhx.common.util.ImageUtil;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnTouchListener, CameraModel.view<Camera>, View.OnClickListener, SurfaceHolder.Callback {
     private ImageView mShowImage, mShutterImg, mFlashImg, mThumImag;
@@ -53,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     private Handler mHandler;
     Point screenP;
     FocusRectView mFocusView;
+    private Bitmap mThumilImage;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -118,15 +112,22 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 int position = mPresenter.chanageFlashMode();
                 mFlashImg.setImageResource(modelResId[position]);
                 break;
+            case R.id.z_thumil_img:
+                Intent i = new Intent(this, ShowImageActivity.class);
+                i.putExtra("bitmap", mThumilImage);
+                ActivityOptionsCompat optionsCompat =
+                        ActivityOptionsCompat.makeSceneTransitionAnimation(this, mThumImag, "image");
+                startActivity(i, optionsCompat.toBundle());
+                break;
         }
     }
 
     @Override
     public void onPictrueCallback(byte[] data) {
         mShutterImg.setEnabled(true);
-        Bitmap bitmap = ImageUtil.getBitmap(this, data, false);
+        final Bitmap bitmap = ImageUtil.getBitmap(this, data, false);
         mShowImage.setImageBitmap(bitmap);
-        final Bitmap thumil = bitmap;
+        mThumilImage = ImageUtil.getThumilImage(this, data);
         mShowImage.animate()
                 .translationX(-(screenP.x / 2 - 2 * mThumImag.getX()))
                 .translationY(screenP.y / 2 - 2 * mThumImag.getY())
@@ -139,7 +140,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     public void run() {
                         mRootView.removeView(mShowImage);
                         mShowImage.setImageBitmap(null);
-                        mThumImag.setImageBitmap(thumil);
+                        ImageUtil.recycleBitmap(bitmap);
+                        mThumImag.setImageBitmap(mThumilImage);
                         mShowImage = new ImageView(MainActivity.this);
                         mShowImage.setId(R.id.z_base_camera_showImg);
                         addView(1, mShowImage, showLp);
