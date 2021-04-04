@@ -49,6 +49,7 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback {
     public AutoFocusManager(Camera camera, Camera.AutoFocusCallback callback) {
         this.camera = camera;
         this.mCallback = callback;
+        start();
     }
 
     @Override
@@ -69,6 +70,10 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback {
                 Log.w(TAG, "Could not request auto focus", ree);
             }
         }
+    }
+
+    public boolean isFocusing() {
+        return focusing;
     }
 
     public synchronized void stop() {

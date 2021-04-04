@@ -1,11 +1,14 @@
 package org.zhx.common.camera;
 
 import android.Manifest;
-import android.app.Activity;
 import android.graphics.ImageFormat;
 import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.hardware.Camera;
+import android.os.AsyncTask;
 import android.util.Log;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Lifecycle;
@@ -16,6 +19,7 @@ import org.zhx.common.util.DisplayUtil;
 import org.zhx.common.util.PermissionsUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusCallback, LifecycleObserver {
@@ -31,10 +35,13 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     private Point displayPx;
     private AutoFocusManager autoFocusManager;
     private boolean isSurfaceDestory = false;
+    private boolean isFocus = false;
+    private RotationProcessor mRprocessor;
+    private View mFocusView;
 
     public CameraPresenter(CameraModel.view mView) {
         this.mView = mView;
-        displayPx = DisplayUtil.getScreenMetrics(mView.getConText());
+        displayPx = DisplayUtil.getScreenMetrics(mView.getContext());
     }
 
     @Override
@@ -43,7 +50,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
             if (CameraAction.SURFACE_CREATE == action) {
                 isSurfaceDestory = false;
             }
-            AppCompatActivity activity = (AppCompatActivity) mView.getConText();
+            AppCompatActivity activity = (AppCompatActivity) mView.getContext();
             if (PermissionsUtil.hasPermission(activity, Manifest.permission.CAMERA)) {
                 Log.e(TAG, action + "....Camera....start.......................");
                 if (openCamera()) {
@@ -187,8 +194,30 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
 
     @Override
     public void takePictrue() {
-        if (autoFocusManager != null) {
-            autoFocusManager.start();
+        if (isFocus&&autoFocusManager != null && !autoFocusManager.isFocusing()) {
+            if (previewSuc) {
+                mCamera.takePicture(null, null, new Camera.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] data, Camera camera) {
+                        Log.e(TAG, "....Camera...takePicture.......................");
+                        if (mRprocessor == null) {
+                            mRprocessor = new RotationProcessor(mView.getContext(), data, isFrontCamera, new RotationProcessor.DataCallback() {
+                                @Override
+                                public void onData(byte[] bitmapData) {
+                                    mRprocessor = null;
+                                    mView.onPictrueCallback(bitmapData);
+                                }
+                            });
+                            mRprocessor.execute(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }
+                        mCamera.startPreview();
+                    }
+                });
+            } else {
+                mView.onError(R.string.preview_error_string);
+            }
+        } else {
+            mView.onError(R.string.focus_error);
         }
     }
 
@@ -208,23 +237,62 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     }
 
     @Override
+    public void focusArea(View focusView, Point point) {
+        if (!previewSuc) {
+            return;
+        }
+        this.mFocusView = focusView;
+        Camera.Parameters parameters = mCamera.getParameters();
+        List<Camera.Area> areas = new ArrayList<Camera.Area>();
+        List<Camera.Area> areasMetrix = new ArrayList<Camera.Area>();
+        Camera.Size previewSize = parameters.getPreviewSize();
+        Rect focusRect = calculateTapArea(point.x, point.y, 1.0f, previewSize);
+        Rect metrixRect = calculateTapArea(point.x, point.y, 1.5f, previewSize);
+        areas.add(new Camera.Area(focusRect, 1000));
+        areasMetrix.add(new Camera.Area(metrixRect, 1000));
+        parameters.setMeteringAreas(areasMetrix);
+        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        parameters.setFocusAreas(areas);
+        try {
+            mCamera.setParameters(parameters);
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.printStackTrace();
+        }
+        mCamera.autoFocus(autoFocusManager);
+    }
+
+    @Override
     public void onAutoFocus(boolean success, Camera camera) {
         Log.e(TAG, "....Camera...onAutoFocus......." + success);
-        if (success) {
-            if (previewSuc) {
-                mCamera.takePicture(null, null, new Camera.PictureCallback() {
-                    @Override
-                    public void onPictureTaken(byte[] data, Camera camera) {
-                        Log.e(TAG, "....Camera...takePicture.......................");
-                        mView.onPictrueCallback(data, isFrontCamera);
-                        mCamera.startPreview();
-                    }
-                });
-            } else {
-                mView.onError(R.string.preview_error_string);
-            }
-        } else {
-            mView.onError(R.string.focus_error);
+        isFocus = success;
+        if (mFocusView != null) {
+            mFocusView.setVisibility(View.GONE);
         }
+    }
+
+
+    private Rect calculateTapArea(float x, float y, float coefficient, Camera.Size previewSize) {
+        float focusAreaSize = 300;
+        int areaSize = Float.valueOf(focusAreaSize * coefficient).intValue();
+        int centerY = 0;
+        int centerX = 0;
+        centerY = (int) (x / DisplayUtil.getScreenMetrics(mView.getContext()).x * 2000 - 1000);
+        centerX = (int) (y / DisplayUtil.getScreenMetrics(mView.getContext()).y * 2000 - 1000);
+        int left = clamp(centerX - areaSize / 2, -1000, 1000);
+        int top = clamp(centerY - areaSize / 2, -1000, 1000);
+
+        RectF rectF = new RectF(left, top, left + areaSize, top + areaSize);
+        return new Rect(Math.round(rectF.left), Math.round(rectF.top), Math.round(rectF.right), Math.round(rectF.bottom));
+    }
+
+    private static int clamp(int x, int min, int max) {
+        if (x > max) {
+            return max;
+        }
+        if (x < min) {
+            return min;
+        }
+        return x;
     }
 }

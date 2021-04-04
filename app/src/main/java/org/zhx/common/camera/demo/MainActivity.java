@@ -6,13 +6,18 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.ImageView;
@@ -28,11 +33,16 @@ import org.zhx.common.camera.CameraModel;
 import org.zhx.common.camera.CameraPresenter;
 import org.zhx.common.camera.CameraProxy;
 import org.zhx.common.camera.Constants;
+import org.zhx.common.camera.widget.FocusRectView;
+import org.zhx.common.camera.widget.OverlayerView;
+import org.zhx.common.util.DisplayUtil;
 import org.zhx.common.util.ImageUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements CameraModel.view<Camera>, View.OnClickListener, SurfaceHolder.Callback {
+public class MainActivity extends AppCompatActivity implements View.OnTouchListener, CameraModel.view<Camera>, View.OnClickListener, SurfaceHolder.Callback {
     private ImageView mShowImage, mShutterImg, mFlashImg, mThumImag;
     private SurfaceView mSurfaceView;
     private SurfaceHolder mHolder;
@@ -41,12 +51,15 @@ public class MainActivity extends AppCompatActivity implements CameraModel.view<
     private RelativeLayout.LayoutParams showLp;
     private RelativeLayout mRootView;
     private Handler mHandler;
+    Point screenP;
+    FocusRectView mFocusView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mPresenter = new CameraPresenter(this);
         mHandler = new Handler();
+        screenP = DisplayUtil.getScreenMetrics(this);
         setContentView(R.layout.activity_main);
         getWindow().addFlags((WindowManager.LayoutParams.FLAG_FULLSCREEN));
         mShowImage = findViewById(R.id.z_base_camera_showImg);
@@ -57,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements CameraModel.view<
         findViewById(R.id.btn_switch_camera).setOnClickListener(this);
         mFlashImg = findViewById(R.id.btn_flash_mode);
         mThumImag = findViewById(R.id.z_thumil_img);
+        mThumImag.setOnClickListener(this);
         mFlashImg.setOnClickListener(this);
         mShutterImg.setOnClickListener(this);
         initHolder();
@@ -66,10 +80,11 @@ public class MainActivity extends AppCompatActivity implements CameraModel.view<
         mHolder = mSurfaceView.getHolder();
         mHolder.addCallback(this);
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        mSurfaceView.setOnTouchListener(this);
     }
 
     @Override
-    public Context getConText() {
+    public Context getContext() {
         return this;
     }
 
@@ -107,27 +122,14 @@ public class MainActivity extends AppCompatActivity implements CameraModel.view<
     }
 
     @Override
-    public void onPictrueCallback(byte[] data, boolean isFrontCamera) {
+    public void onPictrueCallback(byte[] data) {
         mShutterImg.setEnabled(true);
-        Bitmap bitmap = ImageUtil.getBitmap(this, data);
-        Bitmap bm = bitmap;
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            Matrix matrix = new Matrix();
-            matrix.setRotate(90, 0.1f, 0.1f);
-            bm = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-                    bitmap.getHeight(), matrix, false);
-            if (isFrontCamera) {
-                //前置摄像头旋转图片270度。
-                matrix.setRotate(270);
-                bm = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
-            }
-            ImageUtil.recycleBitmap(bitmap);
-        }
-        mShowImage.setImageBitmap(bm);
-        final Bitmap thumil = bm;
+        Bitmap bitmap = ImageUtil.getBitmap(this, data, false);
+        mShowImage.setImageBitmap(bitmap);
+        final Bitmap thumil = bitmap;
         mShowImage.animate()
-                .translationX(-(mShowImage.getX() - 2 * mThumImag.getX()))
-                .translationY(mShowImage.getY() - 2 * mThumImag.getY())
+                .translationX(-(screenP.x / 2 - 2 * mThumImag.getX()))
+                .translationY(screenP.y / 2 - 2 * mThumImag.getY())
                 .scaleX(0.01f)
                 .scaleY(0.01f)
                 .setDuration(150)
@@ -140,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements CameraModel.view<
                         mThumImag.setImageBitmap(thumil);
                         mShowImage = new ImageView(MainActivity.this);
                         mShowImage.setId(R.id.z_base_camera_showImg);
-                        mRootView.addView(mShowImage, 1, showLp);
+                        addView(1, mShowImage, showLp);
                     }
                 })
                 .setInterpolator(new AccelerateInterpolator()).start();
@@ -177,5 +179,26 @@ public class MainActivity extends AppCompatActivity implements CameraModel.view<
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         mPresenter.releaseCamera(CameraAction.SURFACE_DESTORY);
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (v == mSurfaceView) {
+            int x = (int) (event.getX() / v.getWidth() * 2000) - 1000; // 获取映射区域的X坐标
+            int y = (int) (event.getY() / v.getWidth() * 2000) - 1000; // 获取映射区域的Y坐标
+            Point point = new Point(x, y);
+            if (mFocusView == null) {
+                mFocusView = new FocusRectView(this);
+                addView(mRootView.getChildCount(), mFocusView, new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
+            }
+            mFocusView.setVisibility(View.VISIBLE);
+            mFocusView.setTouchFoucusRect(event.getX(), event.getY());
+            mPresenter.focusArea(mFocusView, point);
+        }
+        return false;
+    }
+
+    private void addView(int childCount, View view, RelativeLayout.LayoutParams layoutParams) {
+        mRootView.addView(view, childCount, layoutParams);
     }
 }

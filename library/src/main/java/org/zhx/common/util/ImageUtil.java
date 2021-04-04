@@ -15,6 +15,9 @@ import android.graphics.Matrix;
 import android.graphics.Point;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+
 /**
  * 希望有一天可以开源出来 org.zhx
  *
@@ -80,32 +83,35 @@ public class ImageUtil {
                 (bitmap.getHeight() - height) / 2, width, height);
     }
 
-    public static Bitmap getBitmap(Context context, byte[] data) {
+    public static Bitmap getBitmap(Context context, byte[] data, boolean isScal) {
         //只请求图片宽高，不解析图片像素(请求图片属性但不申请内存，解析bitmap对象，该对象不占内存)
         Point displayPx = DisplayUtil.getScreenMetrics(context);
         BitmapFactory.Options opt = new BitmapFactory.Options();
-        opt.inJustDecodeBounds = true;
-        //String path = Environment.getExternalStorageDirectory() + "/dog.jpg";
-        BitmapFactory.decodeByteArray(data, 0, data.length, opt);
-        int imageWidth = opt.outWidth;
-        int imageHeight = opt.outHeight;
-        Log.e(TAG, imageWidth + "!!@" + imageHeight);
-        int scale = 1;
-        int scaleX = imageWidth / displayPx.x;
-        int scaleY = imageHeight / displayPx.y;
-        if (scaleX >= scaleY && scaleX > 1) {
-            scale = scaleX;
-        } else if (scaleX < scaleY && scaleY > 1) {
-            scale = scaleY;
+        if (isScal) {
+            opt.inJustDecodeBounds = true;
+            //String path = Environment.getExternalStorageDirectory() + "/dog.jpg";
+            BitmapFactory.decodeByteArray(data, 0, data.length, opt);
+            int imageWidth = opt.outWidth;
+            int imageHeight = opt.outHeight;
+            int scale = 1;
+            int scaleX = imageWidth / displayPx.x;
+            int scaleY = imageHeight / displayPx.y;
+            if (scaleX >= scaleY && scaleX > 1) {
+                scale = scaleX;
+            } else if (scaleX < scaleY && scaleY > 1) {
+                scale = scaleY;
+            }
+            //设置缩放比例
+            opt.inSampleSize = scale;
+            opt.inJustDecodeBounds = false;
         }
-
-        System.out.println(scale);
-
-        //按照缩放比例加载图片
-        //设置缩放比例
-        opt.inSampleSize = scale;
-        opt.inJustDecodeBounds = false;
         return BitmapFactory.decodeByteArray(data, 0, data.length, opt);
     }
 
+    public static byte[] bitmap2Bytes(Bitmap bm) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data = baos.toByteArray();
+        return data;
+    }
 }
