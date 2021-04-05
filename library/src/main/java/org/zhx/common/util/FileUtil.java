@@ -27,24 +27,18 @@ public class FileUtil {
 
     public static Uri saveImageData(Context context, byte[] data) throws IOException {
         File eFile = Environment.getExternalStorageDirectory();
-        File mDirectory = new File(eFile.toString() + File.separator + context.getPackageName());
+        File mDirectory = new File(eFile.toString() + File.separator + "zCamera");
         if (!mDirectory.exists()) {
             mDirectory.mkdirs();
         }
         File imageFile = new File(mDirectory, "zCamera_" + System.currentTimeMillis() + ".jpg");
         FileOutputStream out;
-        try {
-            out = new FileOutputStream(imageFile);
-            out.write(data);
-            Uri uri = toUri(context, imageFile.getAbsolutePath());
-            updatePhotoAlbum(context, imageFile, data);//更新图库
-            return uri;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        out = new FileOutputStream(imageFile);
+        out.write(data);
+        Uri uri = toUri(context, imageFile.getAbsolutePath());
+        updatePhotoAlbum(context, imageFile, data);//更新图库
+        out.close();
+        return uri;
     }
 
 

@@ -53,18 +53,8 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         mImageSaveProcessor = new ImageSaveProcessor(mView.getContext(), new ImageSaveProcessor.UriResult() {
             @Override
             public void onResult(Uri uri) {
-                Log.e(TAG, "....Camera....ImageSaveProcessor....result..." + uri.toString());
+                Log.e(TAG, "....Camera....ImageSaveProcessor....result..." + System.currentTimeMillis());
                 mView.onSaveResult(uri);
-            }
-        });
-        mRprocessor = new RotationProcessor(mView.getContext(), new RotationProcessor.DataCallback() {
-            @Override
-            public void onData(byte[] bitmapData) {
-                Log.e(TAG, "....Camera....RotationProcessor....suc..." + bitmapData.length);
-                if (mImageSaveProcessor != null) {
-                    mImageSaveProcessor.excute(bitmapData);
-                }
-                mView.onPictrueCallback(bitmapData);
             }
         });
     }
@@ -244,9 +234,19 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 mCamera.takePicture(null, null, new Camera.PictureCallback() {
                     @Override
                     public void onPictureTaken(byte[] data, Camera camera) {
-                        Log.e(TAG, "....Camera...takePicture.......................");
-                        if (mRprocessor != null) {
-                            mRprocessor.excute(data, isFrontCamera);
+                        Log.e(TAG, "....Camera...takePicture......................." + System.currentTimeMillis());
+                        if (mRprocessor == null) {
+                            mRprocessor = new RotationProcessor(mView.getContext(), data, isFrontCamera, new RotationProcessor.DataCallback() {
+                                @Override
+                                public void onData(byte[] bytebitmap) {
+                                    mRprocessor = null;
+                                    mView.onPictrueCallback(bytebitmap);
+                                    if (mImageSaveProcessor != null) {
+                                        mImageSaveProcessor.excute(bytebitmap);
+                                    }
+                                }
+                            });
+                            mRprocessor.execute(AsyncTask.THREAD_POOL_EXECUTOR);
                         }
                         mCamera.startPreview();
                     }

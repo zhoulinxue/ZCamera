@@ -3,6 +3,7 @@ package org.zhx.common.camera;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import org.zhx.common.util.FileUtil;
 
@@ -26,6 +27,7 @@ public class ImageSaveProcessor {
 
         @Override
         protected Uri doInBackground(Object... objects) {
+            Log.e("CameraPresenter", "....Camera...save_process_start..............." + System.currentTimeMillis());
             Uri uri = null;
             try {
                 uri = FileUtil.saveImageData(mContext, datas);
@@ -45,7 +47,7 @@ public class ImageSaveProcessor {
     }
 
     public void excute(byte[] data) {
-        new SaveImageTask(data.clone()).execute(AsyncTask.THREAD_POOL_EXECUTOR);
+        new SaveImageTask(data).execute(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public interface UriResult {

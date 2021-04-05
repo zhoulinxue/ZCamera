@@ -138,10 +138,14 @@ public class ImageUtil {
         return BitmapFactory.decodeByteArray(data, 0, data.length, opt);
     }
 
-    public static byte[] bitmap2Bytes(Bitmap bm) {
+    public static byte[] bitmap2Bytes(Bitmap bm, boolean isRecycl) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] data = baos.toByteArray();
+        if (isRecycl) {
+            bm.recycle();
+            bm = null;
+        }
         return data;
     }
 
