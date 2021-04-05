@@ -39,6 +39,11 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     private RotationProcessor mRprocessor;
     private View mFocusView;
 
+    private int mPreviewWidth = 1440;
+    private int mPreviewHeight = 1080;
+
+    private float mPreviewScale = mPreviewHeight * 1f / mPreviewWidth;
+
     public CameraPresenter(CameraModel.view mView) {
         this.mView = mView;
         displayPx = DisplayUtil.getScreenMetrics(mView.getContext());
@@ -98,10 +103,6 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 }
             });
             setParamiters();
-            if (mView != null) {
-                mProxy = new CameraProxy<>(mCamera);
-                mView.onCameraCreate(mProxy);
-            }
         } catch (IOException e) {
             e.printStackTrace();
             previewSuc = false;
@@ -112,7 +113,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         return true;
     }
 
-    private void setParamiters() {
+    private void setParamiters() throws IOException {
         Camera.Parameters parameters = mCamera.getParameters();
         // 设置闪光灯为自动 前置摄像头时 不能设置
         if (!isFrontCamera) {
@@ -130,35 +131,40 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
      *
      * @param parameters
      */
-    public void setCameraSize(Camera.Parameters parameters) {
+    public void setCameraSize(Camera.Parameters parameters) throws IOException {
 
         //摄像头画面显示在Surface上
-        List<Camera.Size> sizes = parameters.getSupportedPreviewSizes();
-        int[] a = new int[sizes.size()];
-        int[] b = new int[sizes.size()];
+        List<Camera.Size> vSizes = parameters.getSupportedPreviewSizes();
+        Camera.Size previewSize = getSuitableSize(vSizes);
+        parameters.setPreviewSize(previewSize.width, previewSize.height); // 设置预览图像大小
+        List<Camera.Size> pSizes = parameters.getSupportedPictureSizes();
+        Camera.Size pictrueSize = getSuitableSize(pSizes);
+        parameters.setPictureSize(pictrueSize.width, pictrueSize.height);
+        if (mView != null) {
+            mProxy = new CameraProxy<>(mCamera, mPreviewWidth, mPreviewHeight);
+            mView.onCameraCreate(mProxy);
+        }
+    }
+
+    private Camera.Size getSuitableSize(List<Camera.Size> sizes) {
+        int minDelta = Integer.MAX_VALUE; // 最小的差值，初始值应该设置大点保证之后的计算中会被重置
+        int index = 0; // 最小的差值对应的索引坐标
         for (int i = 0; i < sizes.size(); i++) {
-            int supportH = sizes.get(i).height;
-            int supportW = sizes.get(i).width;
-            a[i] = Math.abs(supportW - displayPx.x);
-            b[i] = Math.abs(supportH - displayPx.y);
-            Log.d(TAG, "supportW:" + supportW + "supportH:" + supportH);
-        }
-        int minW = 0, minA = a[0];
-        for (int i = 0; i < a.length; i++) {
-            if (a[i] <= minA) {
-                minW = i;
-                minA = a[i];
+            Camera.Size previewSize = sizes.get(i);
+            Log.v(TAG, "SupportedPreviewSize, width: " + previewSize.width + ", height: " + previewSize.height);
+            // 找到一个与设置的分辨率差值最小的相机支持的分辨率大小
+            if (previewSize.width * mPreviewScale == previewSize.height) {
+                int delta = Math.abs(mPreviewWidth - previewSize.width);
+                if (delta == 0) {
+                    return previewSize;
+                }
+                if (minDelta > delta) {
+                    minDelta = delta;
+                    index = i;
+                }
             }
         }
-        int minH = 0, minB = b[0];
-        for (int i = 0; i < b.length; i++) {
-            if (b[i] < minB) {
-                minH = i;
-                minB = b[i];
-            }
-        }
-        Log.d(TAG, "result=" + sizes.get(minW).width + "x" + sizes.get(minH).height);
-        parameters.setPreviewSize(sizes.get(minW).width, sizes.get(minH).height); // 设置预览图像大小
+        return sizes.get(index); // 默认返回与设置的分辨率最接近的预览尺寸
     }
 
 

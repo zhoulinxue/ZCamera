@@ -56,15 +56,7 @@ public class Camera2Activity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.zcamera_base_layout);
-        displayPx = DisplayUtil.getScreenMetrics(this);
-        mPreView = findViewById(org.zhx.common.camera.R.id.z_base_camera_preview);
-        tpImg = findViewById(org.zhx.common.camera.R.id.z_take_pictrue_img);
-        saveBtn = findViewById(org.zhx.common.camera.R.id.z_base_camera_save);
-        showImg = findViewById(org.zhx.common.camera.R.id.z_base_camera_showImg);
-        mLayer = findViewById(org.zhx.common.camera.R.id.z_base_camera_over_img);
-        swImg =  findViewById(org.zhx.common.camera.R.id.btn_switch_camera);
-        flashModelImg= findViewById(org.zhx.common.camera.R.id.btn_flash_mode);
+
 
 
     }

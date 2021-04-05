@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -43,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     private int[] modelResId = {org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_auto_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_on_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_off_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_torch_normal};
     private RelativeLayout.LayoutParams showLp;
     private RelativeLayout mRootView;
-    Point screenP;
+    Point screenP, mPreviewPoint;
     FocusRectView mFocusView;
     private Bitmap mThumilBitmap;
 
@@ -69,10 +70,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     }
 
     private void initHolder() {
-        RelativeLayout.LayoutParams preViewLp = (RelativeLayout.LayoutParams) mSurfaceView.getLayoutParams();
-        preViewLp.width = screenP.x;
-        preViewLp.height = screenP.y * 3 / 4;
-        mSurfaceView.setLayoutParams(preViewLp);
         mHolder = mSurfaceView.getHolder();
         mHolder.addCallback(this);
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
@@ -97,6 +94,11 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         } else {
             proxy.getCamera().setDisplayOrientation(0);
         }
+        RelativeLayout.LayoutParams preViewLp = (RelativeLayout.LayoutParams) mSurfaceView.getLayoutParams();
+        mPreviewPoint = new Point(screenP.x, screenP.y * proxy.getHeight() / proxy.getWidth());
+        preViewLp.width = mPreviewPoint.x;
+        preViewLp.height = mPreviewPoint.y;
+        mSurfaceView.setLayoutParams(preViewLp);
         proxy.getCamera().setPreviewDisplay(mHolder);
     }
 
@@ -147,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                         mThumImag.setImageBitmap(mThumilBitmap);
                         mShowImage = new ImageView(MainActivity.this);
                         mShowImage.setId(R.id.z_base_camera_showImg);
-                        addView(1, mShowImage, showLp);
+                        addView(mRootView.getChildCount(), mShowImage, showLp);
                     }
                 })
                 .setInterpolator(new AccelerateInterpolator()).start();
@@ -191,8 +193,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         if (v == mSurfaceView) {
             if (mFocusView == null) {
                 mFocusView = new FocusRectView(this);
-                RelativeLayout.LayoutParams focusLp = new RelativeLayout.LayoutParams(screenP.x, screenP.y * 3 / 4);
-                focusLp.addRule(RelativeLayout.CENTER_IN_PARENT);
+                RelativeLayout.LayoutParams focusLp = new RelativeLayout.LayoutParams(mPreviewPoint.x, mPreviewPoint.y);
+                focusLp.addRule(RelativeLayout.BELOW, R.id.z_base_camera_top_layout);
                 addView(mRootView.getChildCount(), mFocusView, focusLp);
             }
             if (!mPresenter.isFocusing()) {
