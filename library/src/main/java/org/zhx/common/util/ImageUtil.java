@@ -98,6 +98,7 @@ public class ImageUtil {
             BitmapFactory.decodeByteArray(data, 0, data.length, opt);
             int imageWidth = opt.outWidth;
             int imageHeight = opt.outHeight;
+            Log.e("CameraPresenter", "bitmap...." + imageWidth + " xxx  " + imageHeight);
             int scale = 1;
             int scaleX = imageWidth / displayPx.x;
             int scaleY = imageHeight / displayPx.y;

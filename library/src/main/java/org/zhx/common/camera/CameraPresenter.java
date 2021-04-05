@@ -4,7 +4,6 @@ import android.Manifest;
 import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.hardware.Camera;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -132,46 +131,34 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
      * @param parameters
      */
     public void setCameraSize(Camera.Parameters parameters) {
-        Point point = findBestPreviewSizeValue(parameters, new Point(displayPx.x, displayPx.y), true);
-        // 设置图片大小 为设备长宽
-        parameters.setPictureSize(point.x, point.y);
-        parameters.setPreviewFpsRange(point.x, point.y);
-    }
 
-    private static final int MIN_PREVIEW_PIXELS = 320 * 240; // small screen
-    private static final int MAX_PREVIEW_PIXELS = 800 * 480; // large/HD screen
-
-    private static Point findBestPreviewSizeValue(Camera.Parameters parameters,
-                                                  Point screenResolution,
-                                                  boolean portrait) {
-        Point bestSize = null;
-        int diff = Integer.MAX_VALUE;
-        for (Camera.Size supportedPreviewSize : parameters.getSupportedPreviewSizes()) {
-            int pixels = supportedPreviewSize.height * supportedPreviewSize.width;
-            //预先设置大小
-            if (pixels < MIN_PREVIEW_PIXELS || pixels > MAX_PREVIEW_PIXELS) {
-                continue;
-            }
-            int supportedWidth = portrait ? supportedPreviewSize.height : supportedPreviewSize.width;
-            int supportedHeight = portrait ? supportedPreviewSize.width : supportedPreviewSize.height;
-            //不太理解为啥要交叉相乘，总之是比较差值
-            int newDiff = Math.abs(screenResolution.x * supportedHeight - supportedWidth * screenResolution.y);
-            if (newDiff == 0) {
-                bestSize = new Point(supportedWidth, supportedHeight);
-                break;
-            }
-            //更新最小差值
-            if (newDiff < diff) {
-                bestSize = new Point(supportedWidth, supportedHeight);
-                diff = newDiff;
+        //摄像头画面显示在Surface上
+        List<Camera.Size> sizes = parameters.getSupportedPreviewSizes();
+        int[] a = new int[sizes.size()];
+        int[] b = new int[sizes.size()];
+        for (int i = 0; i < sizes.size(); i++) {
+            int supportH = sizes.get(i).height;
+            int supportW = sizes.get(i).width;
+            a[i] = Math.abs(supportW - displayPx.x);
+            b[i] = Math.abs(supportH - displayPx.y);
+            Log.d(TAG, "supportW:" + supportW + "supportH:" + supportH);
+        }
+        int minW = 0, minA = a[0];
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] <= minA) {
+                minW = i;
+                minA = a[i];
             }
         }
-        //如果还没找到，就使用预览值
-        if (bestSize == null) {
-            Camera.Size defaultSize = parameters.getPreviewSize();
-            bestSize = new Point(defaultSize.width, defaultSize.height);
+        int minH = 0, minB = b[0];
+        for (int i = 0; i < b.length; i++) {
+            if (b[i] < minB) {
+                minH = i;
+                minB = b[i];
+            }
         }
-        return bestSize;
+        Log.d(TAG, "result=" + sizes.get(minW).width + "x" + sizes.get(minH).height);
+        parameters.setPreviewSize(sizes.get(minW).width, sizes.get(minH).height); // 设置预览图像大小
     }
 
 
