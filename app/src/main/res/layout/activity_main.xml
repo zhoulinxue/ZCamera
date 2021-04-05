@@ -7,13 +7,51 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/alpha_black">
 
         <SurfaceView
             android:id="@id/z_base_camera_preview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_centerInParent="true" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <RelativeLayout
+                android:layout_width="44.0dip"
+                android:layout_height="fill_parent"
+                android:layout_weight="1.0"
+                android:gravity="center">
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="44.0dip"
+                android:layout_height="fill_parent"
+                android:layout_weight="1.0" />
+
+            <ImageView
+                android:id="@+id/btn_flash_mode"
+                android:layout_width="44.0dip"
+                android:layout_height="fill_parent"
+                android:layout_weight="1.0"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/btn_flash_on" />
+
+            <ImageView
+                android:id="@+id/btn_other_setting"
+                android:layout_width="44.0dip"
+                android:layout_height="fill_parent"
+                android:layout_weight="1.0"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_camera_top_bar_setting" />
+        </LinearLayout>
     </RelativeLayout>
 
     <ImageView
@@ -60,42 +98,5 @@
             android:layout_marginRight="20dp"
             android:src="@drawable/ic_camera_top_bar_sw_camera" />
     </RelativeLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:layout_alignParentTop="true"
-        android:orientation="horizontal">
-
-        <RelativeLayout
-            android:layout_width="44.0dip"
-            android:layout_height="fill_parent"
-            android:layout_weight="1.0"
-            android:gravity="center">
-
-        </RelativeLayout>
-
-        <View
-            android:layout_width="44.0dip"
-            android:layout_height="fill_parent"
-            android:layout_weight="1.0" />
-
-        <ImageView
-            android:id="@+id/btn_flash_mode"
-            android:layout_width="44.0dip"
-            android:layout_height="fill_parent"
-            android:layout_weight="1.0"
-            android:contentDescription="@string/app_name"
-            android:src="@drawable/btn_flash_on" />
-
-        <ImageView
-            android:id="@+id/btn_other_setting"
-            android:layout_width="44.0dip"
-            android:layout_height="fill_parent"
-            android:layout_weight="1.0"
-            android:contentDescription="@string/app_name"
-            android:src="@drawable/ic_camera_top_bar_setting" />
-    </LinearLayout>
-
 
 </RelativeLayout>

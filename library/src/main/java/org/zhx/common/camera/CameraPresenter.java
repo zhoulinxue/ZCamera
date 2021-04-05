@@ -223,7 +223,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
 
     @Override
     public void takePictrue() {
-        if (isFocus && autoFocusManager != null && !autoFocusManager.isFocusing()) {
+        if (isFocus) {
             if (previewSuc) {
                 if (mFocusView != null) {
                     mFocusView.setVisibility(View.GONE);
