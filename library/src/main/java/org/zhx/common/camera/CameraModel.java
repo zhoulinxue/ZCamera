@@ -3,6 +3,7 @@ package org.zhx.common.camera;
 import android.content.Context;
 import android.graphics.Point;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.view.View;
 
 import androidx.annotation.StringRes;
@@ -40,5 +41,6 @@ public interface CameraModel {
 
         public void onPictrueCallback(byte[] data);
 
+        void onSaveResult(Uri uri);
     }
 }

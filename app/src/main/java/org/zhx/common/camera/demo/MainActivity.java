@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -153,6 +154,11 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     }
                 })
                 .setInterpolator(new AccelerateInterpolator()).start();
+    }
+
+    @Override
+    public void onSaveResult(Uri uri) {
+
     }
 
     @Override

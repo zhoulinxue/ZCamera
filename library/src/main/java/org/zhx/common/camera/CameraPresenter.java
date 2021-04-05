@@ -5,6 +5,7 @@ import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
@@ -44,9 +45,28 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
 
     private float mPreviewScale = mPreviewHeight * 1f / mPreviewWidth;
 
-    public CameraPresenter(CameraModel.view mView) {
+    private ImageSaveProcessor mImageSaveProcessor;
+
+    public CameraPresenter(final CameraModel.view mView) {
         this.mView = mView;
         displayPx = DisplayUtil.getScreenMetrics(mView.getContext());
+        mImageSaveProcessor = new ImageSaveProcessor(mView.getContext(), new ImageSaveProcessor.UriResult() {
+            @Override
+            public void onResult(Uri uri) {
+                Log.e(TAG, "....Camera....ImageSaveProcessor....result..." + uri.toString());
+                mView.onSaveResult(uri);
+            }
+        });
+        mRprocessor = new RotationProcessor(mView.getContext(), new RotationProcessor.DataCallback() {
+            @Override
+            public void onData(byte[] bitmapData) {
+                Log.e(TAG, "....Camera....RotationProcessor....suc..." + bitmapData.length);
+                if (mImageSaveProcessor != null) {
+                    mImageSaveProcessor.excute(bitmapData);
+                }
+                mView.onPictrueCallback(bitmapData);
+            }
+        });
     }
 
     @Override
@@ -129,7 +149,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     /**
      * 旋转相机和设置预览大小
      *
-     * @param parameters
+     * @param parameters 相机 属性
      */
     public void setCameraSize(Camera.Parameters parameters) throws IOException {
 
@@ -225,15 +245,8 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                     @Override
                     public void onPictureTaken(byte[] data, Camera camera) {
                         Log.e(TAG, "....Camera...takePicture.......................");
-                        if (mRprocessor == null) {
-                            mRprocessor = new RotationProcessor(mView.getContext(), data, isFrontCamera, new RotationProcessor.DataCallback() {
-                                @Override
-                                public void onData(byte[] bitmapData) {
-                                    mRprocessor = null;
-                                    mView.onPictrueCallback(bitmapData);
-                                }
-                            });
-                            mRprocessor.execute(AsyncTask.THREAD_POOL_EXECUTOR);
+                        if (mRprocessor != null) {
+                            mRprocessor.excute(data, isFrontCamera);
                         }
                         mCamera.startPreview();
                     }
