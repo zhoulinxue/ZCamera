@@ -241,9 +241,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                                 public void onData(byte[] bytebitmap) {
                                     mRprocessor = null;
                                     mView.onPictrueCallback(bytebitmap);
-                                    if (mImageSaveProcessor != null) {
-                                        mImageSaveProcessor.excute(bytebitmap);
-                                    }
+                                    mImageSaveProcessor.excute(bytebitmap);
                                 }
                             });
                             mRprocessor.execute(AsyncTask.THREAD_POOL_EXECUTOR);

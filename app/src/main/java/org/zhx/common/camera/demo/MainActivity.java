@@ -1,5 +1,6 @@
 package org.zhx.common.camera.demo;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -34,6 +35,7 @@ import org.zhx.common.camera.Constants;
 import org.zhx.common.camera.widget.FocusRectView;
 import org.zhx.common.util.DisplayUtil;
 import org.zhx.common.util.ImageUtil;
+import org.zhx.common.util.PermissionsUtil;
 
 import java.io.IOException;
 
@@ -48,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     Point screenP, mPreviewPoint;
     FocusRectView mFocusView;
     private Bitmap mThumilBitmap;
+    private Uri mUri;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -78,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     }
 
     @Override
-    public Context getContext() {
+    public AppCompatActivity getContext() {
         return this;
     }
 
@@ -109,7 +112,12 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         switch (v.getId()) {
             case R.id.z_take_pictrue_img:
                 mShutterImg.setEnabled(false);
-                mPresenter.takePictrue();
+                boolean hasPermiss = PermissionsUtil.hasPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                if (hasPermiss) {
+                    mPresenter.takePictrue();
+                } else {
+                    PermissionsUtil.requestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE, Constants.STORAGE);
+                }
                 break;
             case R.id.btn_switch_camera:
                 mPresenter.switchCamera();
@@ -120,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 break;
             case R.id.z_thumil_img:
                 Intent i = new Intent(this, ShowImageActivity.class);
-                i.putExtra("bitmap", mThumilBitmap);
+                i.putExtra("bitmap", mUri.toString());
                 ActivityOptionsCompat optionsCompat =
                         ActivityOptionsCompat.makeSceneTransitionAnimation(this, mThumImag, "image");
                 startActivity(i, optionsCompat.toBundle());
@@ -158,19 +166,24 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
     @Override
     public void onSaveResult(Uri uri) {
-
+        mUri = uri;
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
-            case Constants.CAMERA: {
+            case Constants.CAMERA:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startCamera(CameraAction.PERMISSITON_GRANTED);
                 }
-                return;
-            }
+                break;
+            case Constants.STORAGE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mPresenter.takePictrue();
+                }
+                break;
+
 
         }
     }

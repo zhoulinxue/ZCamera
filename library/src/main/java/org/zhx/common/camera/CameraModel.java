@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.view.View;
 
 import androidx.annotation.StringRes;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,7 +34,7 @@ public interface CameraModel {
 
     public interface view<T> {
 
-        Context getContext();
+        AppCompatActivity getContext();
 
         public void onError(@StringRes int msg);
 
