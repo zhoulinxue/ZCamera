@@ -10,6 +10,7 @@ import android.graphics.Point;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -32,6 +33,7 @@ import org.zhx.common.camera.CameraModel;
 import org.zhx.common.camera.CameraPresenter;
 import org.zhx.common.camera.CameraProxy;
 import org.zhx.common.camera.Constants;
+import org.zhx.common.camera.ImageData;
 import org.zhx.common.camera.widget.FocusRectView;
 import org.zhx.common.util.DisplayUtil;
 import org.zhx.common.util.ImageUtil;
@@ -71,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         mFlashImg.setOnClickListener(this);
         mShutterImg.setOnClickListener(this);
         initHolder();
+        mPresenter.showImages();
     }
 
     private void initHolder() {
@@ -166,7 +169,18 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
     @Override
     public void onSaveResult(Uri uri) {
-        mUri = uri;
+        if (uri != null)
+            mUri = uri;
+    }
+
+    @Override
+    public void showLastImag(ImageData imageData) {
+        try {
+            mUri = imageData.getContentUri();
+            mThumImag.setImageBitmap(MediaStore.Images.Media.getBitmap(getContentResolver(), mUri));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

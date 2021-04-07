@@ -1,4 +1,4 @@
-package org.zhx.common.camera;
+package org.zhx.common.camera.tasks;
 
 import android.content.Context;
 import android.net.Uri;

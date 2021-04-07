@@ -25,4 +25,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.0'
     implementation project(path: ':library')
     implementation 'de.hdodenhof:circleimageview:3.1.0'
+    implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
 }

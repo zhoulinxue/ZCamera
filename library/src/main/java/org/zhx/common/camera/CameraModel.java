@@ -30,6 +30,8 @@ public interface CameraModel {
         public void focusArea(float x, float y,View focus);
 
         boolean isFocusing();
+
+        void showImages();
     }
 
     public interface view<T> {
@@ -43,5 +45,7 @@ public interface CameraModel {
         public void onPictrueCallback(byte[] data);
 
         void onSaveResult(Uri uri);
+
+        void showLastImag(ImageData imageData);
     }
 }

@@ -10,6 +10,9 @@ import android.widget.ImageView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.davemorrissey.labs.subscaleview.ImageSource;
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
+
 import java.io.IOException;
 
 public class ShowImageActivity extends AppCompatActivity {
@@ -18,18 +21,8 @@ public class ShowImageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_image);
         getWindow().addFlags((WindowManager.LayoutParams.FLAG_FULLSCREEN));
-        ImageView showImage = findViewById(R.id.z_base_camera_showImg_big);
+        SubsamplingScaleImageView showImage = findViewById(R.id.z_base_camera_showImg_big);
         String path = getIntent().getStringExtra("bitmap");
-        try {
-            showImage.setImageBitmap(MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(path)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        showImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
+        showImage.setImage(ImageSource.uri(Uri.parse(path)));
     }
 }

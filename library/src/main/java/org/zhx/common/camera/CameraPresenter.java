@@ -15,6 +15,9 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 
+import org.zhx.common.camera.tasks.ImageSaveProcessor;
+import org.zhx.common.camera.tasks.ImageSearchProcessor;
+import org.zhx.common.camera.tasks.RotationProcessor;
 import org.zhx.common.util.DisplayUtil;
 import org.zhx.common.util.ImageUtil;
 import org.zhx.common.util.PermissionsUtil;
@@ -46,6 +49,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     private float mPreviewScale = mPreviewHeight * 1f / mPreviewWidth;
 
     private ImageSaveProcessor mImageSaveProcessor;
+    private ImageSearchProcessor mImageSearchProcessor;
 
     public CameraPresenter(final CameraModel.view mView) {
         this.mView = mView;
@@ -57,6 +61,19 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 mView.onSaveResult(uri);
             }
         });
+        mImageSearchProcessor = new ImageSearchProcessor(mView.getContext(), new ImageSearchProcessor.ImageDataCallback() {
+            @Override
+            public void onResult(List<ImageData> images) {
+                Log.e(TAG, images.size() + "....Camera....ImageSearchProcessor....result..." + System.currentTimeMillis());
+                if (null != images && images.size() > 0)
+                    mView.showLastImag(images.get(0));
+            }
+        });
+    }
+
+    @Override
+    public void showImages() {
+        mImageSearchProcessor.showImags();
     }
 
     @Override
