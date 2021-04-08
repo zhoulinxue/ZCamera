@@ -8,6 +8,7 @@ import android.hardware.Camera;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.SurfaceHolder;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -43,17 +44,20 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     private RotationProcessor mRprocessor;
     private View mFocusView;
 
-    private int mPreviewWidth = 1440;
-    private int mPreviewHeight = 1080;
+    private int mPreviewWidth;
+    private int mPreviewHeight;
 
     private float mPreviewScale = mPreviewHeight * 1f / mPreviewWidth;
 
     private ImageSaveProcessor mImageSaveProcessor;
     private ImageSearchProcessor mImageSearchProcessor;
+    private boolean hasAutoFocus = true;
 
     public CameraPresenter(final CameraModel.view mView) {
         this.mView = mView;
         displayPx = DisplayUtil.getScreenMetrics(mView.getContext());
+        mPreviewWidth = Math.min(displayPx.x, displayPx.y);
+        mPreviewHeight = Math.max(displayPx.x, displayPx.y);
         mImageSaveProcessor = new ImageSaveProcessor(mView.getContext(), new ImageSaveProcessor.UriResult() {
             @Override
             public void onResult(Uri uri) {
@@ -91,7 +95,6 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                         if (autoFocusManager == null) {
                             autoFocusManager = new AutoFocusManager(mCamera, this);
                         }
-                        mCamera.startPreview();
                         Log.e(TAG, action + "....Camera....preview.......................");
                     }
                 }
@@ -130,6 +133,9 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 }
             });
             setParamiters();
+
+            List<String> supportedFocusModes = mCamera.getParameters().getSupportedFocusModes();
+            hasAutoFocus = supportedFocusModes != null && supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO);
         } catch (IOException e) {
             e.printStackTrace();
             previewSuc = false;
@@ -151,6 +157,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         parameters.setPictureFormat(ImageFormat.JPEG);
         // 设置JPG照片的质量
         parameters.set("jpeg-quality", 100);
+        mCamera.startPreview();
     }
 
     /**
@@ -159,13 +166,23 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
      * @param parameters 相机 属性
      */
     public void setCameraSize(Camera.Parameters parameters) throws IOException {
-
         //摄像头画面显示在Surface上
         List<Camera.Size> vSizes = parameters.getSupportedPreviewSizes();
         Camera.Size previewSize = getSuitableSize(vSizes);
-        parameters.setPreviewSize(previewSize.width, previewSize.height); // 设置预览图像大小
+        Log.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + " _ " + previewSize.width + ", height: " + mPreviewHeight + " _ " + previewSize.height);
+        int previewWidth = Math.min(previewSize.width, previewSize.height);
+        int previewHeight = Math.max(previewSize.width, previewSize.height);
+        mPreviewScale = previewWidth * 1f / previewHeight;
+        if (mPreviewWidth > previewWidth) {
+            mPreviewHeight = (int) (mPreviewWidth / mPreviewScale);
+        } else {
+            mPreviewHeight = (int) (mPreviewHeight / mPreviewScale);
+        }
+        Log.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + ", height: " + mPreviewHeight);
+        parameters.setPreviewSize(mPreviewWidth, mPreviewHeight); // 设置预览图像大小
         List<Camera.Size> pSizes = parameters.getSupportedPictureSizes();
         Camera.Size pictrueSize = getSuitableSize(pSizes);
+        Log.e(TAG, "Supported, width: " + pictrueSize.width + ", height: " + pictrueSize.height);
         parameters.setPictureSize(pictrueSize.width, pictrueSize.height);
         if (mView != null) {
             mProxy = new CameraProxy<>(mCamera, mPreviewWidth, mPreviewHeight);
@@ -291,7 +308,12 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
 
     @Override
     public void focusArea(float x, float y, View focusView) {
-        if (!previewSuc || mCamera == null || autoFocusManager == null) {
+        if (!previewSuc || mCamera == null || autoFocusManager == null || !hasAutoFocus) {
+            isFocus = true;
+            Log.e(TAG, "...hasAutoFocus." + hasAutoFocus);
+            if (focusView != null) {
+                focusView.setVisibility(View.GONE);
+            }
             return;
         }
         this.mFocusView = focusView;

@@ -1,7 +1,6 @@
 package org.zhx.common.camera.demo;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -11,14 +10,12 @@ import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
-import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -102,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             proxy.getCamera().setDisplayOrientation(0);
         }
         RelativeLayout.LayoutParams preViewLp = (RelativeLayout.LayoutParams) mSurfaceView.getLayoutParams();
-        mPreviewPoint = new Point(screenP.x, screenP.y * proxy.getHeight() / proxy.getWidth());
+        mPreviewPoint = new Point(proxy.getWidth(), proxy.getHeight());
         preViewLp.width = mPreviewPoint.x;
         preViewLp.height = mPreviewPoint.y;
         mSurfaceView.setLayoutParams(preViewLp);
@@ -150,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 .translationY(screenP.y / 2 - 2 * mThumImag.getY())
                 .scaleX(0.01f)
                 .scaleY(0.01f)
-                .setDuration(150)
+                .setDuration(90)
                 .withLayer()
                 .withEndAction(new Runnable() {
                     @Override
@@ -227,7 +224,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             if (mFocusView == null) {
                 mFocusView = new FocusRectView(this);
                 RelativeLayout.LayoutParams focusLp = new RelativeLayout.LayoutParams(mPreviewPoint.x, mPreviewPoint.y);
-                focusLp.addRule(RelativeLayout.BELOW, R.id.z_base_camera_top_layout);
                 addView(mRootView.getChildCount(), mFocusView, focusLp);
             }
             if (!mPresenter.isFocusing()) {

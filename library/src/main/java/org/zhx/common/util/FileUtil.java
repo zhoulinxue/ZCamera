@@ -26,18 +26,36 @@ public class FileUtil {
     // 保存图片
 
     public static Uri saveImageData(Context context, byte[] data) throws IOException {
-        File eFile = Environment.getExternalStorageDirectory();
-        File mDirectory = new File(eFile.toString() + File.separator + "zCamera");
-        if (!mDirectory.exists()) {
-            mDirectory.mkdirs();
+        Uri uri = null;
+        String name = "zCamera_" + System.currentTimeMillis() + ".jpg";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DCIM);
+            ContentResolver contentResolver = context.getContentResolver();
+            uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            try {
+                OutputStream out = contentResolver.openOutputStream(uri);
+                out.write(data);
+                out.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            File eFile = Environment.getExternalStorageDirectory();
+            File mDirectory = new File(eFile.toString() + File.separator + "zCamera");
+            if (!mDirectory.exists()) {
+                mDirectory.mkdirs();
+            }
+            File imageFile = new File(mDirectory, name);
+            FileOutputStream out;
+            out = new FileOutputStream(imageFile);
+            out.write(data);
+            uri = toUri(context, imageFile.getAbsolutePath());
+            updatePhotoAlbum(context, imageFile, data);//更新图库
+            out.close();
         }
-        File imageFile = new File(mDirectory, "zCamera_" + System.currentTimeMillis() + ".jpg");
-        FileOutputStream out;
-        out = new FileOutputStream(imageFile);
-        out.write(data);
-        Uri uri = toUri(context, imageFile.getAbsolutePath());
-        updatePhotoAlbum(context, imageFile, data);//更新图库
-        out.close();
         return uri;
     }
 
@@ -50,31 +68,15 @@ public class FileUtil {
      * @param file
      */
     public static void updatePhotoAlbum(Context mContext, File file, byte[] data) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.MediaColumns.DISPLAY_NAME, file.getName());
-            values.put(MediaStore.MediaColumns.MIME_TYPE, getMimeType(file));
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DCIM);
-            ContentResolver contentResolver = mContext.getContentResolver();
-            Uri uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-            if (uri == null) {
-                return;
-            }
-            try {
-                OutputStream out = contentResolver.openOutputStream(uri);
-                out.write(data);
-                out.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            MediaScannerConnection.scanFile(mContext.getApplicationContext(), new String[]{file.getAbsolutePath()}, new String[]{"image/jpeg"}, new MediaScannerConnection.OnScanCompletedListener() {
-                @Override
-                public void onScanCompleted(String path, Uri uri) {
 
-                }
-            });
-        }
+
+        MediaScannerConnection.scanFile(mContext.getApplicationContext(), new String[]{file.getAbsolutePath()}, new String[]{"image/jpeg"}, new MediaScannerConnection.OnScanCompletedListener() {
+            @Override
+            public void onScanCompleted(String path, Uri uri) {
+
+            }
+        });
+
     }
 
     public static Uri toUri(Context context, String filePath) {
