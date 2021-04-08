@@ -224,6 +224,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             if (mFocusView == null) {
                 mFocusView = new FocusRectView(this);
                 RelativeLayout.LayoutParams focusLp = new RelativeLayout.LayoutParams(mPreviewPoint.x, mPreviewPoint.y);
+                focusLp.addRule(RelativeLayout.CENTER_IN_PARENT);
                 addView(mRootView.getChildCount(), mFocusView, focusLp);
             }
             if (!mPresenter.isFocusing()) {

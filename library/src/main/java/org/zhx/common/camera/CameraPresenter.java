@@ -169,14 +169,15 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         //摄像头画面显示在Surface上
         List<Camera.Size> vSizes = parameters.getSupportedPreviewSizes();
         Camera.Size previewSize = getSuitableSize(vSizes);
-        Log.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + " _ " + previewSize.width + ", height: " + mPreviewHeight + " _ " + previewSize.height);
+
         int previewWidth = Math.min(previewSize.width, previewSize.height);
         int previewHeight = Math.max(previewSize.width, previewSize.height);
+        Log.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + " _ " + previewWidth + ", height: " + mPreviewHeight + " _ " + previewHeight);
         mPreviewScale = previewWidth * 1f / previewHeight;
         if (mPreviewWidth > previewWidth) {
             mPreviewHeight = (int) (mPreviewWidth / mPreviewScale);
-        } else {
-            mPreviewHeight = (int) (mPreviewHeight / mPreviewScale);
+        } else if (mPreviewWidth < previewHeight) {
+            mPreviewHeight = (int) (mPreviewHeight * mPreviewScale);
         }
         Log.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + ", height: " + mPreviewHeight);
         parameters.setPreviewSize(mPreviewWidth, mPreviewHeight); // 设置预览图像大小
