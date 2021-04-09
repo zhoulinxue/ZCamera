@@ -176,7 +176,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         mPreviewScale = previewWidth * 1f / previewHeight;
         if (mPreviewWidth > previewWidth) {
             mPreviewHeight = (int) (mPreviewWidth / mPreviewScale);
-        } else if (mPreviewWidth < previewHeight) {
+        } else if (mPreviewWidth < previewWidth) {
             mPreviewHeight = (int) (mPreviewHeight * mPreviewScale);
         }
         Log.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + ", height: " + mPreviewHeight);
