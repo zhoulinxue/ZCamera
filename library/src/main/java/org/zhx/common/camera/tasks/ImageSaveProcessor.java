@@ -5,7 +5,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import org.zhx.common.util.FileUtil;
+import org.zhx.common.util.CameraUtil;
+import org.zhx.common.util.ZCameraLog;
 
 import java.io.IOException;
 
@@ -27,10 +28,10 @@ public class ImageSaveProcessor {
 
         @Override
         protected Uri doInBackground(Object... objects) {
-            Log.e("CameraPresenter", "....Camera...save_process_start..............." + System.currentTimeMillis());
+            ZCameraLog.e("CameraPresenter", "....Camera...save_process_start..............." + System.currentTimeMillis());
             Uri uri = null;
             try {
-                uri = FileUtil.saveImageData(mContext, datas);
+                uri = CameraUtil.saveImageData(mContext, datas);
             } catch (IOException e) {
                 e.printStackTrace();
             }

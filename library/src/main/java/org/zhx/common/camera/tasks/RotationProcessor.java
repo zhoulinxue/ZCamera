@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import org.zhx.common.util.ImageUtil;
+import org.zhx.common.util.ZCameraLog;
 
 public class RotationProcessor extends AsyncTask<Object, Object, byte[]> {
     private Context mContext;
@@ -26,14 +27,14 @@ public class RotationProcessor extends AsyncTask<Object, Object, byte[]> {
     protected void onPostExecute(byte[] bytes) {
         super.onPostExecute(bytes);
         if (mCallback != null) {
-            Log.e("CameraPresenter", "....Camera...rotation_process_callback......................."+System.currentTimeMillis());
+            ZCameraLog.e("CameraPresenter", "....Camera...rotation_process_callback......................." + System.currentTimeMillis());
             mCallback.onData(bytes);
         }
     }
 
     @Override
     protected byte[] doInBackground(Object... objects) {
-        Log.e("CameraPresenter", "....Camera...rotation_process_start......................."+System.currentTimeMillis());
+        ZCameraLog.e("CameraPresenter", "....Camera...rotation_process_start......................." + System.currentTimeMillis());
         Bitmap bitmap = ImageUtil.getBitmap(mContext, data, true);
         Bitmap bm = bitmap;
         if (mContext.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {

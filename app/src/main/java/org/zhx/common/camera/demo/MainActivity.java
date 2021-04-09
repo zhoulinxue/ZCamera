@@ -32,7 +32,7 @@ import org.zhx.common.camera.CameraProxy;
 import org.zhx.common.camera.Constants;
 import org.zhx.common.camera.ImageData;
 import org.zhx.common.camera.widget.FocusRectView;
-import org.zhx.common.util.DisplayUtil;
+import org.zhx.common.util.CameraUtil;
 import org.zhx.common.util.ImageUtil;
 import org.zhx.common.util.PermissionsUtil;
 
@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mPresenter = new CameraPresenter(this);
-        screenP = DisplayUtil.getScreenMetrics(this);
+        screenP = CameraUtil.getScreenMetrics(this);
         setContentView(R.layout.activity_main);
         getWindow().addFlags((WindowManager.LayoutParams.FLAG_FULLSCREEN));
         mShowImage = findViewById(R.id.z_base_camera_showImg);

@@ -18,7 +18,7 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 
-import org.zhx.common.util.DisplayUtil;
+import org.zhx.common.util.CameraUtil;
 import org.zhx.common.util.ImageUtil;
 
 import androidx.appcompat.widget.AppCompatImageView;
@@ -55,7 +55,7 @@ public class OverlayerView extends AppCompatImageView implements LifecycleObserv
     private void init(Context context) {
         initPaint();
         mContext = context;
-        Point p = DisplayUtil.getScreenMetrics(mContext);
+        Point p = CameraUtil.getScreenMetrics(mContext);
         width = p.x;
         height = p.y;
     }

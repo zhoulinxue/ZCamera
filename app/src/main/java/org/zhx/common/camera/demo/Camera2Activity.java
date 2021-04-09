@@ -14,7 +14,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.zhx.common.camera.AutoFocusManager;
-import org.zhx.common.util.DisplayUtil;
 import org.zhx.common.camera.widget.OverlayerView;
 
 public class Camera2Activity extends AppCompatActivity {

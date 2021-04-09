@@ -1,16 +1,11 @@
 package org.zhx.common.camera;
 
-import android.content.Context;
-import android.graphics.Point;
-import android.hardware.Camera;
 import android.net.Uri;
 import android.view.View;
 
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
-
 import java.io.IOException;
-import java.util.List;
 
 public interface CameraModel {
 

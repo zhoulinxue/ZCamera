@@ -8,7 +8,6 @@ import android.hardware.Camera;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.view.SurfaceHolder;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,9 +18,10 @@ import androidx.lifecycle.OnLifecycleEvent;
 import org.zhx.common.camera.tasks.ImageSaveProcessor;
 import org.zhx.common.camera.tasks.ImageSearchProcessor;
 import org.zhx.common.camera.tasks.RotationProcessor;
-import org.zhx.common.util.DisplayUtil;
+import org.zhx.common.util.CameraUtil;
 import org.zhx.common.util.ImageUtil;
 import org.zhx.common.util.PermissionsUtil;
+import org.zhx.common.util.ZCameraLog;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -55,20 +55,20 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
 
     public CameraPresenter(final CameraModel.view mView) {
         this.mView = mView;
-        displayPx = DisplayUtil.getScreenMetrics(mView.getContext());
+        displayPx = CameraUtil.getScreenMetrics(mView.getContext());
         mPreviewWidth = Math.min(displayPx.x, displayPx.y);
         mPreviewHeight = Math.max(displayPx.x, displayPx.y);
         mImageSaveProcessor = new ImageSaveProcessor(mView.getContext(), new ImageSaveProcessor.UriResult() {
             @Override
             public void onResult(Uri uri) {
-                Log.e(TAG, "....Camera....ImageSaveProcessor....result..." + System.currentTimeMillis());
+                ZCameraLog.e(TAG, "....Camera....ImageSaveProcessor....result..." + System.currentTimeMillis());
                 mView.onSaveResult(uri);
             }
         });
         mImageSearchProcessor = new ImageSearchProcessor(mView.getContext(), new ImageSearchProcessor.ImageDataCallback() {
             @Override
             public void onResult(List<ImageData> images) {
-                Log.e(TAG, images.size() + "....Camera....ImageSearchProcessor....result..." + System.currentTimeMillis());
+                ZCameraLog.e(TAG, images.size() + "....Camera....ImageSearchProcessor....result..." + System.currentTimeMillis());
                 if (null != images && images.size() > 0)
                     mView.showLastImag(images.get(0));
             }
@@ -88,14 +88,14 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
             }
             AppCompatActivity activity = (AppCompatActivity) mView.getContext();
             if (PermissionsUtil.hasPermission(activity, Manifest.permission.CAMERA)) {
-                Log.e(TAG, action + "....Camera....start.......................");
+                ZCameraLog.e(TAG, action + "....Camera....start.......................");
                 if (openCamera()) {
                     boolean setCamera = setCamera();
                     if (setCamera) {
                         if (autoFocusManager == null) {
                             autoFocusManager = new AutoFocusManager(mCamera, this);
                         }
-                        Log.e(TAG, action + "....Camera....preview.......................");
+                        ZCameraLog.e(TAG, action + "....Camera....preview.......................");
                     }
                 }
             } else {
@@ -120,7 +120,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 }
             }
         }
-        Log.e(TAG, "open....." + (mCamera != null));
+        ZCameraLog.e(TAG, "open....." + (mCamera != null));
         return mCamera != null;
     }
 
@@ -139,10 +139,10 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         } catch (IOException e) {
             e.printStackTrace();
             previewSuc = false;
-            Log.e(TAG, "set.....eception");
+            ZCameraLog.e(TAG, "set.....eception");
             return false;
         }
-        Log.e(TAG, "set.....suc");
+        ZCameraLog.e(TAG, "set.....suc");
         return true;
     }
 
@@ -172,18 +172,18 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
 
         int previewWidth = Math.min(previewSize.width, previewSize.height);
         int previewHeight = Math.max(previewSize.width, previewSize.height);
-        Log.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + " _ " + previewWidth + ", height: " + mPreviewHeight + " _ " + previewHeight);
+        ZCameraLog.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + " _ " + previewWidth + ", height: " + mPreviewHeight + " _ " + previewHeight);
         mPreviewScale = previewWidth * 1f / previewHeight;
         if (mPreviewWidth > previewWidth) {
             mPreviewHeight = (int) (mPreviewWidth / mPreviewScale);
         } else if (mPreviewWidth < previewWidth) {
             mPreviewHeight = (int) (mPreviewHeight * mPreviewScale);
         }
-        Log.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + ", height: " + mPreviewHeight);
+        ZCameraLog.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + ", height: " + mPreviewHeight);
         parameters.setPreviewSize(mPreviewWidth, mPreviewHeight); // 设置预览图像大小
         List<Camera.Size> pSizes = parameters.getSupportedPictureSizes();
         Camera.Size pictrueSize = getSuitableSize(pSizes);
-        Log.e(TAG, "Supported, width: " + pictrueSize.width + ", height: " + pictrueSize.height);
+        ZCameraLog.e(TAG, "Supported, width: " + pictrueSize.width + ", height: " + pictrueSize.height);
         parameters.setPictureSize(pictrueSize.width, pictrueSize.height);
         if (mView != null) {
             mProxy = new CameraProxy<>(mCamera, mPreviewWidth, mPreviewHeight);
@@ -233,7 +233,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     @Override
     public void releaseCamera(CameraAction action) {
         synchronized (mCameraLock) {
-            Log.e(TAG, "....release....");
+            ZCameraLog.e(TAG, "....release....");
             isSurfaceDestory = CameraAction.SURFACE_CREATE == action;
             if (previewSuc) {
                 if (autoFocusManager != null) {
@@ -247,7 +247,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                     mCamera = null;
                 }
                 previewSuc = false;
-                Log.e(TAG, action + "....Camera...end.......................");
+                ZCameraLog.e(TAG, action + "....Camera...end.......................");
             }
         }
     }
@@ -269,7 +269,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 mCamera.takePicture(null, null, new Camera.PictureCallback() {
                     @Override
                     public void onPictureTaken(byte[] data, Camera camera) {
-                        Log.e(TAG, "....Camera...takePicture......................." + System.currentTimeMillis());
+                        ZCameraLog.e(TAG, "....Camera...takePicture......................." + System.currentTimeMillis());
                         if (mRprocessor == null) {
                             mRprocessor = new RotationProcessor(mView.getContext(), data, isFrontCamera, new RotationProcessor.DataCallback() {
                                 @Override
@@ -311,7 +311,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     public void focusArea(float x, float y, View focusView) {
         if (!previewSuc || mCamera == null || autoFocusManager == null || !hasAutoFocus) {
             isFocus = true;
-            Log.e(TAG, "...hasAutoFocus." + hasAutoFocus);
+            ZCameraLog.e(TAG, "...hasAutoFocus." + hasAutoFocus);
             if (focusView != null) {
                 focusView.setVisibility(View.GONE);
             }
@@ -321,8 +321,8 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         Camera.Parameters parameters = mCamera.getParameters();
         List<Camera.Area> areas = new ArrayList<Camera.Area>();
         List<Camera.Area> areasMetrix = new ArrayList<Camera.Area>();
-        Rect focusRect = ImageUtil.calculateTapArea(mView.getContext(), x, y, 1.0f);
-        Rect metrixRect = ImageUtil.calculateTapArea(mView.getContext(), x, y, 1.5f);
+        Rect focusRect = CameraUtil.calculateTapArea(mView.getContext(), x, y, 1.0f);
+        Rect metrixRect = CameraUtil.calculateTapArea(mView.getContext(), x, y, 1.5f);
         areas.add(new Camera.Area(focusRect, 1000));
         areasMetrix.add(new Camera.Area(metrixRect, 1000));
         parameters.setMeteringAreas(areasMetrix);
@@ -344,7 +344,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
 
     @Override
     public void onAutoFocus(boolean success, Camera camera) {
-        Log.e(TAG, "....Camera...onAutoFocus......." + success);
+        ZCameraLog.e(TAG, "....Camera...onAutoFocus......." + success);
         isFocus = success;
         if (mFocusView != null) {
             mFocusView.setVisibility(View.GONE);

@@ -9,9 +9,8 @@ import android.provider.MediaStore;
 import android.util.Log;
 
 import org.zhx.common.camera.ImageData;
-import org.zhx.common.util.FileUtil;
+import org.zhx.common.util.ZCameraLog;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -36,7 +35,7 @@ public class ImageSearchProcessor {
 
         @Override
         protected List<ImageData> doInBackground(Object... objects) {
-            Log.e("CameraPresenter", "....Camera...search_start..............." + System.currentTimeMillis());
+            ZCameraLog.e("CameraPresenter", "....Camera...search_start..............." + System.currentTimeMillis());
             List<ImageData> dataList = new ArrayList<>();
             String[] projection = {MediaStore.Images.Media._ID,
                     MediaStore.Images.Media.DISPLAY_NAME,

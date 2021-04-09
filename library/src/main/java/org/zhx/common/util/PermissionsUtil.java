@@ -19,11 +19,9 @@ import androidx.core.content.ContextCompat;
 public class PermissionsUtil {
 
     public static void checkPermission(AppCompatActivity context, String permission, int requestCode) {
-
         // Here, thisActivity is the current activity(Manifest.permission.READ_CONTACTS)
         if (!hasPermission(context, permission)) {
             requestPermission(context, permission, requestCode);
-
         } else {
             // Permission has already been granted
             context.onRequestPermissionsResult(requestCode, new String[]{permission}, new int[]{PackageManager.PERMISSION_GRANTED});
