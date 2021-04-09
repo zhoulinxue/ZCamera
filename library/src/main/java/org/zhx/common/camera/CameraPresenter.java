@@ -87,7 +87,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 isSurfaceDestory = false;
             }
             AppCompatActivity activity = (AppCompatActivity) mView.getContext();
-            if (PermissionsUtil.hasPermission(activity, Manifest.permission.CAMERA)) {
+            if (PermissionsUtil.hasPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 ZCameraLog.e(TAG, action + "....Camera....start.......................");
                 if (openCamera()) {
                     boolean setCamera = setCamera();
@@ -99,7 +99,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                     }
                 }
             } else {
-                PermissionsUtil.requestPermission(activity, Manifest.permission.CAMERA, Constants.CAMERA);
+                PermissionsUtil.requestPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE, Constants.STORAGE);
             }
         }
     }

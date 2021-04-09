@@ -112,12 +112,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         switch (v.getId()) {
             case R.id.z_take_pictrue_img:
                 mShutterImg.setEnabled(false);
-                boolean hasPermiss = PermissionsUtil.hasPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                if (hasPermiss) {
-                    mPresenter.takePictrue();
-                } else {
-                    PermissionsUtil.requestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE, Constants.STORAGE);
-                }
+                mPresenter.takePictrue();
                 break;
             case R.id.btn_switch_camera:
                 mPresenter.switchCamera();
@@ -191,7 +186,11 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 break;
             case Constants.STORAGE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mPresenter.takePictrue();
+                    if (PermissionsUtil.hasPermission(this, Manifest.permission.CAMERA)) {
+                        startCamera(CameraAction.PERMISSITON_GRANTED);
+                    } else {
+                        PermissionsUtil.requestPermission(this, Manifest.permission.CAMERA, Constants.CAMERA);
+                    }
                 }
                 break;
 

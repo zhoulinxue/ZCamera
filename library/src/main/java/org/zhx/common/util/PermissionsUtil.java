@@ -35,12 +35,16 @@ public class PermissionsUtil {
 
     public static void requestPermission(AppCompatActivity context, String permission, int resultCode) {
         if (ActivityCompat.shouldShowRequestPermissionRationale(context, permission)) {
-            ActivityCompat.requestPermissions(context,
+            requestPermissions(context,
                     new String[]{permission}, resultCode);
         } else {
-            ActivityCompat.requestPermissions(context,
+            requestPermissions(context,
                     new String[]{permission}, resultCode);
         }
+    }
+
+    public static void requestPermissions(AppCompatActivity context, String[] permissions, int resultCode) {
+        ActivityCompat.requestPermissions(context, permissions, resultCode);
     }
 
 }
