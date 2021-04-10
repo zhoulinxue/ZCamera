@@ -5,6 +5,7 @@
       int num=Camera.getNumberOfCameras();
    ```
    b、遍历 相机 Camera.CameraInfo.CAMERA_FACING_BACK 是后置|| Camera.CameraInfo.CAMERA_FACING_FRONT 是前置相机
+   
             for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
                 Camera.getCameraInfo(i, cameraInfo);
                  if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
@@ -15,21 +16,25 @@
                  }
                  }
           }
+          
    c、打开相机 获得Camera 对象
+   
    ```
      Camera camera = Camera.open();
      //Camera camera = Camera.open(i); 打开前置 用position 去打开
    ```
+   
    2、设置相机
    
    a、获取相机属性
-  ```
+   
+     ```
     Camera.Parameters parameters =  camera.getParameters()
      // 设置图片格式
             parameters.setPictureFormat(ImageFormat.JPEG);
             // 设置JPG照片的质量
             parameters.set("jpeg-quality", 100);
-   ```
+      ```
    b、设置相机属性
    
         // 设置图片格式
@@ -59,7 +64,8 @@
         ```
         camera.startPreview();
         ```
+        
    4、拍照
-       ```
+        ```
          camera.takePicture(null, null, new Camera.PictureCallback())
        ```
