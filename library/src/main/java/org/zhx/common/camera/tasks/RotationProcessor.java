@@ -5,7 +5,6 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import org.zhx.common.util.ImageUtil;
 import org.zhx.common.util.ZCameraLog;

@@ -3,7 +3,6 @@ package org.zhx.common.camera.tasks;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import org.zhx.common.util.CameraUtil;
 import org.zhx.common.util.ZCameraLog;

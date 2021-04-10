@@ -13,7 +13,6 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
-import android.util.Log;
 
 import androidx.core.content.FileProvider;
 
@@ -21,8 +20,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.FileNameMap;
-import java.net.URLConnection;
 
 /**
  * 相机工具类

@@ -1,10 +1,6 @@
 package org.zhx.common.util;
 
-import android.app.Activity;
 import android.content.pm.PackageManager;
-import android.os.Build;
-
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
