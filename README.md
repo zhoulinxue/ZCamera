@@ -5,6 +5,7 @@
       int num=Camera.getNumberOfCameras();
    ```
    b、遍历 相机 Camera.CameraInfo.CAMERA_FACING_BACK 是后置|| Camera.CameraInfo.CAMERA_FACING_FRONT 是前置相机
+   
     ```android
          Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
             for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
@@ -25,6 +26,7 @@
      //Camera camera = Camera.open(i); 打开前置 用position 去打开
    ```
    2、设置相机
+   
    a、获取相机属性
   ```android
     Camera.Parameters parameters =  camera.getParameters()
