@@ -7,7 +7,6 @@
    b、遍历 相机 Camera.CameraInfo.CAMERA_FACING_BACK 是后置|| Camera.CameraInfo.CAMERA_FACING_FRONT 是前置相机
    
     ```
-         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
             for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
                 Camera.getCameraInfo(i, cameraInfo);
                  if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
@@ -17,7 +16,7 @@
                   //后置相机
                  }
                  }
-            }
+          }
       ```
    c、打开相机 获得Camera 对象
 
