@@ -5,7 +5,6 @@
       int num=Camera.getNumberOfCameras();
    ```
    b、遍历 相机 Camera.CameraInfo.CAMERA_FACING_BACK 是后置|| Camera.CameraInfo.CAMERA_FACING_FRONT 是前置相机
-   
     ```
             for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
                 Camera.getCameraInfo(i, cameraInfo);
@@ -19,7 +18,6 @@
           }
       ```
    c、打开相机 获得Camera 对象
-
    ```
      Camera camera = Camera.open();
      //Camera camera = Camera.open(i); 打开前置 用position 去打开
