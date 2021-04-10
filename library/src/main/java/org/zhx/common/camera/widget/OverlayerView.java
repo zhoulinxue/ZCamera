@@ -27,7 +27,7 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 
 /**
- * 希望有一天可以开源出来  org.zhx
+ * org.zhx
  *
  * @author zhx
  * @version 1.0, 2015-11-15 下午7:11:49

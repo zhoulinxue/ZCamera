@@ -111,11 +111,9 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
             Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
             for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
                 Camera.getCameraInfo(i, cameraInfo);
-                {
-                    if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                        mCamera = Camera.open(i);
-                        isFrontCamera = true;
-                    }
+                if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                    mCamera = Camera.open(i);
+                    isFrontCamera = true;
                 }
             }
         }
@@ -132,7 +130,6 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 }
             });
             setParamiters();
-
             List<String> supportedFocusModes = mCamera.getParameters().getSupportedFocusModes();
             hasAutoFocus = supportedFocusModes != null && supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO);
         } catch (IOException e) {
@@ -156,6 +153,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         parameters.setPictureFormat(ImageFormat.JPEG);
         // 设置JPG照片的质量
         parameters.set("jpeg-quality", 100);
+        mCamera.setParameters(parameters);
         mCamera.startPreview();
     }
 

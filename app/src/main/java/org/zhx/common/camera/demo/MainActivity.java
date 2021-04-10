@@ -38,6 +38,7 @@ import org.zhx.common.util.PermissionsUtil;
 
 import java.io.IOException;
 
+
 public class MainActivity extends AppCompatActivity implements View.OnTouchListener, CameraModel.view<Camera>, View.OnClickListener, SurfaceHolder.Callback {
     private ImageView mShowImage, mShutterImg, mFlashImg, mThumImag;
     private SurfaceView mSurfaceView;
