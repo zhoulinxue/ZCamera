@@ -94,11 +94,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
     @Override
     public void onCameraCreate(CameraProxy<Camera> proxy) throws IOException {
-        if (this.getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
-            proxy.getCamera().setDisplayOrientation(90);
-        } else {
-            proxy.getCamera().setDisplayOrientation(0);
-        }
         RelativeLayout.LayoutParams preViewLp = (RelativeLayout.LayoutParams) mSurfaceView.getLayoutParams();
         mPreviewPoint = new Point(proxy.getWidth(), proxy.getHeight());
         preViewLp.width = mPreviewPoint.x;
@@ -133,9 +128,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     }
 
     @Override
-    public void onPictrueCallback(Bitmap bitmap) {
+    public void onPictrueCallback(final Bitmap bitmap) {
         mShowImage.setImageBitmap(bitmap);
-        mThumilBitmap = bitmap;
         mShowImage.animate()
                 .translationX(-(screenP.x / 2 - 2 * mThumImag.getX()))
                 .translationY(screenP.y / 2 - 2 * mThumImag.getY())
@@ -148,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     public void run() {
                         mRootView.removeView(mShowImage);
                         mShowImage.setImageBitmap(null);
-                        mThumImag.setImageBitmap(mThumilBitmap);
+                        ImageUtil.recycleBitmap(bitmap);
                         mShowImage = new ImageView(MainActivity.this);
                         mShowImage.setId(R.id.z_base_camera_showImg);
                         addView(mRootView.getChildCount(), mShowImage, showLp);
@@ -159,15 +153,20 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
     @Override
     public void onSaveResult(Uri uri) {
-        if (uri != null)
-            mUri = uri;
+        if (uri != null) {
+            setImageData(uri);
+        }
     }
 
     @Override
     public void showLastImag(ImageData imageData) {
+        setImageData(imageData.getContentUri());
+    }
+
+    private void setImageData(Uri contentUri) {
         try {
-            mUri = imageData.getContentUri();
-            mThumImag.setImageBitmap(MediaStore.Images.Media.getBitmap(getContentResolver(), mUri));
+            mUri = contentUri;
+            mThumImag.setImageBitmap(MediaStore.Images.Media.getBitmap(getContentResolver(), contentUri));
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 
 import org.zhx.common.camera.ImageData;
 import org.zhx.common.util.ZCameraLog;
@@ -24,13 +25,17 @@ public class ImageSearchProcessor {
         this.mImageDataCallback = imageDataCallback;
     }
 
-    public void showImags() {
-        new SearchImageTask().execute(AsyncTask.THREAD_POOL_EXECUTOR);
+    public void showImags(String path) {
+        new SearchImageTask(path).execute(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
 
     private class SearchImageTask extends AsyncTask<Object, Object, List<ImageData>> {
+        private String path;
 
+        public SearchImageTask(String path) {
+            this.path = path;
+        }
 
         @Override
         protected List<ImageData> doInBackground(Object... objects) {
@@ -63,7 +68,8 @@ public class ImageSearchProcessor {
                 data.setDateAdded(dateModified);
                 data.setDisplayName(displayName);
                 data.setId(id);
-                dataList.add(data);
+                if (!TextUtils.isEmpty(displayName) && !TextUtils.isEmpty(path) && displayName.contains(path))
+                    dataList.add(data);
             }
 
             return dataList;

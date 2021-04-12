@@ -1,6 +1,7 @@
 package org.zhx.common.camera;
 
 import android.Manifest;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.Point;
@@ -52,6 +53,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     private ImageSaveProcessor mImageSaveProcessor;
     private ImageSearchProcessor mImageSearchProcessor;
     private boolean hasAutoFocus = true;
+    private int mCameraId;
 
     public CameraPresenter(final CameraModel.view mView) {
         this.mView = mView;
@@ -77,7 +79,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
 
     @Override
     public void showImages() {
-        mImageSearchProcessor.showImags();
+        mImageSearchProcessor.showImags(Constants.FILE_DIR);
     }
 
     @Override
@@ -107,12 +109,14 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
 
     private boolean openCamera() {
         if (!isFrontCamera) {
+            mCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
             mCamera = Camera.open();
         } else {
             Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
             for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
                 Camera.getCameraInfo(i, cameraInfo);
                 if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                    mCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
                     mCamera = Camera.open(i);
                     isFrontCamera = true;
                 }
@@ -131,6 +135,9 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 }
             });
             setParamiters();
+
+            setOrientation();
+
             List<String> supportedFocusModes = mCamera.getParameters().getSupportedFocusModes();
             hasAutoFocus = supportedFocusModes != null && supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO);
         } catch (IOException e) {
@@ -141,6 +148,16 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         }
         ZCameraLog.e(TAG, "set.....suc");
         return true;
+    }
+
+    private void setOrientation() {
+//        int orientation = CameraUtil.getCameraOri(mView.getContext().getResources().getConfiguration().orientation, mCameraId);
+//            mCamera.setDisplayOrientation(orientation);
+        if (mView.getContext().getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
+            mCamera.setDisplayOrientation(90);
+        } else {
+            mCamera.setDisplayOrientation(0);
+        }
     }
 
     private void setParamiters() throws IOException {
@@ -154,7 +171,6 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         parameters.setPictureFormat(ImageFormat.JPEG);
         // 设置JPG照片的质量
         parameters.set("jpeg-quality", 100);
-        mCamera.setParameters(parameters);
         mCamera.startPreview();
     }
 
