@@ -1,10 +1,13 @@
 package org.zhx.common.camera.tasks;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 
+import org.zhx.common.camera.Constants;
 import org.zhx.common.util.CameraUtil;
+import org.zhx.common.util.ImageUtil;
 import org.zhx.common.util.ZCameraLog;
 
 import java.io.IOException;
@@ -19,10 +22,10 @@ public class ImageSaveProcessor {
     }
 
     private class SaveImageTask extends AsyncTask<Object, Object, Uri> {
-        private byte[] datas;
+        private Bitmap bitmap;
 
-        public SaveImageTask(byte[] datas) {
-            this.datas = datas;
+        public SaveImageTask(Bitmap datas) {
+            this.bitmap = datas;
         }
 
         @Override
@@ -30,7 +33,7 @@ public class ImageSaveProcessor {
             ZCameraLog.e("CameraPresenter", "....Camera...save_process_start..............." + System.currentTimeMillis());
             Uri uri = null;
             try {
-                uri = CameraUtil.saveImageData(mContext, datas);
+                uri = CameraUtil.saveImageData(mContext, bitmap, Constants.FILE_DIR);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -46,7 +49,7 @@ public class ImageSaveProcessor {
         }
     }
 
-    public void excute(byte[] data) {
+    public void excute(Bitmap data) {
         new SaveImageTask(data).execute(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 

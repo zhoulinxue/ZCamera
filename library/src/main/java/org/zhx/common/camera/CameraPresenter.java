@@ -1,6 +1,7 @@
 package org.zhx.common.camera;
 
 import android.Manifest;
+import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -256,36 +257,44 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         startCamera(CameraAction.SWITCH_CAMERA);
     }
 
+    private void takeRequest() {
+        mCamera.takePicture(null, null, new Camera.PictureCallback() {
+            @Override
+            public void onPictureTaken(byte[] data, Camera camera) {
+                ZCameraLog.e(TAG, "....Camera...takePicture......................." + System.currentTimeMillis());
+                mView.onTakeComplete();
+                if (mRprocessor == null) {
+                    mRprocessor = new RotationProcessor(mView.getContext(), data, isFrontCamera, new RotationProcessor.DataCallback() {
+                        @Override
+                        public void onData(Bitmap bytebitmap) {
+                            mRprocessor = null;
+                            mView.onPictrueCallback(bytebitmap);
+                            mImageSaveProcessor.excute(bytebitmap);
+                        }
+                    });
+                    mRprocessor.execute(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
+                mCamera.startPreview();
+            }
+        });
+
+    }
+
+    private boolean canTake() {
+        return isFocus && previewSuc;
+    }
+
     @Override
     public void takePictrue() {
-        if (isFocus) {
-            if (previewSuc) {
-                if (mFocusView != null) {
-                    mFocusView.setVisibility(View.GONE);
-                }
-                mCamera.takePicture(null, null, new Camera.PictureCallback() {
-                    @Override
-                    public void onPictureTaken(byte[] data, Camera camera) {
-                        ZCameraLog.e(TAG, "....Camera...takePicture......................." + System.currentTimeMillis());
-                        if (mRprocessor == null) {
-                            mRprocessor = new RotationProcessor(mView.getContext(), data, isFrontCamera, new RotationProcessor.DataCallback() {
-                                @Override
-                                public void onData(byte[] bytebitmap) {
-                                    mRprocessor = null;
-                                    mView.onPictrueCallback(bytebitmap);
-                                    mImageSaveProcessor.excute(bytebitmap);
-                                }
-                            });
-                            mRprocessor.execute(AsyncTask.THREAD_POOL_EXECUTOR);
-                        }
-                        mCamera.startPreview();
-                    }
-                });
-            } else {
-                mView.onError(R.string.preview_error_string);
-            }
-        } else {
+        if (mFocusView != null) {
+            mFocusView.setVisibility(View.GONE);
+        }
+        if (canTake()) {
+            takeRequest();
+        } else if (!isFocus) {
             mView.onError(R.string.focus_error);
+        } else if (!previewSuc) {
+            mView.onError(R.string.preview_error_string);
         }
     }
 

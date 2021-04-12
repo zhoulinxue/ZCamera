@@ -133,11 +133,9 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     }
 
     @Override
-    public void onPictrueCallback(byte[] data) {
-        mShutterImg.setEnabled(true);
-        final Bitmap bitmap = ImageUtil.getBitmap(this, data, false);
+    public void onPictrueCallback(Bitmap bitmap) {
         mShowImage.setImageBitmap(bitmap);
-        mThumilBitmap = ImageUtil.getThumilImage(this, data);
+        mThumilBitmap = bitmap;
         mShowImage.animate()
                 .translationX(-(screenP.x / 2 - 2 * mThumImag.getX()))
                 .translationY(screenP.y / 2 - 2 * mThumImag.getY())
@@ -150,7 +148,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     public void run() {
                         mRootView.removeView(mShowImage);
                         mShowImage.setImageBitmap(null);
-                        ImageUtil.recycleBitmap(bitmap);
                         mThumImag.setImageBitmap(mThumilBitmap);
                         mShowImage = new ImageView(MainActivity.this);
                         mShowImage.setId(R.id.z_base_camera_showImg);
@@ -174,6 +171,11 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onTakeComplete() {
+        mShutterImg.setEnabled(true);
     }
 
     @Override

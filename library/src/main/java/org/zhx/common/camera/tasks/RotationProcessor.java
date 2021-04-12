@@ -9,7 +9,7 @@ import android.os.AsyncTask;
 import org.zhx.common.util.ImageUtil;
 import org.zhx.common.util.ZCameraLog;
 
-public class RotationProcessor extends AsyncTask<Object, Object, byte[]> {
+public class RotationProcessor extends AsyncTask<Object, Object, Bitmap> {
     private Context mContext;
     private byte[] data;
     private boolean isFrontCamera;
@@ -23,7 +23,7 @@ public class RotationProcessor extends AsyncTask<Object, Object, byte[]> {
     }
 
     @Override
-    protected void onPostExecute(byte[] bytes) {
+    protected void onPostExecute(Bitmap bytes) {
         super.onPostExecute(bytes);
         if (mCallback != null) {
             ZCameraLog.e("CameraPresenter", "....Camera...rotation_process_callback......................." + System.currentTimeMillis());
@@ -32,9 +32,9 @@ public class RotationProcessor extends AsyncTask<Object, Object, byte[]> {
     }
 
     @Override
-    protected byte[] doInBackground(Object... objects) {
+    protected Bitmap doInBackground(Object... objects) {
         ZCameraLog.e("CameraPresenter", "....Camera...rotation_process_start......................." + System.currentTimeMillis());
-        Bitmap bitmap = ImageUtil.getBitmap(mContext, data, true);
+        Bitmap bitmap = ImageUtil.getBitmap(mContext, data, false);
         Bitmap bm = bitmap;
         if (mContext.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             Matrix matrix = new Matrix();
@@ -48,10 +48,10 @@ public class RotationProcessor extends AsyncTask<Object, Object, byte[]> {
             }
             ImageUtil.recycleBitmap(bitmap);
         }
-        return ImageUtil.bitmap2Bytes(bm, true);
+        return bm;
     }
 
     public interface DataCallback {
-        public void onData(byte[] bitmapData);
+        public void onData(Bitmap bitmapData);
     }
 }

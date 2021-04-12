@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -15,6 +16,8 @@ import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 
 import androidx.core.content.FileProvider;
+
+import org.zhx.common.camera.Constants;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -83,13 +86,26 @@ public class CameraUtil {
      * 保存图片到相册
      *
      * @param context
+     * @param bitmap
+     * @return
+     * @throws IOException
+     */
+    public static Uri saveImageData(Context context, Bitmap bitmap, String path) throws IOException {
+        byte[] datas = ImageUtil.bitmap2Bytes(bitmap, false);
+        return saveImageData(context, datas, path);
+    }
+
+    /**
+     * 保存图片到相册
+     *
+     * @param context
      * @param data
      * @return
      * @throws IOException
      */
-    public static Uri saveImageData(Context context, byte[] data) throws IOException {
+    public static Uri saveImageData(Context context, byte[] data, String path) throws IOException {
         Uri uri = null;
-        String name = "zCamera_" + System.currentTimeMillis() + ".jpg";
+        String name = path + System.currentTimeMillis() + ".jpg";
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ContentValues values = new ContentValues();
             values.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
@@ -106,7 +122,7 @@ public class CameraUtil {
             }
         } else {
             File eFile = Environment.getExternalStorageDirectory();
-            File mDirectory = new File(eFile.toString() + File.separator + "zCamera");
+            File mDirectory = new File(eFile.toString() + File.separator + path);
             if (!mDirectory.exists()) {
                 mDirectory.mkdirs();
             }
@@ -155,6 +171,7 @@ public class CameraUtil {
 
     /**
      * 计算 点击位置
+     *
      * @param context
      * @param x
      * @param y

@@ -1,5 +1,6 @@
 package org.zhx.common.camera;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.view.View;
 
@@ -37,10 +38,12 @@ public interface CameraModel {
 
         public void onCameraCreate(CameraProxy<T> proxy) throws IOException;
 
-        public void onPictrueCallback(byte[] data);
+        public void onPictrueCallback(Bitmap data);
 
         void onSaveResult(Uri uri);
 
         void showLastImag(ImageData imageData);
+
+        void onTakeComplete();
     }
 }
