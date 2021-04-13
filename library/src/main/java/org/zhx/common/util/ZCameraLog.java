@@ -19,8 +19,24 @@ public class ZCameraLog {
         Log.d(TAG, tag + "__" + msg);
     }
 
+    public static void i(String msg) {
+        i("", msg);
+    }
+
+    public static void v(String msg) {
+        v("", msg);
+    }
+
+    public static void d(String msg) {
+        d("", msg);
+    }
+
     public static void e(String tag, String msg) {
         Log.e(TAG, tag + "__" + msg);
+    }
+
+    public static void e(String msg) {
+        e("", msg);
     }
 
 }
