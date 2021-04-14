@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 
+import androidx.exifinterface.media.ExifInterface;
+
 import org.zhx.common.camera.Constants;
 import org.zhx.common.util.CameraUtil;
 import org.zhx.common.util.ImageUtil;
@@ -22,19 +24,24 @@ public class ImageSaveProcessor {
     }
 
     private class SaveImageTask extends AsyncTask<Object, Object, Uri> {
-        private Bitmap bitmap;
+        private byte[] bitmap;
+        private int orientation;
 
-        public SaveImageTask(Bitmap datas) {
-            this.bitmap = datas;
+        public SaveImageTask(byte[] bitmap, int orientation) {
+            this.bitmap = bitmap;
+            this.orientation = orientation;
         }
 
         @Override
         protected Uri doInBackground(Object... objects) {
-            ZCameraLog.e("CameraPresenter", "....Camera...save_process_start..............." + System.currentTimeMillis());
+            ZCameraLog.e("CameraPresenter", orientation + "....Camera...save_process_start..............." + System.currentTimeMillis());
             Uri uri = null;
             try {
                 uri = CameraUtil.saveImageData(mContext, bitmap, Constants.FILE_DIR);
-            } catch (IOException e) {
+                ExifInterface exifInterface = new ExifInterface(mContext.getContentResolver().openFileDescriptor(uri, "rw", null).getFileDescriptor());
+                exifInterface.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
+                exifInterface.saveAttributes();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return uri;
@@ -49,8 +56,8 @@ public class ImageSaveProcessor {
         }
     }
 
-    public void excute(Bitmap data) {
-        new SaveImageTask(data).execute(AsyncTask.THREAD_POOL_EXECUTOR);
+    public void excute(byte[] data, int degree) {
+        new SaveImageTask(data, degree).execute(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public interface UriResult {

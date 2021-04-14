@@ -12,12 +12,20 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Log;
 
+import androidx.exifinterface.media.ExifInterface;
+
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author zhx
@@ -63,6 +71,44 @@ public class ImageUtil {
         return BitmapFactory.decodeByteArray(data, 0, data.length, opt);
     }
 
+    /**
+     * 从uri  获取缩略图
+     *
+     * @param context
+     * @param uri
+     * @return
+     */
+    public static Bitmap getThumilImage(Context context, Uri uri) {
+        Bitmap bitmap = null;
+        BitmapFactory.Options opt = new BitmapFactory.Options();
+        opt.inJustDecodeBounds = true;
+        Point displayPx = CameraUtil.getScreenMetrics(context);
+        InputStream stream = null;
+        try {
+            stream = context.getContentResolver().openInputStream(uri);
+            BitmapFactory.decodeStream(stream, null, opt);
+            int imageWidth = opt.outWidth;
+            int imageHeight = opt.outHeight;
+            int x = displayPx.x;
+            int y = displayPx.y;
+            int scale = 1;
+            int scaleX = imageWidth / x;
+            int scaleY = imageHeight / y;
+            if (scaleX >= scaleY && scaleX > 1) {
+                scale = scaleX;
+            } else if (scaleX < scaleY && scaleY > 1) {
+                scale = scaleY;
+            }
+            //设置缩放比例
+            opt.inSampleSize = scale * 4;
+            opt.inJustDecodeBounds = false;
+            bitmap = adjustPhotoRotation(BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri), null, opt), getDegreeFromOrientation(context, uri));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
     public static Bitmap getThumilImage(Context context, byte[] data) {
         Point displayPx = CameraUtil.getScreenMetrics(context);
         BitmapFactory.Options opt = new BitmapFactory.Options();
@@ -85,6 +131,85 @@ public class ImageUtil {
         opt.inSampleSize = scale * 4;
         opt.inJustDecodeBounds = false;
         return BitmapFactory.decodeByteArray(data, 0, data.length, opt);
+    }
+
+    private static Bitmap adjustPhotoRotation(Bitmap bm, final int orientationDegree) {
+        Matrix m = new Matrix();
+        m.setRotate(orientationDegree, (float) bm.getWidth() / 2, (float) bm.getHeight() / 2);
+        float targetX, targetY;
+        if (orientationDegree == 90) {
+            targetX = bm.getHeight();
+            targetY = 0;
+        } else {
+            targetX = bm.getHeight();
+            targetY = bm.getWidth();
+        }
+        final float[] values = new float[9];
+        m.getValues(values);
+        float x1 = values[Matrix.MTRANS_X];
+        float y1 = values[Matrix.MTRANS_Y];
+        m.postTranslate(targetX - x1, targetY - y1);
+        Bitmap bm1 = Bitmap.createBitmap(bm.getHeight(), bm.getWidth(), Bitmap.Config.ARGB_8888);
+        Paint paint = new Paint();
+        Canvas canvas = new Canvas(bm1);
+        canvas.drawBitmap(bm, m, paint);
+        recycleBitmap(bm);
+        return bm1;
+    }
+
+    /**
+     * 获取大图
+     *
+     * @param context
+     * @param uri
+     * @return
+     */
+    public static Bitmap getBitmapFromUri(Context context, Uri uri) {
+        ZCameraLog.e("CameraPresenter", "....Camera...show_img.start.............." + System.currentTimeMillis());
+        Bitmap bitmap = null;
+        try {
+            bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
+            int degree = getDegreeFromOrientation(context, uri);
+            if (degree != 0)
+                bitmap = adjustPhotoRotation(bitmap, degree);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ZCameraLog.e("CameraPresenter", "....Camera...show_img._suc.............." + System.currentTimeMillis());
+        return bitmap;
+    }
+
+    /**
+     * 获取图片旋转角度
+     *
+     * @param context
+     * @param uri
+     * @return
+     * @throws Exception
+     */
+
+    private static int getDegreeFromOrientation(Context context, Uri uri) {
+        int degree = 0;
+        try {
+            ExifInterface exifInterface = new ExifInterface(context.getContentResolver().openFileDescriptor(uri, "rw", null).getFileDescriptor());
+            int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+            switch (Integer.valueOf(orientation)) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    degree = 90;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    degree = 180;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    degree = 270;
+                    break;
+            }
+
+        } catch (Exception e) {
+
+        }
+        return degree;
     }
 
     public static byte[] bitmap2Bytes(Bitmap bm, boolean isRecycl) {

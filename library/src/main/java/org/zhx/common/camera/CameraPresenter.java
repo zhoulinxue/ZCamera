@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.exifinterface.media.ExifInterface;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
@@ -46,7 +47,7 @@ public class CameraPresenter implements SensorEventListener, CameraModel.present
     private AutoFocusManager autoFocusManager;
     private boolean isSurfaceDestory = false;
     private boolean isFocus = false;
-    private RotationProcessor mRprocessor;
+    //    private RotationProcessor mRprocessor;
     private View mFocusView;
 
     private int mPreviewWidth;
@@ -160,8 +161,6 @@ public class CameraPresenter implements SensorEventListener, CameraModel.present
     }
 
     private void setOrientation() {
-//        int orientation = CameraUtil.getCameraOri(mView.getContext().getResources().getConfiguration().orientation, mCameraId);
-//            mCamera.setDisplayOrientation(orientation);
         if (mView.getContext().getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
             mCamera.setDisplayOrientation(90);
         } else {
@@ -283,46 +282,19 @@ public class CameraPresenter implements SensorEventListener, CameraModel.present
     }
 
     private void takeRequest() {
-        final int degree = getPortraitDegree();
+        final int degree = CameraUtil.getPortraitDegree(isFrontCamera, currentRad);
         mCamera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 ZCameraLog.e(TAG, degree + "....Camera...takePicture......................." + System.currentTimeMillis());
                 mView.onTakeComplete();
-                if (mRprocessor == null) {
-                    mRprocessor = new RotationProcessor(mView.getContext(), degree, data, isFrontCamera, new RotationProcessor.DataCallback() {
-                        @Override
-                        public void onData(Bitmap bytebitmap) {
-                            mRprocessor = null;
-                            mView.onPictrueCallback(bytebitmap);
-                            mImageSaveProcessor.excute(bytebitmap);
-                        }
-                    });
-                    mRprocessor.execute(AsyncTask.THREAD_POOL_EXECUTOR);
-                }
+                mImageSaveProcessor.excute(data, degree);
                 mCamera.startPreview();
             }
         });
 
     }
 
-    /**
-     * 获取 ORIENTATION_PORTRAIT 图片旋转角度
-     * @return
-     */
-    private int getPortraitDegree() {
-        int degree = 0;
-        if (currentRad > 45 && currentRad < 135) {
-            degree = 0;
-        } else if (currentRad < 45 || currentRad > 315) {
-            degree =isFrontCamera?270:90;
-        } else if (currentRad > 225 && currentRad < 315) {
-            degree = 180;
-        } else {
-            degree =isFrontCamera?90: 270;
-        }
-        return degree;
-    }
 
     private boolean canTake() {
         return isFocus && previewSuc;
