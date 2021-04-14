@@ -8,4 +8,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:transitionName="image" />
+
+    <ProgressBar
+        android:id="@+id/load_process"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_centerInParent="true" />
 </RelativeLayout>

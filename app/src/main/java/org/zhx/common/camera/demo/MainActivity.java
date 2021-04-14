@@ -136,39 +136,43 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     @Override
     public void onSaveResult(Uri uri) {
         if (uri != null) {
-            setImageData(uri);
+            setImageData(uri, true);
         }
     }
 
     @Override
     public void showLastImag(ImageData imageData) {
-        setImageData(imageData.getContentUri());
+        setImageData(imageData.getContentUri(), false);
     }
 
-    private void setImageData(Uri contentUri) {
+    private void setImageData(Uri contentUri, boolean isAnimate) {
         mUri = contentUri;
         final Bitmap bitmap = ImageUtil.getThumilImage(this, contentUri);
-        mShowImage.setImageBitmap(bitmap);
         ZCameraLog.e("CameraPresenter", "....Camera...take complete..............." + System.currentTimeMillis());
-        mShowImage.animate()
-                .translationX(-(screenP.x / 2 - 2 * mThumImag.getX()))
-                .translationY(screenP.y / 2 - 2 * mThumImag.getY())
-                .scaleX(0.01f)
-                .scaleY(0.01f)
-                .setDuration(90)
-                .withLayer()
-                .withEndAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        mRootView.removeView(mShowImage);
-                        mShowImage.setImageBitmap(null);
-                        mThumImag.setImageBitmap(bitmap);
-                        mShowImage = new ImageView(MainActivity.this);
-                        mShowImage.setId(R.id.z_base_camera_showImg);
-                        addView(mRootView.getChildCount(), mShowImage, showLp);
-                        ZCameraLog.e("CameraPresenter", "....Camera...show end..............." + System.currentTimeMillis());
-                    }
-                }).setInterpolator(new AccelerateInterpolator()).start();
+        if (isAnimate) {
+            mShowImage.setImageBitmap(bitmap);
+            mShowImage.animate()
+                    .translationX(-(screenP.x / 2 - 2 * mThumImag.getX()))
+                    .translationY(screenP.y / 2 - 2 * mThumImag.getY())
+                    .scaleX(0.01f)
+                    .scaleY(0.01f)
+                    .setDuration(90)
+                    .withLayer()
+                    .withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            mRootView.removeView(mShowImage);
+                            mShowImage.setImageBitmap(null);
+                            mThumImag.setImageBitmap(bitmap);
+                            mShowImage = new ImageView(MainActivity.this);
+                            mShowImage.setId(R.id.z_base_camera_showImg);
+                            addView(mRootView.getChildCount(), mShowImage, showLp);
+                            ZCameraLog.e("CameraPresenter", "....Camera...show end..............." + System.currentTimeMillis());
+                        }
+                    }).setInterpolator(new AccelerateInterpolator()).start();
+        } else {
+            mThumImag.setImageBitmap(bitmap);
+        }
     }
 
     @Override

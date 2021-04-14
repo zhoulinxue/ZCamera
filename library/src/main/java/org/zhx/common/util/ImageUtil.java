@@ -100,7 +100,7 @@ public class ImageUtil {
                 scale = scaleY;
             }
             //设置缩放比例
-            opt.inSampleSize = scale * 4;
+            opt.inSampleSize = scale * 5;
             opt.inJustDecodeBounds = false;
             bitmap = adjustPhotoRotation(BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri), null, opt), getDegreeFromOrientation(context, uri));
         } catch (Exception e) {
