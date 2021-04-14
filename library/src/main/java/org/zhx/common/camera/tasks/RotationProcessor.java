@@ -14,12 +14,14 @@ public class RotationProcessor extends AsyncTask<Object, Object, Bitmap> {
     private byte[] data;
     private boolean isFrontCamera;
     private DataCallback mCallback;
+    private int degree;
 
-    public RotationProcessor(Context mContext, byte[] data, boolean isFrontCamera, DataCallback mCallback) {
+    public RotationProcessor(Context mContext, int degree, byte[] data, boolean isFrontCamera, DataCallback mCallback) {
         this.mContext = mContext;
         this.data = data;
         this.isFrontCamera = isFrontCamera;
         this.mCallback = mCallback;
+        this.degree = degree;
     }
 
     @Override
@@ -38,15 +40,9 @@ public class RotationProcessor extends AsyncTask<Object, Object, Bitmap> {
         Bitmap bm = bitmap;
         if (mContext.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             Matrix matrix = new Matrix();
-            matrix.setRotate(90, 0.1f, 0.1f);
+            matrix.setRotate(degree, 0.1f, 0.1f);
             bm = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
                     bitmap.getHeight(), matrix, false);
-            if (isFrontCamera) {
-                //前置摄像头旋转图片270度。
-                matrix.setRotate(270);
-                bm = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
-            }
-            ImageUtil.recycleBitmap(bitmap);
         }
         return bm;
     }

@@ -283,14 +283,14 @@ public class CameraPresenter implements SensorEventListener, CameraModel.present
     }
 
     private void takeRequest() {
-        final int degree = getDegree();
+        final int degree = getPortraitDegree();
         mCamera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 ZCameraLog.e(TAG, degree + "....Camera...takePicture......................." + System.currentTimeMillis());
                 mView.onTakeComplete();
                 if (mRprocessor == null) {
-                    mRprocessor = new RotationProcessor(mView.getContext(), data, isFrontCamera, new RotationProcessor.DataCallback() {
+                    mRprocessor = new RotationProcessor(mView.getContext(), degree, data, isFrontCamera, new RotationProcessor.DataCallback() {
                         @Override
                         public void onData(Bitmap bytebitmap) {
                             mRprocessor = null;
@@ -306,16 +306,20 @@ public class CameraPresenter implements SensorEventListener, CameraModel.present
 
     }
 
-    private int getDegree() {
+    /**
+     * 获取 ORIENTATION_PORTRAIT 图片旋转角度
+     * @return
+     */
+    private int getPortraitDegree() {
         int degree = 0;
         if (currentRad > 45 && currentRad < 135) {
-            degree = 90;
-        } else if (currentRad < 45 || currentRad > 315) {
             degree = 0;
+        } else if (currentRad < 45 || currentRad > 315) {
+            degree =isFrontCamera?270:90;
         } else if (currentRad > 225 && currentRad < 315) {
-            degree = 270;
-        } else {
             degree = 180;
+        } else {
+            degree =isFrontCamera?90: 270;
         }
         return degree;
     }
