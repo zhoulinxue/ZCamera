@@ -19,6 +19,7 @@ import org.zhx.common.util.CameraUtil;
 import org.zhx.common.util.ImageUtil;
 import org.zhx.common.util.ZCameraLog;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import static androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90;
@@ -35,7 +36,11 @@ public class ShowImageActivity extends AppCompatActivity {
         mBar = findViewById(R.id.load_process);
         String path = getIntent().getStringExtra("bitmap");
         final Uri uri = Uri.parse(path);
-        showImage.setImage(ImageSource.bitmap(ImageUtil.getThumilImage(this, uri)));
+        try {
+            showImage.setImage(ImageSource.bitmap(ImageUtil.getBitmapFormUri(this, uri)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {

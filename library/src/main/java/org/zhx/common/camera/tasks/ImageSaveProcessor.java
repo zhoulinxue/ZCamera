@@ -15,6 +15,7 @@ import org.zhx.common.util.ZCameraLog;
 import java.io.IOException;
 
 public class ImageSaveProcessor {
+    private String TAG = ImageSaveProcessor.class.getSimpleName();
     private Context mContext;
     private UriResult mReuslt;
 
@@ -34,7 +35,7 @@ public class ImageSaveProcessor {
 
         @Override
         protected Uri doInBackground(Object... objects) {
-            ZCameraLog.e("CameraPresenter", orientation + "....Camera...save_process_start..............." + System.currentTimeMillis());
+            ZCameraLog.e(TAG, "....Camera...save_process_start..............." + System.currentTimeMillis());
             Uri uri = null;
             try {
                 uri = CameraUtil.saveImageData(mContext, bitmap, Constants.FILE_DIR);
@@ -52,6 +53,7 @@ public class ImageSaveProcessor {
             super.onPostExecute(uri);
             if (mReuslt != null) {
                 mReuslt.onResult(uri);
+                ZCameraLog.e(TAG, "....Camera....ImageSaveProcessor....result..." + System.currentTimeMillis());
             }
         }
     }

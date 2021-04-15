@@ -136,18 +136,26 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     @Override
     public void onSaveResult(Uri uri) {
         if (uri != null) {
-            setImageData(uri, true);
+            try {
+                setImageData(uri, true);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Override
     public void showLastImag(ImageData imageData) {
-        setImageData(imageData.getContentUri(), false);
+        try {
+            setImageData(imageData.getContentUri(), false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void setImageData(Uri contentUri, boolean isAnimate) {
+    private void setImageData(Uri contentUri, boolean isAnimate) throws IOException {
         mUri = contentUri;
-        final Bitmap bitmap = ImageUtil.getThumilImage(this, contentUri);
+        final Bitmap bitmap = ImageUtil.getBitmapFormUri(this, contentUri);
         ZCameraLog.e("CameraPresenter", "....Camera...take complete..............." + System.currentTimeMillis());
         if (isAnimate) {
             mShowImage.setImageBitmap(bitmap);

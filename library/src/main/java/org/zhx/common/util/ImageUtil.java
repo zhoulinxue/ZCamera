@@ -22,6 +22,7 @@ import android.util.Log;
 
 import androidx.exifinterface.media.ExifInterface;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -78,36 +79,65 @@ public class ImageUtil {
      * @param uri
      * @return
      */
-    public static Bitmap getThumilImage(Context context, Uri uri) {
-        Bitmap bitmap = null;
-        BitmapFactory.Options opt = new BitmapFactory.Options();
-        opt.inJustDecodeBounds = true;
-        Point displayPx = CameraUtil.getScreenMetrics(context);
-        InputStream stream = null;
-        try {
-            stream = context.getContentResolver().openInputStream(uri);
-            BitmapFactory.decodeStream(stream, null, opt);
-            int imageWidth = opt.outWidth;
-            int imageHeight = opt.outHeight;
-            int x = displayPx.x;
-            int y = displayPx.y;
-            int scale = 1;
-            int scaleX = imageWidth / x;
-            int scaleY = imageHeight / y;
-            if (scaleX >= scaleY && scaleX > 1) {
-                scale = scaleX;
-            } else if (scaleX < scaleY && scaleY > 1) {
-                scale = scaleY;
-            }
-            //设置缩放比例
-            opt.inSampleSize = scale * 5;
-            opt.inJustDecodeBounds = false;
-            bitmap = adjustPhotoRotation(BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri), null, opt), getDegreeFromOrientation(context, uri));
-        } catch (Exception e) {
-            e.printStackTrace();
+    public static Bitmap getBitmapFormUri(Context context, Uri uri) throws IOException {
+        InputStream input = context.getContentResolver().openInputStream(uri);
+        BitmapFactory.Options onlyBoundsOptions = new BitmapFactory.Options();
+        onlyBoundsOptions.inJustDecodeBounds = true;
+        onlyBoundsOptions.inDither = true;//optional
+        onlyBoundsOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;//optional
+        BitmapFactory.decodeStream(input, null, onlyBoundsOptions);
+        input.close();
+        int originalWidth = onlyBoundsOptions.outWidth;
+        int originalHeight = onlyBoundsOptions.outHeight;
+        if ((originalWidth == -1) || (originalHeight == -1))
+            return null;
+        //图片分辨率以480x800为标准
+        float hh = 800f;//这里设置高度为800f
+        float ww = 480f;//这里设置宽度为480f
+        //缩放比。由于是固定比例缩放，只用高或者宽其中一个数据进行计算即可
+        int be = 1;//be=1表示不缩放
+        if (originalWidth > originalHeight && originalWidth > ww) {//如果宽度大的话根据宽度固定大小缩放
+            be = (int) (originalWidth / ww);
+        } else if (originalWidth < originalHeight && originalHeight > hh) {//如果高度高的话根据宽度固定大小缩放
+            be = (int) (originalHeight / hh);
         }
+        if (be <= 0)
+            be = 1;
+        //比例压缩
+        BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+        bitmapOptions.inSampleSize = be;//设置缩放比例
+        bitmapOptions.inDither = true;//optional
+        bitmapOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;//optional
+        input = context.getContentResolver().openInputStream(uri);
+        Bitmap bitmap = BitmapFactory.decodeStream(input, null, bitmapOptions);
+        bitmap = adjustPhotoRotation(bitmap, getDegreeFromOrientation(context, uri));
+        input.close();
+
+        return compressImage(bitmap);//再进行质量压缩
+    }
+
+    /**
+     * 质量压缩方法
+     *
+     * @param image
+     * @return
+     */
+    private static Bitmap compressImage(Bitmap image) {
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
+        int options = 100;
+        while (baos.toByteArray().length / 1024 > 100) {  //循环判断如果压缩后图片是否大于100kb,大于继续压缩
+            baos.reset();//重置baos即清空baos
+            //第一个参数 ：图片格式 ，第二个参数： 图片质量，100为最高，0为最差  ，第三个参数：保存压缩后的数据的流
+            image.compress(Bitmap.CompressFormat.JPEG, options, baos);//这里压缩options%，把压缩后的数据存放到baos中
+            options -= 10;//每次都减少10
+        }
+        ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());//把压缩后的数据baos存放到ByteArrayInputStream中
+        Bitmap bitmap = BitmapFactory.decodeStream(isBm, null, null);//把ByteArrayInputStream数据生成图片
         return bitmap;
     }
+
 
     public static Bitmap getThumilImage(Context context, byte[] data) {
         Point displayPx = CameraUtil.getScreenMetrics(context);
@@ -136,25 +166,12 @@ public class ImageUtil {
     private static Bitmap adjustPhotoRotation(Bitmap bm, final int orientationDegree) {
         Matrix m = new Matrix();
         m.setRotate(orientationDegree, (float) bm.getWidth() / 2, (float) bm.getHeight() / 2);
-        float targetX, targetY;
-        if (orientationDegree == 90) {
-            targetX = bm.getHeight();
-            targetY = 0;
-        } else {
-            targetX = bm.getHeight();
-            targetY = bm.getWidth();
+        try {
+            Bitmap bm1 = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), m, true);
+            return bm1;
+        } catch (OutOfMemoryError ex) {
         }
-        final float[] values = new float[9];
-        m.getValues(values);
-        float x1 = values[Matrix.MTRANS_X];
-        float y1 = values[Matrix.MTRANS_Y];
-        m.postTranslate(targetX - x1, targetY - y1);
-        Bitmap bm1 = Bitmap.createBitmap(bm.getHeight(), bm.getWidth(), Bitmap.Config.ARGB_8888);
-        Paint paint = new Paint();
-        Canvas canvas = new Canvas(bm1);
-        canvas.drawBitmap(bm, m, paint);
-        recycleBitmap(bm);
-        return bm1;
+        return null;
     }
 
     /**

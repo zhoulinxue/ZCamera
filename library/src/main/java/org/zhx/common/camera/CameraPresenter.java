@@ -47,7 +47,6 @@ public class CameraPresenter implements SensorEventListener, CameraModel.present
     private AutoFocusManager autoFocusManager;
     private boolean isSurfaceDestory = false;
     private boolean isFocus = false;
-    //    private RotationProcessor mRprocessor;
     private View mFocusView;
 
     private int mPreviewWidth;
@@ -70,14 +69,13 @@ public class CameraPresenter implements SensorEventListener, CameraModel.present
         mImageSaveProcessor = new ImageSaveProcessor(mView.getContext(), new ImageSaveProcessor.UriResult() {
             @Override
             public void onResult(Uri uri) {
-                ZCameraLog.e(TAG, "....Camera....ImageSaveProcessor....result..." + System.currentTimeMillis());
                 mView.onSaveResult(uri);
             }
         });
         mImageSearchProcessor = new ImageSearchProcessor(mView.getContext(), new ImageSearchProcessor.ImageDataCallback() {
             @Override
             public void onResult(List<ImageData> images) {
-                ZCameraLog.e(TAG, images.size() + "....Camera....ImageSearchProcessor....result..." + System.currentTimeMillis());
+                ZCameraLog.e(TAG, "....Camera....ImageSearchProcessor....result..." + System.currentTimeMillis());
                 if (null != images && images.size() > 0)
                     mView.showLastImag(images.get(0));
             }
@@ -286,7 +284,7 @@ public class CameraPresenter implements SensorEventListener, CameraModel.present
         mCamera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
-                ZCameraLog.e(TAG, degree + "....Camera...takePicture......................." + System.currentTimeMillis());
+                ZCameraLog.e(TAG, "....Camera...takePicture......................." + System.currentTimeMillis());
                 mView.onTakeComplete();
                 mImageSaveProcessor.excute(data, degree);
                 mCamera.startPreview();
