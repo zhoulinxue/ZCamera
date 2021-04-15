@@ -40,6 +40,7 @@ import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements View.OnTouchListener, CameraModel.view<Camera>, View.OnClickListener, SurfaceHolder.Callback {
     private ImageView mShowImage, mShutterImg, mFlashImg, mThumImag;
+    private View animateHolder;
     private SurfaceView mSurfaceView;
     private SurfaceHolder mHolder;
     private CameraPresenter mPresenter;
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         setContentView(R.layout.activity_main);
         getWindow().addFlags((WindowManager.LayoutParams.FLAG_FULLSCREEN));
         mShowImage = findViewById(R.id.z_base_camera_showImg);
+        animateHolder = findViewById(R.id.animate_place_holder);
         showLp = (RelativeLayout.LayoutParams) mShowImage.getLayoutParams();
         mShutterImg = findViewById(R.id.z_take_pictrue_img);
         mSurfaceView = findViewById(R.id.z_base_camera_preview);
@@ -119,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 Intent i = new Intent(this, ShowImageActivity.class);
                 i.putExtra("bitmap", mUri.toString());
                 ActivityOptionsCompat optionsCompat =
-                        ActivityOptionsCompat.makeSceneTransitionAnimation(this, mThumImag, "image");
+                        ActivityOptionsCompat.makeSceneTransitionAnimation(this, animateHolder, "image");
                 startActivity(i, optionsCompat.toBundle());
                 break;
         }
@@ -152,8 +154,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         if (isAnimate) {
             mShowImage.setImageBitmap(bitmap);
             mShowImage.animate()
-                    .translationX(-(screenP.x / 2 - 2 * mThumImag.getX()))
-                    .translationY(screenP.y / 2 - 2 * mThumImag.getY())
+                    .translationX(-(screenP.x / 2 + mThumImag.getX()) + CameraUtil.dip2px(this, 45))
+                    .translationY(screenP.y / 2 - mThumImag.getY() - CameraUtil.dip2px(this, 55))
                     .scaleX(0.01f)
                     .scaleY(0.01f)
                     .setDuration(90)
