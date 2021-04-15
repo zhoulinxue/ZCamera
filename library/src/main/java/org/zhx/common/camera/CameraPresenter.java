@@ -3,14 +3,8 @@ package org.zhx.common.camera;
 import android.Manifest;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.Camera;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.net.Uri;
 import android.util.Log;
 import android.view.View;
 
@@ -21,6 +15,8 @@ import androidx.lifecycle.OnLifecycleEvent;
 
 import org.zhx.common.camera.tasks.ImageSaveProcessor;
 import org.zhx.common.camera.tasks.ImageSearchProcessor;
+import org.zhx.common.camera.tasks.ScreenProcessor;
+import org.zhx.common.camera.tasks.SensorProcessor;
 import org.zhx.common.util.CameraUtil;
 import org.zhx.common.util.PermissionsUtil;
 import org.zhx.common.util.ZCameraLog;
@@ -29,7 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CameraPresenter implements SensorEventListener, CameraModel.presenter, Camera.AutoFocusCallback, LifecycleObserver {
+public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusCallback, LifecycleObserver {
     private String TAG = CameraPresenter.class.getSimpleName();
     private Camera mCamera;
     private CameraModel.view mView;
@@ -39,46 +35,33 @@ public class CameraPresenter implements SensorEventListener, CameraModel.present
     private boolean previewSuc = false;
     private String[] flashMedols = {Camera.Parameters.FLASH_MODE_AUTO, Camera.Parameters.FLASH_MODE_ON, Camera.Parameters.FLASH_MODE_OFF, Camera.Parameters.FLASH_MODE_TORCH};
     private int modelIndex = 0;
-    private Point displayPx;
     private AutoFocusManager autoFocusManager;
     private boolean isSurfaceDestory = false;
     private boolean isFocus = false;
     private View mFocusView;
-
     private int mPreviewWidth;
     private int mPreviewHeight;
-
     private float mPreviewScale = mPreviewHeight * 1f / mPreviewWidth;
-
     private ImageSaveProcessor mImageSaveProcessor;
     private ImageSearchProcessor mImageSearchProcessor;
+    private ScreenProcessor mScreenProcessor;
+    private SensorProcessor mSensorProcessor;
     private boolean hasAutoFocus = true;
     private int mCameraId;
-    SensorManager sm;
-    private int currentRad;
 
-    public CameraPresenter(final CameraModel.view mView) {
-        this.mView = mView;
-        displayPx = CameraUtil.getScreenMetrics(mView.getContext());
-        mPreviewWidth = Math.min(displayPx.x, displayPx.y);
-        mPreviewHeight = Math.max(displayPx.x, displayPx.y);
-        mImageSaveProcessor = new ImageSaveProcessor(mView.getContext(), new ImageSaveProcessor.UriResult() {
-            @Override
-            public void onResult(Uri uri) {
-                mView.onSaveResult(uri);
-            }
-        });
-        mImageSearchProcessor = new ImageSearchProcessor(mView.getContext(), new ImageSearchProcessor.ImageDataCallback() {
-            @Override
-            public void onResult(List<ImageData> images) {
-                ZCameraLog.e(TAG, "....Camera....ImageSearchProcessor....result..." + System.currentTimeMillis());
-                if (null != images && images.size() > 0)
-                    mView.showLastImag(images.get(0));
-            }
-        });
 
-        sm = (SensorManager) mView.getContext().getSystemService(mView.getContext().SENSOR_SERVICE);
-        sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
+    public CameraPresenter(final CameraModel.view view) {
+        this.mView = view;
+        initPreviewData();
+        mImageSaveProcessor = new ImageSaveProcessor(view);
+        mImageSearchProcessor = new ImageSearchProcessor(view);
+        mSensorProcessor = new SensorProcessor(view);
+    }
+
+    private void initPreviewData() {
+        mScreenProcessor = new ScreenProcessor(mView);
+        mPreviewWidth = mScreenProcessor.getWidth();
+        mPreviewHeight = mScreenProcessor.getHeight();
     }
 
     @Override
@@ -239,6 +222,14 @@ public class CameraPresenter implements SensorEventListener, CameraModel.present
         releaseCamera(CameraAction.ON_STOP);
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    public void onDestory() {
+        if (mSensorProcessor != null) {
+            if (mSensorProcessor != null)
+                mSensorProcessor.destory();
+        }
+    }
+
     @Override
     public void resumenCamera(CameraAction action) {
         if (!isSurfaceDestory) {
@@ -276,7 +267,7 @@ public class CameraPresenter implements SensorEventListener, CameraModel.present
     }
 
     private void takeRequest() {
-        final int degree = CameraUtil.getPortraitDegree(isFrontCamera, currentRad);
+        final int degree = mSensorProcessor.getDegree(isFrontCamera);
         mCamera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
@@ -367,34 +358,5 @@ public class CameraPresenter implements SensorEventListener, CameraModel.present
         }
     }
 
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        if (Sensor.TYPE_ACCELEROMETER != event.sensor.getType()) {
-            return;
-        }
-        float[] values = event.values;
-        float ax = values[0];
-        float ay = values[1];
-        double g = Math.sqrt(ax * ax + ay * ay);
-        double cos = ay / g;
-        if (cos > 1) {
-            cos = 1;
-        } else if (cos < -1) {
-            cos = -1;
-        }
-        double rad = Math.acos(cos);
-        if (ax < 0) {
-            rad = 2 * Math.PI - rad;
-        }
-        int uiRot = mView.getContext().getWindowManager().getDefaultDisplay().getRotation();
-        int degree = 90 * uiRot;
-        double uiRad = Math.PI / 2 * uiRot;
-        rad -= uiRad;
-        currentRad = (int) (180 * rad / Math.PI);
-    }
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-    }
 }

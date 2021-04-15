@@ -38,8 +38,6 @@ public interface CameraModel {
 
         public void onCameraCreate(CameraProxy<T> proxy) throws IOException;
 
-        public void onPictrueCallback(Bitmap data);
-
         void onSaveResult(Uri uri);
 
         void showLastImag(ImageData imageData);

@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     private RelativeLayout mRootView;
     Point screenP, mPreviewPoint;
     FocusRectView mFocusView;
-    private Bitmap mThumilBitmap;
     private Uri mUri;
 
     @Override
@@ -124,11 +123,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 startActivity(i, optionsCompat.toBundle());
                 break;
         }
-    }
-
-    @Override
-    public void onPictrueCallback(final Bitmap bitmap) {
-
     }
 
     @Override

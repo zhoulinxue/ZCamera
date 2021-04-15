@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 
+import org.zhx.common.camera.CameraModel;
 import org.zhx.common.camera.ImageData;
 import org.zhx.common.util.ZCameraLog;
 
@@ -17,12 +18,10 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ImageSearchProcessor {
-    private Context mContext;
-    private ImageDataCallback mImageDataCallback;
+    private CameraModel.view mView;
 
-    public ImageSearchProcessor(Context mContext, ImageDataCallback imageDataCallback) {
-        this.mContext = mContext;
-        this.mImageDataCallback = imageDataCallback;
+    public ImageSearchProcessor(CameraModel.view view) {
+        this.mView = view;
     }
 
     public void showImags(String path) {
@@ -44,7 +43,7 @@ public class ImageSearchProcessor {
             String[] projection = {MediaStore.Images.Media._ID,
                     MediaStore.Images.Media.DISPLAY_NAME,
                     MediaStore.Images.Media.DATE_ADDED};
-            Cursor cursor = mContext.getApplicationContext().getContentResolver().query(
+            Cursor cursor = mView.getContext().getApplicationContext().getContentResolver().query(
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, null, null, MediaStore.Images.Media.DATE_ADDED + " DESC");
             int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
             int dateModifiedColumn =
@@ -77,14 +76,10 @@ public class ImageSearchProcessor {
 
         @Override
         protected void onPostExecute(List<ImageData> datas) {
-            super.onPostExecute(datas);
-            if (mImageDataCallback != null) {
-                mImageDataCallback.onResult(datas);
-            }
+            if (null != datas && datas.size() > 0)
+                mView.showLastImag(datas.get(0));
         }
     }
 
-    public interface ImageDataCallback {
-        void onResult(List<ImageData> images);
-    }
+
 }
