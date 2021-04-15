@@ -14,14 +14,11 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.Surface;
 
 import androidx.core.content.FileProvider;
 import androidx.exifinterface.media.ExifInterface;
-
-import org.zhx.common.camera.Constants;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

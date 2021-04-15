@@ -10,19 +10,12 @@ import android.widget.ProgressBar;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.exifinterface.media.ExifInterface;
 
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
-
-import org.zhx.common.util.CameraUtil;
 import org.zhx.common.util.ImageUtil;
-import org.zhx.common.util.ZCameraLog;
 
 import java.io.IOException;
-import java.io.InputStream;
-
-import static androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90;
 
 public class ShowImageActivity extends AppCompatActivity {
     private ProgressBar mBar;

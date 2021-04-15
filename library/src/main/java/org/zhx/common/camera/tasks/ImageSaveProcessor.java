@@ -1,7 +1,6 @@
 package org.zhx.common.camera.tasks;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 
@@ -9,10 +8,8 @@ import androidx.exifinterface.media.ExifInterface;
 
 import org.zhx.common.camera.Constants;
 import org.zhx.common.util.CameraUtil;
-import org.zhx.common.util.ImageUtil;
 import org.zhx.common.util.ZCameraLog;
 
-import java.io.IOException;
 
 public class ImageSaveProcessor {
     private String TAG = ImageSaveProcessor.class.getSimpleName();

@@ -2,7 +2,6 @@ package org.zhx.common.camera;
 
 import android.Manifest;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -12,19 +11,16 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.exifinterface.media.ExifInterface;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 
 import org.zhx.common.camera.tasks.ImageSaveProcessor;
 import org.zhx.common.camera.tasks.ImageSearchProcessor;
-import org.zhx.common.camera.tasks.RotationProcessor;
 import org.zhx.common.util.CameraUtil;
 import org.zhx.common.util.PermissionsUtil;
 import org.zhx.common.util.ZCameraLog;
