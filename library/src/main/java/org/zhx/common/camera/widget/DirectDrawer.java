@@ -72,6 +72,7 @@ public class DirectDrawer {
         drawListBuffer.position(0);
         //纹理坐标
         ByteBuffer bb2 = ByteBuffer.allocateDirect(textureVertices.length * 4);
+
         bb2.order(ByteOrder.nativeOrder());
         textureVerticesBuffer = bb2.asFloatBuffer();
         textureVerticesBuffer.put(textureVertices);
