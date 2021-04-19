@@ -5,7 +5,6 @@ import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.hardware.Camera;
-import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -180,10 +179,6 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         }
         ZCameraLog.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + ", height: " + mPreviewHeight);
         parameters.setPreviewSize(mPreviewWidth, mPreviewHeight); // 设置预览图像大小
-        List<Camera.Size> pSizes = parameters.getSupportedPictureSizes();
-        Camera.Size pictrueSize = getSuitableSize(pSizes);
-        ZCameraLog.e(TAG, "Supported, width: " + pictrueSize.width + ", height: " + pictrueSize.height);
-        parameters.setPictureSize(pictrueSize.width, pictrueSize.height);
         if (mView != null) {
             mProxy = new CameraProxy<>(mCamera, mPreviewWidth, mPreviewHeight);
             mView.onCameraCreate(mProxy);
@@ -195,7 +190,6 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         int index = 0; // 最小的差值对应的索引坐标
         for (int i = 0; i < sizes.size(); i++) {
             Camera.Size previewSize = sizes.get(i);
-            Log.v(TAG, "SupportedPreviewSize, width: " + previewSize.width + ", height: " + previewSize.height);
             // 找到一个与设置的分辨率差值最小的相机支持的分辨率大小
             if (previewSize.width * mPreviewScale == previewSize.height) {
                 int delta = Math.abs(mPreviewWidth - previewSize.width);

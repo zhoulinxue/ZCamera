@@ -44,7 +44,11 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     private SurfaceView mSurfaceView;
     private SurfaceHolder mHolder;
     private CameraPresenter mPresenter;
-    private int[] modelResId = {org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_auto_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_on_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_off_normal, org.zhx.common.camera.R.drawable.ic_camera_top_bar_flash_torch_normal};
+    private int[] modelResId = {
+            R.drawable.ic_camera_top_bar_flash_auto_normal,
+            R.drawable.ic_camera_top_bar_flash_on_normal,
+            R.drawable.ic_camera_top_bar_flash_off_normal,
+            R.drawable.ic_camera_top_bar_flash_torch_normal};
     private RelativeLayout.LayoutParams showLp;
     private RelativeLayout mRootView;
     Point screenP, mPreviewPoint;
