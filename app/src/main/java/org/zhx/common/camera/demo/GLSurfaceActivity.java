@@ -82,7 +82,7 @@ public class GLSurfaceActivity extends AppCompatActivity implements View.OnTouch
     }
 
     private void initHolder() {
-        mSurfaceView.setRender(this);
+        mSurfaceView.setViewRender(this);
         mSurfaceView.setOnTouchListener(this);
     }
 
@@ -103,13 +103,13 @@ public class GLSurfaceActivity extends AppCompatActivity implements View.OnTouch
         mPreviewPoint = new Point(proxy.getWidth(), proxy.getHeight());
         preViewLp.width = mPreviewPoint.x;
         preViewLp.height = mPreviewPoint.y;
-        mSurfaceView.setCameraId(proxy.getCameraId());
         mSurfaceView.post(new Runnable() {
             @Override
             public void run() {
                 mSurfaceView.setLayoutParams(preViewLp);
             }
         });
+        mSurfaceView.setCameraId(proxy.getCameraId());
         proxy.getCamera().setPreviewTexture(mSurfaceView.getSurface());
     }
 

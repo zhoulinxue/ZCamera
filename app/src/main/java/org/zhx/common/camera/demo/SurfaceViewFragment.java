@@ -24,4 +24,5 @@ public class SurfaceViewFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mSurfaceView = view.findViewById(R.id.z_base_camera_preview);
     }
+
 }

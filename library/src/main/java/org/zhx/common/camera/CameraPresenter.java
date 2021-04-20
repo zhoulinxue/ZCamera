@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.hardware.Camera;
+import android.view.Surface;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -137,12 +138,36 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     }
 
     private void setOrientation() {
-        if (mView.getContext().getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
-            mCamera.setDisplayOrientation(90);
-        } else {
-            mCamera.setDisplayOrientation(0);
+        Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
+        Camera.getCameraInfo(mCameraId, info);
+        int rotation = mView.getContext().getWindowManager().getDefaultDisplay().getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0:
+                degrees = 0;
+                break;
+            case Surface.ROTATION_90:
+                degrees = 90;
+                break;
+            case Surface.ROTATION_180:
+                degrees = 180;
+                break;
+            case Surface.ROTATION_270:
+                degrees = 270;
+                break;
         }
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+            result = (360 - result) % 360;   // compensate the mirror
+        } else {
+            // back-facing
+            result = (info.orientation - degrees + 360) % 360;
+        }
+        mCamera.getParameters().setRotation(result);
+        mCamera.setDisplayOrientation(result);
     }
+
 
     private void setParamiters() throws IOException {
         Camera.Parameters parameters = mCamera.getParameters();
@@ -180,7 +205,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         ZCameraLog.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + ", height: " + mPreviewHeight);
         parameters.setPreviewSize(mPreviewWidth, mPreviewHeight); // 设置预览图像大小
         if (mView != null) {
-            mProxy = new CameraProxy<>(mCamera, mPreviewWidth, mPreviewHeight, mCameraId);
+            mProxy = new CameraProxy<>(mCamera, mPreviewWidth, mPreviewHeight,mCameraId);
             mView.onCameraCreate(mProxy);
         }
     }
