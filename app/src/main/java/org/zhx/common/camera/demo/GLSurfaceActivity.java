@@ -103,6 +103,7 @@ public class GLSurfaceActivity extends AppCompatActivity implements View.OnTouch
         mPreviewPoint = new Point(proxy.getWidth(), proxy.getHeight());
         preViewLp.width = mPreviewPoint.x;
         preViewLp.height = mPreviewPoint.y;
+        mSurfaceView.setCameraId(proxy.getCameraId());
         mSurfaceView.post(new Runnable() {
             @Override
             public void run() {

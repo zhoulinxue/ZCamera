@@ -180,7 +180,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         ZCameraLog.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + ", height: " + mPreviewHeight);
         parameters.setPreviewSize(mPreviewWidth, mPreviewHeight); // 设置预览图像大小
         if (mView != null) {
-            mProxy = new CameraProxy<>(mCamera, mPreviewWidth, mPreviewHeight);
+            mProxy = new CameraProxy<>(mCamera, mPreviewWidth, mPreviewHeight, mCameraId);
             mView.onCameraCreate(mProxy);
         }
     }

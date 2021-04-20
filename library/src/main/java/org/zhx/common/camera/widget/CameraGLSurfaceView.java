@@ -21,6 +21,7 @@ public class CameraGLSurfaceView extends GLSurfaceView implements android.opengl
     int mTextureID = -1;
     DirectDrawer mDirectDrawer;
     private GLSurfaceView.Renderer mRender;
+    private int mCameraId;
 
     public CameraGLSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -62,13 +63,17 @@ public class CameraGLSurfaceView extends GLSurfaceView implements android.opengl
         }
     }
 
+    public void setCameraId(int mCameraId) {
+        this.mCameraId = mCameraId;
+    }
+
     @Override
     public void onDrawFrame(GL10 gl) {
         GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
         //从图像流中将纹理图像更新为最近的帧
         mSurface.updateTexImage();
-        mDirectDrawer.draw();
+        mDirectDrawer.draw(mCameraId);
     }
 
     private int createTextureID() {

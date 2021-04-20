@@ -4,15 +4,25 @@ public class CameraProxy<T> {
     private T camera;
     private int width;
     private int height;
+    private int cameraId;
 
-    public CameraProxy(T camera, int width, int height) {
+    public CameraProxy(T camera, int width, int height, int cameraId) {
         this.camera = camera;
         this.width = width;
         this.height = height;
+        this.cameraId = cameraId;
     }
 
     public CameraProxy(T proxy) {
         this.camera = proxy;
+    }
+
+    public int getCameraId() {
+        return cameraId;
+    }
+
+    public void setCameraId(int cameraId) {
+        this.cameraId = cameraId;
     }
 
     public int getWidth() {

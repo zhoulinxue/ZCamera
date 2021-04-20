@@ -55,6 +55,10 @@ public class DirectDrawer {
     };
 
     private int texture;
+    private float[] mPosCoordinate = {-1, -1, -1, 1, 1, -1, 1, 1};
+    private float[] mTexCoordinateBackRight = {1, 1, 0, 1, 1, 0, 0, 0};//顺时针转90并沿Y轴翻转  后摄像头正确，前摄像头上下颠倒
+    private float[] mTexCoordinateForntRight = {0, 1, 1, 1, 0, 0, 1, 0};//顺时针旋转90  后摄像头上下颠倒了，前摄像头正确
+
 
     public DirectDrawer(int texture) {
         this.texture = texture;
@@ -86,8 +90,14 @@ public class DirectDrawer {
         GLES20.glLinkProgram(mProgram);
     }
 
-    public void draw() {
+    public void draw(int cameraId) {
         GLES20.glUseProgram(mProgram);
+        vertexBuffer = convertToFloatBuffer(mPosCoordinate);
+        if (cameraId == 0) {
+            textureVerticesBuffer = convertToFloatBuffer(mTexCoordinateBackRight);
+        } else {
+            textureVerticesBuffer = convertToFloatBuffer(mTexCoordinateForntRight);
+        }
         //使用纹理
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texture);
@@ -104,6 +114,15 @@ public class DirectDrawer {
         //结束
         GLES20.glDisableVertexAttribArray(mPositionHandle);
         GLES20.glDisableVertexAttribArray(mTextureCoordHandle);
+    }
+
+    private FloatBuffer convertToFloatBuffer(float[] buffer) {
+        FloatBuffer fb = ByteBuffer.allocateDirect(buffer.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        fb.put(buffer);
+        fb.position(0);
+        return fb;
     }
 
     //编译着色器
