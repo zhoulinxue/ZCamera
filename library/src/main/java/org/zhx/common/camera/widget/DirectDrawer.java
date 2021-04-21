@@ -15,33 +15,29 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 public class DirectDrawer implements GLSurfaceView.Renderer {
-    private final String vertexShaderCode = "uniform mat4 textureTransform;\n" +
-            "attribute vec2 inputTextureCoordinate;\n" +
-            "attribute vec4 position;            \n" +//NDK坐标点
-            "varying   vec2 textureCoordinate; \n" +//纹理坐标点变换后输出
-            "\n" +
-            " void main() {\n" +
-            "     gl_Position = position;\n" +
-            "     textureCoordinate = inputTextureCoordinate;\n" +
-            " }";
+    private final String vertexShaderCode =
+            "attribute vec4 vPosition;" +
+                    "attribute vec2 inputTextureCoordinate;" +
+                    "varying vec2 textureCoordinate;" +
+                    "void main()" +
+                    "{" +
+                    "gl_Position = vPosition;" +
+                    "textureCoordinate = inputTextureCoordinate;" +
+                    "}";
 
-    private final String fragmentShaderCode = "#extension GL_OES_EGL_image_external : require\n" +
-            "precision mediump float;\n" +
-            "uniform samplerExternalOES videoTex;\n" +
-            "varying vec2 textureCoordinate;\n" +
-            "\n" +
-            "void main() {\n" +
-            "    vec4 tc = texture2D(videoTex, textureCoordinate);\n" +
-            "    float color = tc.r * 0.3 + tc.g * 0.59 + tc.b * 0.11;\n" +  //所有视图修改成黑白
-            "    gl_FragColor = vec4(color,color,color,1.0);\n" +
-//                "    gl_FragColor = vec4(tc.r,tc.g,tc.b,1.0);\n" +
-            "}\n";
-
-
+    private final String fragmentShaderCode =
+            "#extension GL_OES_EGL_image_external : require\n" +
+                    "precision mediump float;" +
+                    "varying vec2 textureCoordinate;\n" +
+                    "uniform samplerExternalOES s_texture;\n" +
+                    "void main() {" +
+                    "  gl_FragColor = texture2D( s_texture, textureCoordinate );\n" +
+                    "}";
 
     private FloatBuffer mPosBuffer;
     private FloatBuffer mTexBuffer;
     private float[] mPosCoordinate = {-1, -1, -1, 1, 1, -1, 1, 1};
+
     private float[] mTexCoordinateBackRight = {1, 1, 0, 1, 1, 0, 0, 0};//顺时针转90并沿Y轴翻转  后摄像头正确，前摄像头上下颠倒
     private float[] mTexCoordinateForntRight = {0, 1, 1, 1, 0, 0, 1, 0};//顺时针旋转90  后摄像头上下颠倒了，前摄像头正确
 
@@ -84,7 +80,6 @@ public class DirectDrawer implements GLSurfaceView.Renderer {
 
     private int uPosHandle;
     private int aTexHandle;
-    private int mMVPMatrixHandle;
     private float[] mProjectMatrix = new float[16];
     private float[] mCameraMatrix = new float[16];
     private float[] mMVPMatrix = new float[16];
@@ -95,9 +90,9 @@ public class DirectDrawer implements GLSurfaceView.Renderer {
         // 将程序添加到OpenGL ES环境
         GLES20.glUseProgram(mProgram);
         // 获取顶点着色器的位置的句柄
-        uPosHandle = GLES20.glGetAttribLocation(mProgram, "position");
+        uPosHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
         aTexHandle = GLES20.glGetAttribLocation(mProgram, "inputTextureCoordinate");
-        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "textureTransform");
+
 
         mPosBuffer = convertToFloatBuffer(mPosCoordinate);
         if (mCameraId == 0) {
@@ -153,7 +148,6 @@ public class DirectDrawer implements GLSurfaceView.Renderer {
         }
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
         mCallback.onDrawFrame(gl);
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, mPosCoordinate.length / 2);
     }
 }
