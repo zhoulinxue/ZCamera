@@ -1,6 +1,5 @@
 package org.zhx.common.camera.tasks;
 
-import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 
@@ -21,12 +20,14 @@ public class ImageSaveProcessor {
     }
 
     private class SaveImageTask extends AsyncTask<Object, Object, Uri> {
-        private byte[] bitmap;
+        private byte[] datas;
         private int orientation;
+        private boolean isFrontCamera;
 
-        public SaveImageTask(byte[] bitmap, int orientation) {
-            this.bitmap = bitmap;
+        public SaveImageTask(byte[] bitmap, int orientation, boolean isFrontCamera) {
+            this.datas = bitmap;
             this.orientation = orientation;
+            this.isFrontCamera = isFrontCamera;
         }
 
         @Override
@@ -34,7 +35,20 @@ public class ImageSaveProcessor {
             ZCameraLog.e(TAG, "....Camera...save_process_start..............." + System.currentTimeMillis());
             Uri uri = null;
             try {
-                uri = CameraUtil.saveImageData(mView.getContext(), bitmap, Constants.FILE_DIR);
+                if (isFrontCamera) {
+                    switch (orientation) {
+                        case ExifInterface.ORIENTATION_ROTATE_90:
+
+                            break;
+                        case ExifInterface.ORIENTATION_ROTATE_180:
+                            orientation = ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
+                            break;
+                        case ExifInterface.ORIENTATION_ROTATE_270:
+
+                            break;
+                    }
+                }
+                uri = CameraUtil.saveImageData(mView.getContext(), datas, Constants.FILE_DIR);
                 ExifInterface exifInterface = new ExifInterface(mView.getContext().getContentResolver().openFileDescriptor(uri, "rw", null).getFileDescriptor());
                 exifInterface.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
                 exifInterface.saveAttributes();
@@ -52,8 +66,8 @@ public class ImageSaveProcessor {
         }
     }
 
-    public void excute(byte[] data, int degree) {
-        new SaveImageTask(data, degree).execute(AsyncTask.THREAD_POOL_EXECUTOR);
+    public void excute(byte[] data, int degree, boolean isFrontCamera) {
+        new SaveImageTask(data, degree, isFrontCamera).execute(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
 }
