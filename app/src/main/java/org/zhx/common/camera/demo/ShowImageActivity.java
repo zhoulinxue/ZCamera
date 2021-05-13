@@ -1,51 +1,38 @@
 package org.zhx.common.camera.demo;
 
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
+
 import android.view.WindowManager;
-import android.widget.ProgressBar;
 
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.PagerSnapHelper;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SnapHelper;
 
-import com.davemorrissey.labs.subscaleview.ImageSource;
-import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
-import org.zhx.common.util.ImageUtil;
+import org.zhx.common.camera.Constants;
+import org.zhx.common.camera.ImageData;
 
-import java.io.IOException;
+import java.util.List;
 
 public class ShowImageActivity extends AppCompatActivity {
-    private ProgressBar mBar;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_image);
         getWindow().addFlags((WindowManager.LayoutParams.FLAG_FULLSCREEN));
-        final SubsamplingScaleImageView showImage = findViewById(R.id.z_base_camera_showImg_big);
-        mBar = findViewById(R.id.load_process);
-        String path = getIntent().getStringExtra("bitmap");
-        final Uri uri = Uri.parse(path);
-        try {
-            showImage.setImage(ImageSource.bitmap(ImageUtil.getBitmapFormUri(this, uri)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final Bitmap bitmap = ImageUtil.getBitmapFromUri(ShowImageActivity.this, uri);
-                showImage.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mBar.setVisibility(View.GONE);
-                        showImage.setImage(ImageSource.bitmap(bitmap));
-                    }
-                });
-            }
-        }).start();
+
+        RecyclerView recyclerView = findViewById(R.id.pictrue_group);
+        LinearLayoutManager manager = new LinearLayoutManager(this);
+        manager.setOrientation(RecyclerView.HORIZONTAL);
+        recyclerView.setLayoutManager(manager);
+        List<ImageData> datas = getIntent().getParcelableArrayListExtra(Constants.HISTORE_PICTRUE);
+        recyclerView.setAdapter(new PictrueAdapter(datas));
+        SnapHelper snapHelper = new PagerSnapHelper();
+        snapHelper.attachToRecyclerView(recyclerView);
     }
+
 }

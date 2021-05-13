@@ -6,6 +6,9 @@ import android.view.View;
 
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
+
+import org.zhx.common.mvp.BaseView;
+
 import java.io.IOException;
 
 public interface CameraModel {
@@ -23,24 +26,18 @@ public interface CameraModel {
 
         public int chanageFlashMode();
 
-        public void focusArea(float x, float y,View focus);
+        public void focusArea(float x, float y, View focus);
 
         boolean isFocusing();
 
         void showImages();
     }
 
-    public interface view<T> {
+    public interface view<T> extends PictrueModel.view {
 
-        AppCompatActivity getContext();
 
-        public void onError(@StringRes int msg);
+        void onCameraCreate(CameraProxy<T> proxy) throws IOException;
 
-        public void onCameraCreate(CameraProxy<T> proxy) throws IOException;
-
-        void onSaveResult(Uri uri);
-
-        void showLastImag(ImageData imageData);
 
         void onTakeComplete();
     }

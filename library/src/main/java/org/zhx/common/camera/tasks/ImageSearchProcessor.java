@@ -10,6 +10,7 @@ import android.text.TextUtils;
 
 import org.zhx.common.camera.CameraModel;
 import org.zhx.common.camera.ImageData;
+import org.zhx.common.camera.PictrueModel;
 import org.zhx.common.util.ZCameraLog;
 
 import java.util.ArrayList;
@@ -18,9 +19,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ImageSearchProcessor {
-    private CameraModel.view mView;
+    private PictrueModel.view mView;
 
-    public ImageSearchProcessor(CameraModel.view view) {
+    public ImageSearchProcessor(PictrueModel.view view) {
         this.mView = view;
     }
 
@@ -77,7 +78,7 @@ public class ImageSearchProcessor {
         @Override
         protected void onPostExecute(List<ImageData> datas) {
             if (null != datas && datas.size() > 0)
-                mView.showLastImag(datas.get(0));
+                mView.onSearchResult(datas);
         }
     }
 

@@ -9,6 +9,7 @@ import android.hardware.Camera;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -38,11 +39,13 @@ import org.zhx.common.util.PermissionsUtil;
 import org.zhx.common.util.ZCameraLog;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class GLSurfaceActivity extends AppCompatActivity implements View.OnTouchListener, CameraModel.view<Camera>, View.OnClickListener, GLSurfaceView.Renderer {
+public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListener, CameraModel.view<Camera>, View.OnClickListener, GLSurfaceView.Renderer {
     private ImageView mShowImage, mShutterImg, mFlashImg, mThumImag;
     private View animateHolder;
     private CameraGLSurfaceView mSurfaceView;
@@ -56,7 +59,6 @@ public class GLSurfaceActivity extends AppCompatActivity implements View.OnTouch
     private RelativeLayout mRootView;
     Point screenP, mPreviewPoint;
     FocusRectView mFocusView;
-    private Uri mUri;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -87,14 +89,9 @@ public class GLSurfaceActivity extends AppCompatActivity implements View.OnTouch
     }
 
     @Override
-    public AppCompatActivity getContext() {
-        return this;
-    }
-
-    @Override
     public void onError(int msg) {
+        super.onError(msg);
         mShutterImg.setEnabled(true);
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -129,37 +126,18 @@ public class GLSurfaceActivity extends AppCompatActivity implements View.OnTouch
                 mFlashImg.setImageResource(modelResId[position]);
                 break;
             case R.id.z_thumil_img:
-                Intent i = new Intent(this, ShowImageActivity.class);
-                i.putExtra("bitmap", mUri.toString());
-                ActivityOptionsCompat optionsCompat =
-                        ActivityOptionsCompat.makeSceneTransitionAnimation(this, animateHolder, "image");
-                startActivity(i, optionsCompat.toBundle());
+                if (mImageDatas != null && mImageDatas.size() != 0) {
+                    Intent i = new Intent(this, ShowImageActivity.class);
+                    i.putParcelableArrayListExtra(Constants.HISTORE_PICTRUE, (ArrayList<? extends Parcelable>) mImageDatas);
+                    ActivityOptionsCompat optionsCompat =
+                            ActivityOptionsCompat.makeSceneTransitionAnimation(this, animateHolder, "image");
+                    startActivity(i, optionsCompat.toBundle());
+                }
                 break;
         }
     }
 
-    @Override
-    public void onSaveResult(Uri uri) {
-        if (uri != null) {
-            try {
-                setImageData(uri, true);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @Override
-    public void showLastImag(ImageData imageData) {
-        try {
-            setImageData(imageData.getContentUri(), false);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void setImageData(Uri contentUri, boolean isAnimate) throws IOException {
-        mUri = contentUri;
+    public void setImageData(Uri contentUri, boolean isAnimate) throws IOException {
         final Bitmap bitmap = ImageUtil.getBitmapFormUri(this, contentUri);
         ZCameraLog.e("CameraPresenter", "....Camera...take complete..............." + System.currentTimeMillis());
         if (isAnimate) {

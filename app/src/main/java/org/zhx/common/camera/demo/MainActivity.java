@@ -8,6 +8,7 @@ import android.graphics.Point;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -36,9 +37,11 @@ import org.zhx.common.util.PermissionsUtil;
 import org.zhx.common.util.ZCameraLog;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnTouchListener, CameraModel.view<Camera>, View.OnClickListener, SurfaceHolder.Callback {
+public class MainActivity extends BaseActivity implements View.OnTouchListener, CameraModel.view<Camera>, View.OnClickListener, SurfaceHolder.Callback {
     private ImageView mShowImage, mShutterImg, mFlashImg, mThumImag;
     private View animateHolder;
     private SurfaceView mSurfaceView;
@@ -53,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     private RelativeLayout mRootView;
     Point screenP, mPreviewPoint;
     FocusRectView mFocusView;
-    private Uri mUri;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -86,14 +89,9 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     }
 
     @Override
-    public AppCompatActivity getContext() {
-        return this;
-    }
-
-    @Override
     public void onError(int msg) {
+        super.onError(msg);
         mShutterImg.setEnabled(true);
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -122,17 +120,23 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 mFlashImg.setImageResource(modelResId[position]);
                 break;
             case R.id.z_thumil_img:
-                Intent i = new Intent(this, ShowImageActivity.class);
-                i.putExtra("bitmap", mUri.toString());
-                ActivityOptionsCompat optionsCompat =
-                        ActivityOptionsCompat.makeSceneTransitionAnimation(this, animateHolder, "image");
-                startActivity(i, optionsCompat.toBundle());
+                if (mImageDatas != null && mImageDatas.size() != 0) {
+                    Intent i = new Intent(this, ShowImageActivity.class);
+                    i.putParcelableArrayListExtra(Constants.HISTORE_PICTRUE, (ArrayList<? extends Parcelable>) mImageDatas);
+                    ActivityOptionsCompat optionsCompat =
+                            ActivityOptionsCompat.makeSceneTransitionAnimation(this, animateHolder, "image");
+                    startActivity(i, optionsCompat.toBundle());
+                }
                 break;
         }
     }
 
     @Override
     public void onSaveResult(Uri uri) {
+        if (mImageDatas == null) {
+            mImageDatas = new ArrayList<>();
+        }
+        mImageDatas.add(0, new ImageData(uri));
         if (uri != null) {
             try {
                 setImageData(uri, true);
@@ -142,17 +146,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         }
     }
 
-    @Override
-    public void showLastImag(ImageData imageData) {
-        try {
-            setImageData(imageData.getContentUri(), false);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void setImageData(Uri contentUri, boolean isAnimate) throws IOException {
-        mUri = contentUri;
+    public void setImageData(Uri contentUri, boolean isAnimate) throws IOException {
         final Bitmap bitmap = ImageUtil.getBitmapFormUri(this, contentUri);
         ZCameraLog.e("CameraPresenter", "....Camera...take complete..............." + System.currentTimeMillis());
         if (isAnimate) {
@@ -246,7 +240,9 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         return false;
     }
 
-    private void addView(int childCount, View view, RelativeLayout.LayoutParams layoutParams) {
+    protected void addView(int childCount, View view, RelativeLayout.LayoutParams layoutParams) {
         mRootView.addView(view, childCount, layoutParams);
     }
+
+
 }

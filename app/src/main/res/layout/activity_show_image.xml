@@ -3,15 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
-        android:id="@+id/z_base_camera_showImg_big"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/pictrue_group"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:transitionName="image" />
+        android:layout_height="wrap_content" />
 
-    <ProgressBar
-        android:id="@+id/load_process"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_centerInParent="true" />
 </RelativeLayout>
