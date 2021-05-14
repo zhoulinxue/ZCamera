@@ -244,5 +244,8 @@ public class MainActivity extends BaseActivity implements View.OnTouchListener, 
         mRootView.addView(view, childCount, layoutParams);
     }
 
-
+    @Override
+    public void onBackPressed() {
+        mPresenter.releaseCamera(CameraAction.ON_BACKPRESS);
+    }
 }

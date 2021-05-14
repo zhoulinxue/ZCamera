@@ -23,8 +23,13 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
     }
 
     @Override
-    public void onError(int msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    public void onError(final int msg) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(BaseActivity.this, msg, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override

@@ -75,7 +75,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
             if (CameraAction.SURFACE_CREATE == action) {
                 isSurfaceDestory = false;
             }
-            AppCompatActivity activity = (AppCompatActivity) mView.getContext();
+            AppCompatActivity activity = mView.getContext();
             if (PermissionsUtil.hasPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 ZCameraLog.e(TAG, action + "....Camera....start.......................");
                 if (openCamera()) {
@@ -86,6 +86,8 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                         }
                         ZCameraLog.e(TAG, action + "....Camera....preview.......................");
                     }
+                } else {
+                    mView.onError(R.string.open_error);
                 }
             } else {
                 PermissionsUtil.requestPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE, Constants.STORAGE);
@@ -95,21 +97,28 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
 
 
     private boolean openCamera() {
-        if (!isFrontCamera) {
-            mCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
-            mCamera = Camera.open();
-        } else {
-            Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-            for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
-                Camera.getCameraInfo(i, cameraInfo);
-                if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    mCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
-                    mCamera = Camera.open(i);
-                    isFrontCamera = true;
+        try {
+
+            if (!isFrontCamera) {
+                mCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+
+                mCamera = Camera.open();
+
+            } else {
+                Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+                for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
+                    Camera.getCameraInfo(i, cameraInfo);
+                    if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                        mCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
+                        mCamera = Camera.open(i);
+                        isFrontCamera = true;
+                    }
                 }
             }
+            ZCameraLog.e(TAG, "open....." + (mCamera != null));
+        } catch (Exception e) {
+            return false;
         }
-        ZCameraLog.e(TAG, "open....." + (mCamera != null));
         return mCamera != null;
     }
 
@@ -138,8 +147,8 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     }
 
     private void setOrientation() {
-        Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
-        Camera.getCameraInfo(mCameraId, info);
+        android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
+        android.hardware.Camera.getCameraInfo(mCameraId, info);
         int rotation = mView.getContext().getWindowManager().getDefaultDisplay().getRotation();
         int degrees = 0;
         switch (rotation) {
@@ -156,16 +165,16 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 degrees = 270;
                 break;
         }
+
         int result;
         if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
             result = (info.orientation + degrees) % 360;
-            result = (360 - result) % 360;   // compensate the mirror
-        } else {
-            // back-facing
+            result = (360 - result) % 360;  // compensate the mirror
+        } else {  // back-facing
             result = (info.orientation - degrees + 360) % 360;
         }
-        mCamera.getParameters().setRotation(result);
         mCamera.setDisplayOrientation(result);
+
     }
 
 
@@ -275,6 +284,9 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 previewSuc = false;
                 ZCameraLog.e(TAG, action + "....Camera...end.......................");
             }
+            if (CameraAction.ON_BACKPRESS.equals(action)) {
+                mView.getContext().finish();
+            }
         }
     }
 
@@ -301,7 +313,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
 
 
     private boolean canTake() {
-        return isFocus && previewSuc;
+        return previewSuc;
     }
 
     @Override
@@ -311,9 +323,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         }
         if (canTake()) {
             takeRequest();
-        } else if (!isFocus) {
-            mView.onError(R.string.focus_error);
-        } else if (!previewSuc) {
+        } else {
             mView.onError(R.string.preview_error_string);
         }
     }

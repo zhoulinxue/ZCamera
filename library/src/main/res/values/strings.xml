@@ -3,5 +3,6 @@
     <string name="app_name">ZCamera1.0</string>
     <string name="preview_error_string">拍照失败，预览出错</string>
     <string name="focus_error">拍照失败，对焦出错</string>
+    <string name="open_error">相机打开失败,请重新进入相机</string>
 
 </resources>

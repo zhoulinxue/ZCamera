@@ -235,4 +235,9 @@ public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListe
     public void onDrawFrame(GL10 gl) {
 
     }
+
+    @Override
+    public void onBackPressed() {
+        mPresenter.releaseCamera(CameraAction.ON_BACKPRESS);
+    }
 }
