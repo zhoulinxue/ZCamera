@@ -147,36 +147,12 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     }
 
     private void setOrientation() {
-        android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
-        android.hardware.Camera.getCameraInfo(mCameraId, info);
-        int rotation = mView.getContext().getWindowManager().getDefaultDisplay().getRotation();
-        int degrees = 0;
-        switch (rotation) {
-            case Surface.ROTATION_0:
-                degrees = 0;
-                break;
-            case Surface.ROTATION_90:
-                degrees = 90;
-                break;
-            case Surface.ROTATION_180:
-                degrees = 180;
-                break;
-            case Surface.ROTATION_270:
-                degrees = 270;
-                break;
+        if (mView.getContext().getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
+            mCamera.setDisplayOrientation(90);
+        } else {
+            mCamera.setDisplayOrientation(0);
         }
-
-        int result;
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            result = (info.orientation + degrees) % 360;
-            result = (360 - result) % 360;  // compensate the mirror
-        } else {  // back-facing
-            result = (info.orientation - degrees + 360) % 360;
-        }
-        mCamera.setDisplayOrientation(result);
-
     }
-
 
     private void setParamiters() throws IOException {
         Camera.Parameters parameters = mCamera.getParameters();
