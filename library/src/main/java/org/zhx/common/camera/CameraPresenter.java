@@ -285,7 +285,12 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 ZCameraLog.e(TAG, action + "....Camera...end.......................");
             }
             if (CameraAction.ON_BACKPRESS.equals(action)) {
-                mView.getContext().finish();
+                try {
+                    mView.getContext().finish();
+                    System.exit(0);
+                }catch (Exception e){
+
+                }
             }
         }
     }
