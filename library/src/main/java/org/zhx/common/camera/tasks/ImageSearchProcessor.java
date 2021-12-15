@@ -19,10 +19,12 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ImageSearchProcessor {
+    private Context mContext;
     private PictrueModel.view mView;
 
-    public ImageSearchProcessor(PictrueModel.view view) {
-        this.mView = view;
+    public ImageSearchProcessor(Context context, PictrueModel.view mView) {
+        this.mContext = context;
+        this.mView = mView;
     }
 
     public void showImags(String path) {
@@ -44,7 +46,7 @@ public class ImageSearchProcessor {
             String[] projection = {MediaStore.Images.Media._ID,
                     MediaStore.Images.Media.DISPLAY_NAME,
                     MediaStore.Images.Media.DATE_ADDED};
-            Cursor cursor = mView.getContext().getApplicationContext().getContentResolver().query(
+            Cursor cursor = mContext.getApplicationContext().getContentResolver().query(
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, null, null, MediaStore.Images.Media.DATE_ADDED + " DESC");
             int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
             int dateModifiedColumn =

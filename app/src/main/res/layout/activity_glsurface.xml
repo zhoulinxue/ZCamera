@@ -23,7 +23,7 @@
             <org.zhx.common.camera.widget.CameraGLSurfaceView
                 android:id="@+id/z_base_camera_preview"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_centerInParent="true" />
         </RelativeLayout>
 

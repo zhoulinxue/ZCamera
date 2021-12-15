@@ -5,20 +5,14 @@ import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.hardware.Camera;
-import android.view.Surface;
 import android.view.View;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 
 import org.zhx.common.camera.tasks.ImageSaveProcessor;
-import org.zhx.common.camera.tasks.ImageSearchProcessor;
-import org.zhx.common.camera.tasks.ScreenProcessor;
-import org.zhx.common.camera.tasks.SensorProcessor;
 import org.zhx.common.util.CameraUtil;
-import org.zhx.common.util.PermissionsUtil;
 import org.zhx.common.util.ZCameraLog;
 
 import java.io.IOException;
@@ -39,34 +33,17 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     private boolean isSurfaceDestory = false;
     private boolean isFocus = false;
     private View mFocusView;
-    private int mPreviewWidth;
-    private int mPreviewHeight;
+    private int mPreviewWidth = 1920;
+    private int mPreviewHeight = 1080;
     private float mPreviewScale = mPreviewHeight * 1f / mPreviewWidth;
     private ImageSaveProcessor mImageSaveProcessor;
-    private ImageSearchProcessor mImageSearchProcessor;
-    private ScreenProcessor mScreenProcessor;
-    private SensorProcessor mSensorProcessor;
     private boolean hasAutoFocus = true;
     private int mCameraId;
 
 
     public CameraPresenter(final CameraModel.view view) {
         this.mView = view;
-        initPreviewData();
         mImageSaveProcessor = new ImageSaveProcessor(view);
-        mImageSearchProcessor = new ImageSearchProcessor(view);
-        mSensorProcessor = new SensorProcessor(view);
-    }
-
-    private void initPreviewData() {
-        mScreenProcessor = new ScreenProcessor(mView);
-        mPreviewWidth = mScreenProcessor.getWidth();
-        mPreviewHeight = mScreenProcessor.getHeight();
-    }
-
-    @Override
-    public void showImages() {
-        mImageSearchProcessor.showImags(Constants.FILE_DIR);
     }
 
     @Override
@@ -75,8 +52,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
             if (CameraAction.SURFACE_CREATE == action) {
                 isSurfaceDestory = false;
             }
-            AppCompatActivity activity = mView.getContext();
-            if (PermissionsUtil.hasPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            if (mView.hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 ZCameraLog.e(TAG, action + "....Camera....start.......................");
                 if (openCamera()) {
                     boolean setCamera = setCamera();
@@ -90,7 +66,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                     mView.onError(R.string.open_error);
                 }
             } else {
-                PermissionsUtil.requestPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE, Constants.STORAGE);
+                mView.requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, Constants.STORAGE);
             }
         }
     }
@@ -147,7 +123,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     }
 
     private void setOrientation() {
-        if (mView.getContext().getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
+        if (mView.getOrientation() != Configuration.ORIENTATION_LANDSCAPE) {
             mCamera.setDisplayOrientation(90);
         } else {
             mCamera.setDisplayOrientation(0);
@@ -176,19 +152,15 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     public void setCameraSize(Camera.Parameters parameters) throws IOException {
         //摄像头画面显示在Surface上
         List<Camera.Size> vSizes = parameters.getSupportedPreviewSizes();
-        Camera.Size previewSize = getSuitableSize(vSizes);
 
-        int previewWidth = Math.min(previewSize.width, previewSize.height);
-        int previewHeight = Math.max(previewSize.width, previewSize.height);
-        ZCameraLog.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + " _ " + previewWidth + ", height: " + mPreviewHeight + " _ " + previewHeight);
-        mPreviewScale = previewWidth * 1f / previewHeight;
-        if (mPreviewWidth > previewWidth) {
-            mPreviewHeight = (int) (mPreviewWidth / mPreviewScale);
-        } else if (mPreviewWidth < previewWidth) {
-            mPreviewHeight = (int) (mPreviewHeight * mPreviewScale);
-        }
+        List<Camera.Size> pSizes = parameters.getSupportedPictureSizes();
+        Camera.Size previewSize = getSuitableSize(vSizes);
+        Camera.Size pictureSize = getSuitableSize(pSizes);
         ZCameraLog.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + ", height: " + mPreviewHeight);
-        parameters.setPreviewSize(mPreviewWidth, mPreviewHeight); // 设置预览图像大小
+
+        parameters.setPreviewSize(previewSize.width, previewSize.height); // 设置预览图像大小
+        parameters.setPictureSize(pictureSize.width, pictureSize.height);
+        mCamera.setParameters(parameters);
         if (mView != null) {
             mProxy = new CameraProxy<>(mCamera, mPreviewWidth, mPreviewHeight, mCameraId);
             mView.onCameraCreate(mProxy);
@@ -226,14 +198,6 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         releaseCamera(CameraAction.ON_STOP);
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    public void onDestory() {
-        if (mSensorProcessor != null) {
-            if (mSensorProcessor != null)
-                mSensorProcessor.destory();
-        }
-    }
-
     @Override
     public void resumenCamera(CameraAction action) {
         if (!isSurfaceDestory) {
@@ -260,14 +224,6 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 previewSuc = false;
                 ZCameraLog.e(TAG, action + "....Camera...end.......................");
             }
-            if (CameraAction.ON_BACKPRESS.equals(action)) {
-                try {
-                    mView.getContext().finish();
-                    System.exit(0);
-                }catch (Exception e){
-
-                }
-            }
         }
     }
 
@@ -279,7 +235,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     }
 
     private void takeRequest() {
-        final int degree = mSensorProcessor.getDegree(isFrontCamera);
+        final int degree = mView.getDegree(isFrontCamera);
         mCamera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
@@ -313,7 +269,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     public int chanageFlashMode() {
         Camera.Parameters parameters = mCamera.getParameters();
         List<String> flashmodels = parameters.getSupportedFlashModes();
-        if (flashmodels.contains(flashMedols[modelIndex])) {
+        if (!isFrontCamera && flashmodels.contains(flashMedols[modelIndex])) {
             modelIndex++;
             if (modelIndex >= flashMedols.length) {
                 modelIndex = 0;
@@ -338,8 +294,8 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         Camera.Parameters parameters = mCamera.getParameters();
         List<Camera.Area> areas = new ArrayList<Camera.Area>();
         List<Camera.Area> areasMetrix = new ArrayList<Camera.Area>();
-        Rect focusRect = CameraUtil.calculateTapArea(mView.getContext(), x, y, 1.0f);
-        Rect metrixRect = CameraUtil.calculateTapArea(mView.getContext(), x, y, 1.5f);
+        Rect focusRect = CameraUtil.calculateTapArea(focusView.getContext(), x, y, 1.0f);
+        Rect metrixRect = CameraUtil.calculateTapArea(focusView.getContext(), x, y, 1.5f);
         areas.add(new Camera.Area(focusRect, 1000));
         areasMetrix.add(new Camera.Area(metrixRect, 1000));
         parameters.setMeteringAreas(areasMetrix);

@@ -23,13 +23,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
+import androidx.exifinterface.media.ExifInterface;
 
+import org.zhx.common.camera.BaseActivity;
 import org.zhx.common.camera.CameraAction;
 import org.zhx.common.camera.CameraModel;
 import org.zhx.common.camera.CameraPresenter;
 import org.zhx.common.camera.CameraProxy;
 import org.zhx.common.camera.Constants;
 import org.zhx.common.camera.ImageData;
+import org.zhx.common.camera.tasks.ImageSearchProcessor;
+import org.zhx.common.camera.tasks.SensorProcessor;
 import org.zhx.common.camera.widget.FocusRectView;
 import org.zhx.common.util.CameraUtil;
 import org.zhx.common.util.ImageUtil;
@@ -38,7 +42,6 @@ import org.zhx.common.util.ZCameraLog;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class MainActivity extends BaseActivity implements View.OnTouchListener, CameraModel.view<Camera>, View.OnClickListener, SurfaceHolder.Callback {
@@ -54,15 +57,20 @@ public class MainActivity extends BaseActivity implements View.OnTouchListener, 
             R.drawable.ic_camera_top_bar_flash_torch_normal};
     private RelativeLayout.LayoutParams showLp;
     private RelativeLayout mRootView;
-    Point screenP, mPreviewPoint;
+    Point screenP;
     FocusRectView mFocusView;
+    private ImageSearchProcessor mImageSearchProcessor;
+    private SensorProcessor mSensorProcessor;
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mPresenter = new CameraPresenter(this);
+        mImageSearchProcessor = new ImageSearchProcessor(this, this);
+        mSensorProcessor = new SensorProcessor(this, this);
         screenP = CameraUtil.getScreenMetrics(this);
+        getLifecycle().addObserver(mPresenter);
         setContentView(R.layout.activity_main);
         getWindow().addFlags((WindowManager.LayoutParams.FLAG_FULLSCREEN));
         mShowImage = findViewById(R.id.z_base_camera_showImg);
@@ -78,7 +86,7 @@ public class MainActivity extends BaseActivity implements View.OnTouchListener, 
         mFlashImg.setOnClickListener(this);
         mShutterImg.setOnClickListener(this);
         initHolder();
-        mPresenter.showImages();
+        mImageSearchProcessor.showImags(Constants.FILE_DIR);
     }
 
     private void initHolder() {
@@ -97,9 +105,18 @@ public class MainActivity extends BaseActivity implements View.OnTouchListener, 
     @Override
     public void onCameraCreate(CameraProxy<Camera> proxy) throws IOException {
         RelativeLayout.LayoutParams preViewLp = (RelativeLayout.LayoutParams) mSurfaceView.getLayoutParams();
-        mPreviewPoint = new Point(proxy.getWidth(), proxy.getHeight());
-        preViewLp.width = mPreviewPoint.x;
-        preViewLp.height = mPreviewPoint.y;
+        int previewHeight = 0;
+        int previewWidth = 0;
+        if (preViewLp.width < preViewLp.height * proxy.getWidth() / proxy.getHeight()) {
+            previewWidth = preViewLp.width;
+            previewHeight = preViewLp.width * proxy.getHeight() / proxy.getWidth();
+        } else {
+            previewWidth = preViewLp.height * proxy.getWidth() / proxy.getHeight();
+            previewHeight = preViewLp.height;
+        }
+        preViewLp.width = previewWidth;
+        preViewLp.height = previewHeight;
+        screenP = new Point(previewWidth, previewHeight);
         mSurfaceView.setLayoutParams(preViewLp);
         proxy.getCamera().setPreviewDisplay(mHolder);
     }
@@ -144,6 +161,11 @@ public class MainActivity extends BaseActivity implements View.OnTouchListener, 
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public int getDegree(boolean isFrontCamera) {
+        return mSensorProcessor.getDegree(isFrontCamera);
     }
 
     public void setImageData(Uri contentUri, boolean isAnimate) throws IOException {
@@ -227,7 +249,7 @@ public class MainActivity extends BaseActivity implements View.OnTouchListener, 
         if (v == mSurfaceView) {
             if (mFocusView == null) {
                 mFocusView = new FocusRectView(this);
-                RelativeLayout.LayoutParams focusLp = new RelativeLayout.LayoutParams(mPreviewPoint.x, mPreviewPoint.y);
+                RelativeLayout.LayoutParams focusLp = new RelativeLayout.LayoutParams(screenP.x, screenP.y);
                 focusLp.addRule(RelativeLayout.CENTER_IN_PARENT);
                 addView(mRootView.getChildCount(), mFocusView, focusLp);
             }

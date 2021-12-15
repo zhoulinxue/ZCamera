@@ -24,8 +24,8 @@ public class ImageSaveProcessor {
         private int orientation;
         private boolean isFrontCamera;
 
-        public SaveImageTask(byte[] bitmap, int orientation, boolean isFrontCamera) {
-            this.datas = bitmap;
+        public SaveImageTask(byte[] datas, int orientation, boolean isFrontCamera) {
+            this.datas = datas;
             this.orientation = orientation;
             this.isFrontCamera = isFrontCamera;
         }
@@ -37,21 +37,12 @@ public class ImageSaveProcessor {
             try {
                 if (isFrontCamera) {
                     switch (orientation) {
-                        case ExifInterface.ORIENTATION_ROTATE_90:
-
-                            break;
                         case ExifInterface.ORIENTATION_ROTATE_180:
                             orientation = ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
                             break;
-                        case ExifInterface.ORIENTATION_ROTATE_270:
-
-                            break;
                     }
                 }
-                uri = CameraUtil.saveImageData(mView.getContext(), datas, Constants.FILE_DIR);
-                ExifInterface exifInterface = new ExifInterface(mView.getContext().getContentResolver().openFileDescriptor(uri, "rw", null).getFileDescriptor());
-                exifInterface.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
-                exifInterface.saveAttributes();
+                uri = mView.saveDatas(orientation, datas);
             } catch (Exception e) {
                 e.printStackTrace();
             }

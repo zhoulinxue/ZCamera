@@ -30,7 +30,6 @@ public interface CameraModel {
 
         boolean isFocusing();
 
-        void showImages();
     }
 
     public interface view<T> extends PictrueModel.view {
@@ -40,5 +39,8 @@ public interface CameraModel {
 
 
         void onTakeComplete();
+
+        int getDegree(boolean isFrontCamera);
+
     }
 }

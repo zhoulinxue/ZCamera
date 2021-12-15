@@ -1,5 +1,6 @@
 package org.zhx.common.camera.tasks;
 
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -9,13 +10,15 @@ import org.zhx.common.camera.CameraModel;
 import org.zhx.common.util.CameraUtil;
 
 public class SensorProcessor implements SensorEventListener {
+    private Context mContext;
     private CameraModel.view mView;
     SensorManager sm;
     private int currentRad;
 
-    public SensorProcessor(CameraModel.view view) {
-        this.mView = view;
-        sm = (SensorManager) view.getContext().getSystemService(view.getContext().SENSOR_SERVICE);
+    public SensorProcessor(Context context, CameraModel.view mView) {
+        this.mContext = context;
+        this.mView = mView;
+        sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
     }
 
@@ -38,8 +41,7 @@ public class SensorProcessor implements SensorEventListener {
         if (ax < 0) {
             rad = 2 * Math.PI - rad;
         }
-        int uiRot = mView.getContext().getWindowManager().getDefaultDisplay().getRotation();
-        int degree = 90 * uiRot;
+        int uiRot = mView.getRotation();
         double uiRad = Math.PI / 2 * uiRot;
         rad -= uiRad;
         currentRad = (int) (180 * rad / Math.PI);

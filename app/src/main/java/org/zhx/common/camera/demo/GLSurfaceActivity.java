@@ -11,26 +11,25 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
+import androidx.exifinterface.media.ExifInterface;
 
+import org.zhx.common.camera.BaseActivity;
 import org.zhx.common.camera.CameraAction;
 import org.zhx.common.camera.CameraModel;
 import org.zhx.common.camera.CameraPresenter;
 import org.zhx.common.camera.CameraProxy;
 import org.zhx.common.camera.Constants;
-import org.zhx.common.camera.ImageData;
+import org.zhx.common.camera.tasks.ImageSearchProcessor;
+import org.zhx.common.camera.tasks.SensorProcessor;
 import org.zhx.common.camera.widget.CameraGLSurfaceView;
 import org.zhx.common.camera.widget.FocusRectView;
 import org.zhx.common.util.CameraUtil;
@@ -40,7 +39,6 @@ import org.zhx.common.util.ZCameraLog;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -57,14 +55,19 @@ public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListe
             R.drawable.ic_camera_top_bar_flash_torch_normal};
     private RelativeLayout.LayoutParams showLp;
     private RelativeLayout mRootView;
-    Point screenP, mPreviewPoint;
+    Point screenP;
     FocusRectView mFocusView;
+    private ImageSearchProcessor mImageSearchProcessor;
+    private SensorProcessor mSensorProcessor;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mPresenter = new CameraPresenter(this);
+        mImageSearchProcessor = new ImageSearchProcessor(this, this);
+        mSensorProcessor = new SensorProcessor(this, this);
         screenP = CameraUtil.getScreenMetrics(this);
+        getLifecycle().addObserver(mPresenter);
         setContentView(R.layout.activity_glsurface);
         getWindow().addFlags((WindowManager.LayoutParams.FLAG_FULLSCREEN));
         mShowImage = findViewById(R.id.z_base_camera_showImg);
@@ -80,7 +83,7 @@ public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListe
         mFlashImg.setOnClickListener(this);
         mShutterImg.setOnClickListener(this);
         initHolder();
-        mPresenter.showImages();
+        mImageSearchProcessor.showImags(Constants.FILE_DIR);
     }
 
     private void initHolder() {
@@ -95,17 +98,27 @@ public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListe
     }
 
     @Override
-    public void onCameraCreate(CameraProxy<Camera> proxy) throws IOException {
-        final RelativeLayout.LayoutParams preViewLp = (RelativeLayout.LayoutParams) mSurfaceView.getLayoutParams();
-        mPreviewPoint = new Point(proxy.getWidth(), proxy.getHeight());
-        preViewLp.width = mPreviewPoint.x;
-        preViewLp.height = mPreviewPoint.y;
-        mSurfaceView.post(new Runnable() {
+    public void onCameraCreate(final CameraProxy<Camera> proxy) throws IOException {
+        runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                final RelativeLayout.LayoutParams preViewLp = (RelativeLayout.LayoutParams) mSurfaceView.getLayoutParams();
+                int previewHeight = 0;
+                int previewWidth = 0;
+                if (preViewLp.width < preViewLp.height * proxy.getWidth() / proxy.getHeight()) {
+                    previewWidth = preViewLp.width;
+                    previewHeight = preViewLp.width * proxy.getHeight() / proxy.getWidth();
+                } else {
+                    previewWidth = preViewLp.height * proxy.getWidth() / proxy.getHeight();
+                    previewHeight = preViewLp.height;
+                }
+                preViewLp.width = previewWidth;
+                preViewLp.height = previewHeight;
+                screenP = new Point(previewWidth, previewHeight);
                 mSurfaceView.setLayoutParams(preViewLp);
             }
         });
+
         mSurfaceView.setCameraId(proxy.getCameraId());
         proxy.getCamera().setPreviewTexture(mSurfaceView.getSurface());
     }
@@ -172,6 +185,11 @@ public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListe
     }
 
     @Override
+    public int getDegree(boolean isFrontCamera) {
+        return mSensorProcessor.getDegree(isFrontCamera);
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
@@ -204,7 +222,7 @@ public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListe
         if (v == mSurfaceView) {
             if (mFocusView == null) {
                 mFocusView = new FocusRectView(this);
-                RelativeLayout.LayoutParams focusLp = new RelativeLayout.LayoutParams(mPreviewPoint.x, mPreviewPoint.y);
+                RelativeLayout.LayoutParams focusLp = new RelativeLayout.LayoutParams(screenP.x, screenP.y);
                 focusLp.addRule(RelativeLayout.CENTER_IN_PARENT);
                 addView(mRootView.getChildCount(), mFocusView, focusLp);
             }
@@ -236,8 +254,4 @@ public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListe
 
     }
 
-    @Override
-    public void onBackPressed() {
-        mPresenter.releaseCamera(CameraAction.ON_BACKPRESS);
-    }
 }
