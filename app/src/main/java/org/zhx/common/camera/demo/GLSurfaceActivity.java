@@ -21,7 +21,6 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityOptionsCompat;
-import androidx.exifinterface.media.ExifInterface;
 
 import org.zhx.common.camera.BaseActivity;
 import org.zhx.common.camera.CameraAction;
