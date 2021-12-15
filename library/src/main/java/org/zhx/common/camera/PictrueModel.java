@@ -13,7 +13,7 @@ public interface PictrueModel {
 
         void onSaveResult(Uri uri);
 
-        Uri saveDatas(int orientation, byte[] datas) throws IOException;
+        Uri saveDatas(int orientation, byte[] datas,boolean isFrontCamera) throws IOException;
 
     }
 }

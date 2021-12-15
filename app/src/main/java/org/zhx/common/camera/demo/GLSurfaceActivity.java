@@ -9,6 +9,7 @@ import android.hardware.Camera;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.view.MotionEvent;
 import android.view.View;
@@ -44,6 +45,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListener, CameraModel.view<Camera>, View.OnClickListener, GLSurfaceView.Renderer {
+    private static final long SWITCH_DELAY = 25;
     private ImageView mShowImage, mShutterImg, mFlashImg, mThumImag;
     private View animateHolder;
     private CameraGLSurfaceView mSurfaceView;
@@ -66,7 +68,6 @@ public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListe
         mPresenter = new CameraPresenter(this);
         mImageSearchProcessor = new ImageSearchProcessor(this, this);
         mSensorProcessor = new SensorProcessor(this, this);
-        screenP = CameraUtil.getScreenMetrics(this);
         getLifecycle().addObserver(mPresenter);
         setContentView(R.layout.activity_glsurface);
         getWindow().addFlags((WindowManager.LayoutParams.FLAG_FULLSCREEN));
@@ -132,7 +133,13 @@ public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListe
                 mPresenter.takePictrue();
                 break;
             case R.id.btn_switch_camera:
-                mPresenter.switchCamera();
+                mPresenter.releaseCamera(CameraAction.SWITCH_CAMERA);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mPresenter.startCamera(CameraAction.SWITCH_CAMERA);
+                    }
+                },SWITCH_DELAY);
                 break;
             case R.id.btn_flash_mode:
                 int position = mPresenter.chanageFlashMode();
@@ -150,7 +157,7 @@ public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListe
         }
     }
 
-    public void setImageData(Uri contentUri, boolean isAnimate) throws IOException {
+    public void showImageData(Uri contentUri, boolean isAnimate) throws IOException {
         final Bitmap bitmap = ImageUtil.getBitmapFormUri(this, contentUri);
         ZCameraLog.e("CameraPresenter", "....Camera...take complete..............." + System.currentTimeMillis());
         if (isAnimate) {

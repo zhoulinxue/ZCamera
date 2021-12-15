@@ -40,7 +40,7 @@ public class ImageUtil {
      * @author zhx
      */
     public static void recycleBitmap(Bitmap bitmap) {
-        if (!bitmap.isRecycled()) {
+        if ((null != bitmap) && !bitmap.isRecycled()) {
             bitmap.recycle();
         }
     }
@@ -279,6 +279,23 @@ public class ImageUtil {
                 (height + mCenterRect.height()) / 2 + stroke, mAreaPaint);
         canvas.drawRect(mCenterRect.right + stroke, (height - mCenterRect.height()) / 2 - stroke,
                 width, (height + mCenterRect.height()) / 2 + stroke, mAreaPaint);
+    }
+
+    public static byte[] flipFrontDatas(Context context, byte[] datas) {
+        Bitmap bitmap = null;
+        try {
+            bitmap = getBitmap(context, datas, false);
+            Matrix matrix = new Matrix();
+            matrix.postScale(1, -1);
+            Bitmap bm = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
+                    bitmap.getHeight(), matrix, false);
+            return bitmap2Bytes(bm, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            recycleBitmap(bitmap);
+        }
+        return datas;
     }
 
 

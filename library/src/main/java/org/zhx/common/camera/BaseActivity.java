@@ -8,6 +8,7 @@ import androidx.exifinterface.media.ExifInterface;
 
 import org.zhx.common.mvp.BaseView;
 import org.zhx.common.util.CameraUtil;
+import org.zhx.common.util.ImageUtil;
 import org.zhx.common.util.PermissionsUtil;
 
 import java.io.IOException;
@@ -31,13 +32,13 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
     public void onSearchResult(List<ImageData> imageDatas) {
         mImageDatas = imageDatas;
         try {
-            setImageData(imageDatas.get(0).getContentUri(), false);
+            showImageData(imageDatas.get(0).getContentUri(), false);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public abstract void setImageData(Uri contentUri, boolean b) throws IOException;
+    public abstract void showImageData(Uri contentUri, boolean b) throws IOException;
 
     @Override
     public void onSaveResult(Uri uri) {
@@ -46,7 +47,7 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
         }
         mImageDatas.add(0, new ImageData(uri));
         try {
-            setImageData(uri, true);
+            showImageData(uri, true);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -73,8 +74,14 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
     }
 
     @Override
-    public Uri saveDatas(int orientation, byte[] datas) throws IOException {
-        Uri uri = CameraUtil.saveImageData(this, datas, Constants.FILE_DIR);
+    public Uri saveDatas(int orientation, byte[] datas, boolean isFrontCamera) throws IOException {
+        byte[] finaldata = datas;
+
+        if (isFrontCamera) {
+            finaldata = ImageUtil.flipFrontDatas(this,datas);
+        }
+
+        Uri uri = CameraUtil.saveImageData(this, finaldata, Constants.FILE_DIR);
         ExifInterface exifInterface = new ExifInterface(getContentResolver().openFileDescriptor(uri, "rw", null).getFileDescriptor());
         exifInterface.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
         exifInterface.saveAttributes();

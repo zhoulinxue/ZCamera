@@ -17,13 +17,10 @@ import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
-import androidx.exifinterface.media.ExifInterface;
 
 import org.zhx.common.camera.BaseActivity;
 import org.zhx.common.camera.CameraAction;
@@ -156,7 +153,7 @@ public class MainActivity extends BaseActivity implements View.OnTouchListener, 
         mImageDatas.add(0, new ImageData(uri));
         if (uri != null) {
             try {
-                setImageData(uri, true);
+                showImageData(uri, true);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -168,7 +165,7 @@ public class MainActivity extends BaseActivity implements View.OnTouchListener, 
         return mSensorProcessor.getDegree(isFrontCamera);
     }
 
-    public void setImageData(Uri contentUri, boolean isAnimate) throws IOException {
+    public void showImageData(Uri contentUri, boolean isAnimate) throws IOException {
         final Bitmap bitmap = ImageUtil.getBitmapFormUri(this, contentUri);
         ZCameraLog.e("CameraPresenter", "....Camera...take complete..............." + System.currentTimeMillis());
         if (isAnimate) {

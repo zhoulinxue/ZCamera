@@ -51,7 +51,10 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         synchronized (mCameraLock) {
             if (CameraAction.SURFACE_CREATE == action) {
                 isSurfaceDestory = false;
+            } else if (CameraAction.SWITCH_CAMERA == action) {
+                isFrontCamera = !isFrontCamera;
             }
+
             if (mView.hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 ZCameraLog.e(TAG, action + "....Camera....start.......................");
                 if (openCamera()) {
@@ -74,25 +77,23 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
 
     private boolean openCamera() {
         try {
-
             if (!isFrontCamera) {
                 mCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
-
-                mCamera = Camera.open();
-
             } else {
                 Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
                 for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
                     Camera.getCameraInfo(i, cameraInfo);
                     if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
                         mCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
-                        mCamera = Camera.open(i);
                         isFrontCamera = true;
                     }
                 }
             }
+
+            mCamera = Camera.open(mCameraId);
             ZCameraLog.e(TAG, "open....." + (mCamera != null));
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
         return mCamera != null;
@@ -229,7 +230,6 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
 
     @Override
     public void switchCamera() {
-        isFrontCamera = !isFrontCamera;
         releaseCamera(CameraAction.SWITCH_CAMERA);
         startCamera(CameraAction.SWITCH_CAMERA);
     }

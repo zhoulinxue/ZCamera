@@ -42,7 +42,7 @@ public class ImageSaveProcessor {
                             break;
                     }
                 }
-                uri = mView.saveDatas(orientation, datas);
+                uri = mView.saveDatas(orientation, datas,isFrontCamera);
             } catch (Exception e) {
                 e.printStackTrace();
             }

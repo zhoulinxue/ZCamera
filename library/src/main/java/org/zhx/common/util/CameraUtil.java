@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -19,6 +20,8 @@ import android.view.Surface;
 
 import androidx.core.content.FileProvider;
 import androidx.exifinterface.media.ExifInterface;
+
+import org.zhx.common.camera.BaseActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -267,8 +270,4 @@ public class CameraUtil {
         }
         return result;
     }
-
-
-
-
 }
