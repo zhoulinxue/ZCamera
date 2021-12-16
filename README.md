@@ -21,7 +21,7 @@
    
    
      Camera camera = Camera.open();
-     //Camera camera = Camera.open(i); 打开前置 用position 去打开
+     //Camera camera = Camera.open(i); 打开前置 Id 去打开
    
    
    2、设置相机
