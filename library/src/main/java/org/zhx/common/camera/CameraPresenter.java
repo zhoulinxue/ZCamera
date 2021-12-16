@@ -155,39 +155,19 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         List<Camera.Size> vSizes = parameters.getSupportedPreviewSizes();
 
         List<Camera.Size> pSizes = parameters.getSupportedPictureSizes();
-        Camera.Size previewSize = getSuitableSize(vSizes);
-        Camera.Size pictureSize = getSuitableSize(pSizes);
-        ZCameraLog.e(TAG, "SupportedPreviewSize, width: " + mPreviewWidth + ", height: " + mPreviewHeight);
+        Camera.Size previewSize = mView.getSuitableSize(vSizes);
+        ZCameraLog.e(TAG, "SupportedPreviewSize, width: " + previewSize.width + ", height: " + previewSize.height);
+        Camera.Size pictureSize = mView.getSuitableSize(pSizes);
+
 
         parameters.setPreviewSize(previewSize.width, previewSize.height); // 设置预览图像大小
         parameters.setPictureSize(pictureSize.width, pictureSize.height);
         mCamera.setParameters(parameters);
         if (mView != null) {
-            mProxy = new CameraProxy<>(mCamera, mPreviewWidth, mPreviewHeight, mCameraId);
+            mProxy = new CameraProxy<>(mCamera, previewSize.width, previewSize.height, mCameraId);
             mView.onCameraCreate(mProxy);
         }
     }
-
-    private Camera.Size getSuitableSize(List<Camera.Size> sizes) {
-        int minDelta = Integer.MAX_VALUE; // 最小的差值，初始值应该设置大点保证之后的计算中会被重置
-        int index = 0; // 最小的差值对应的索引坐标
-        for (int i = 0; i < sizes.size(); i++) {
-            Camera.Size previewSize = sizes.get(i);
-            // 找到一个与设置的分辨率差值最小的相机支持的分辨率大小
-            if (previewSize.width * mPreviewScale == previewSize.height) {
-                int delta = Math.abs(mPreviewWidth - previewSize.width);
-                if (delta == 0) {
-                    return previewSize;
-                }
-                if (minDelta > delta) {
-                    minDelta = delta;
-                    index = i;
-                }
-            }
-        }
-        return sizes.get(index); // 默认返回与设置的分辨率最接近的预览尺寸
-    }
-
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     public void onResume() {

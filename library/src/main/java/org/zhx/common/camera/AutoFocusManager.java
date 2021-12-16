@@ -45,7 +45,7 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback {
     public AutoFocusManager(Camera camera, Camera.AutoFocusCallback callback) {
         this.camera = camera;
         this.mCallback = callback;
-        start();
+//        start();
     }
 
     @Override

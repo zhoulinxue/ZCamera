@@ -1,6 +1,7 @@
 package org.zhx.common.camera;
 
 import android.graphics.Bitmap;
+import android.hardware.Camera;
 import android.net.Uri;
 import android.view.View;
 
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.zhx.common.mvp.BaseView;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface CameraModel {
 
@@ -42,5 +44,6 @@ public interface CameraModel {
 
         int getDegree(boolean isFrontCamera);
 
+        Camera.Size getSuitableSize(List<Camera.Size> sizes);
     }
 }

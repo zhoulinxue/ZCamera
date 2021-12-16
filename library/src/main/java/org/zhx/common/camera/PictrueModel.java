@@ -1,5 +1,6 @@
 package org.zhx.common.camera;
 
+import android.hardware.Camera;
 import android.net.Uri;
 
 import org.zhx.common.mvp.BaseView;
@@ -14,6 +15,5 @@ public interface PictrueModel {
         void onSaveResult(Uri uri);
 
         Uri saveDatas(int orientation, byte[] datas,boolean isFrontCamera) throws IOException;
-
     }
 }

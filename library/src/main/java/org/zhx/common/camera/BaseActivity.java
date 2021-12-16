@@ -1,5 +1,6 @@
 package org.zhx.common.camera;
 
+import android.hardware.Camera;
 import android.net.Uri;
 import android.widget.Toast;
 
@@ -10,6 +11,7 @@ import org.zhx.common.mvp.BaseView;
 import org.zhx.common.util.CameraUtil;
 import org.zhx.common.util.ImageUtil;
 import org.zhx.common.util.PermissionsUtil;
+import org.zhx.common.util.ZCameraLog;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -78,13 +80,15 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
         byte[] finaldata = datas;
 
         if (isFrontCamera) {
-            finaldata = ImageUtil.flipFrontDatas(this,datas);
+            finaldata = ImageUtil.flipFrontDatas(this, datas);
         }
 
         Uri uri = CameraUtil.saveImageData(this, finaldata, Constants.FILE_DIR);
         ExifInterface exifInterface = new ExifInterface(getContentResolver().openFileDescriptor(uri, "rw", null).getFileDescriptor());
         exifInterface.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
         exifInterface.saveAttributes();
+        ZCameraLog.e("saveDatas,uri:" + uri.toString());
         return uri;
     }
+
 }

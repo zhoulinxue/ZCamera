@@ -39,6 +39,7 @@ import org.zhx.common.util.ZCameraLog;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainActivity extends BaseActivity implements View.OnTouchListener, CameraModel.view<Camera>, View.OnClickListener, SurfaceHolder.Callback {
@@ -163,6 +164,11 @@ public class MainActivity extends BaseActivity implements View.OnTouchListener, 
     @Override
     public int getDegree(boolean isFrontCamera) {
         return mSensorProcessor.getDegree(isFrontCamera);
+    }
+
+    @Override
+    public Camera.Size getSuitableSize(List<Camera.Size> sizes) {
+        return null;
     }
 
     public void showImageData(Uri contentUri, boolean isAnimate) throws IOException {

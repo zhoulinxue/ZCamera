@@ -27,6 +27,7 @@ import org.zhx.common.camera.CameraAction;
 import org.zhx.common.camera.CameraModel;
 import org.zhx.common.camera.CameraPresenter;
 import org.zhx.common.camera.CameraProxy;
+import org.zhx.common.camera.CameraRatio;
 import org.zhx.common.camera.Constants;
 import org.zhx.common.camera.tasks.ImageSearchProcessor;
 import org.zhx.common.camera.tasks.SensorProcessor;
@@ -39,6 +40,7 @@ import org.zhx.common.util.ZCameraLog;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -56,14 +58,16 @@ public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListe
             R.drawable.ic_camera_top_bar_flash_torch_normal};
     private RelativeLayout.LayoutParams showLp;
     private RelativeLayout mRootView;
-    Point screenP;
+    Point screenP, mPreviewPoint;
     FocusRectView mFocusView;
     private ImageSearchProcessor mImageSearchProcessor;
     private SensorProcessor mSensorProcessor;
+    protected CameraRatio mRatio = CameraRatio.SCANLE_1_1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        screenP = CameraUtil.getScreenMetrics(this);
         mPresenter = new CameraPresenter(this);
         mImageSearchProcessor = new ImageSearchProcessor(this, this);
         mSensorProcessor = new SensorProcessor(this, this);
@@ -104,17 +108,17 @@ public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListe
             public void run() {
                 final RelativeLayout.LayoutParams preViewLp = (RelativeLayout.LayoutParams) mSurfaceView.getLayoutParams();
                 int previewHeight = 0;
-                int previewWidth = 0;
-                if (preViewLp.width < preViewLp.height * proxy.getWidth() / proxy.getHeight()) {
-                    previewWidth = preViewLp.width;
-                    previewHeight = preViewLp.width * proxy.getHeight() / proxy.getWidth();
+                int previewWidth = screenP.x;
+
+                if (proxy.getWidth() < proxy.getHeight()) {
+                    previewHeight = screenP.x * proxy.getHeight() / proxy.getWidth();
                 } else {
-                    previewWidth = preViewLp.height * proxy.getWidth() / proxy.getHeight();
-                    previewHeight = preViewLp.height;
+                    previewHeight = screenP.x * proxy.getWidth() / proxy.getHeight();
                 }
+
+                mPreviewPoint = new Point(previewWidth, previewHeight);
                 preViewLp.width = previewWidth;
                 preViewLp.height = previewHeight;
-                screenP = new Point(previewWidth, previewHeight);
                 mSurfaceView.setLayoutParams(preViewLp);
             }
         });
@@ -138,7 +142,7 @@ public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListe
                     public void run() {
                         mPresenter.startCamera(CameraAction.SWITCH_CAMERA);
                     }
-                },SWITCH_DELAY);
+                }, SWITCH_DELAY);
                 break;
             case R.id.btn_flash_mode:
                 int position = mPresenter.chanageFlashMode();
@@ -193,6 +197,25 @@ public class GLSurfaceActivity extends BaseActivity implements View.OnTouchListe
     @Override
     public int getDegree(boolean isFrontCamera) {
         return mSensorProcessor.getDegree(isFrontCamera);
+    }
+
+    @Override
+    public Camera.Size getSuitableSize(List<Camera.Size> sizes) {
+        int minDelta = Integer.MAX_VALUE; // 最小的差值，初始值应该设置大点保证之后的计算中会被重置
+        int index = 0; // 最小的差值对应的索引坐标
+        for (int i = 0; i < sizes.size(); i++) {
+            Camera.Size previewSize = sizes.get(i);
+            // 找到一个与设置的分辨率差值最小的相机支持的分辨率大小
+            ZCameraLog.e("getSuitableSize, width:" + previewSize.width + ", height:" + previewSize.height);
+            if (previewSize.width * mRatio.getHeightRatio() / mRatio.getWidthRatio() == previewSize.height) {
+                int delta = Math.abs(screenP.x - previewSize.height);
+                if (minDelta >= delta) {
+                    minDelta = delta;
+                    index = i;
+                }
+            }
+        }
+        return sizes.get(index); // 默认返回与设置的分辨率最接近的预览尺寸
     }
 
     @Override

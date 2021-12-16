@@ -112,6 +112,7 @@ public class CameraUtil {
     public static Uri saveImageData(Context context, byte[] data, String path) throws IOException {
         Uri uri = null;
         String name = path + System.currentTimeMillis() + ".jpg";
+        ZCameraLog.e("saveImageData, api > 29:  " + (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ContentValues values = new ContentValues();
             values.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
