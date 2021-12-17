@@ -14,11 +14,8 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import org.zhx.common.camera.ImageData;
 import org.zhx.common.camera.ImageLoaderModel;
-import org.zhx.common.camera.tasks.ImageSearchProcessor;
 import org.zhx.common.camera.tasks.ImageloaderProcessor;
-import org.zhx.common.util.ImageUtil;
 
-import java.io.IOException;
 import java.util.List;
 
 public class PictrueAdapter extends BaseQuickAdapter<ImageData, BaseViewHolder> {

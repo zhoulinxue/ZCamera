@@ -37,7 +37,7 @@ public interface CameraModel {
     public interface view<T> extends PictrueModel.view {
 
 
-        void onCameraCreate(CameraProxy<T> proxy) throws IOException;
+        void onCameraCreate(CameraProxy<T> proxy);
 
 
         void onTakeComplete();

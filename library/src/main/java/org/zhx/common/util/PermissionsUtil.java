@@ -1,9 +1,12 @@
 package org.zhx.common.util;
 
+import android.app.Activity;
 import android.content.pm.PackageManager;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 
 /**
  * Name: PermissionsUtil
@@ -24,19 +27,18 @@ public class PermissionsUtil {
         }
     }
 
-    public static boolean hasPermission(AppCompatActivity activity, String permission) {
+    public static boolean hasPermission(Activity activity, String permission) {
         return ContextCompat.checkSelfPermission(activity, permission)
                 == PackageManager.PERMISSION_GRANTED;
     }
 
     public static void requestPermission(AppCompatActivity context, String permission, int resultCode) {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(context, permission)) {
-            requestPermissions(context,
-                    new String[]{permission}, resultCode);
-        } else {
-            requestPermissions(context,
-                    new String[]{permission}, resultCode);
-        }
+        requestPermissions(context,
+                new String[]{permission}, resultCode);
+    }
+
+    public static void requestPermission(Fragment fragment, String permission, int resultCode) {
+        fragment.requestPermissions(new String[]{permission}, resultCode);
     }
 
     public static void requestPermissions(AppCompatActivity context, String[] permissions, int resultCode) {
