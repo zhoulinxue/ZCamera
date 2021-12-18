@@ -36,12 +36,7 @@ public class ImageloaderProcessor {
 
         @Override
         protected Bitmap doInBackground(Object... objects) {
-            try {
-                return ImageUtil.getBitmapFormUri(mContext, uri);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
+            return ImageUtil.getBitmapFormUri(mContext, uri);
         }
 
         @Override

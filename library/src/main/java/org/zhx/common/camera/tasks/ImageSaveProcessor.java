@@ -7,6 +7,7 @@ import androidx.exifinterface.media.ExifInterface;
 
 import org.zhx.common.camera.CameraModel;
 import org.zhx.common.camera.Constants;
+import org.zhx.common.camera.ImageData;
 import org.zhx.common.util.CameraUtil;
 import org.zhx.common.util.ZCameraLog;
 
@@ -19,7 +20,7 @@ public class ImageSaveProcessor {
         this.mView = view;
     }
 
-    private class SaveImageTask extends AsyncTask<Object, Object, Uri> {
+    private class SaveImageTask extends AsyncTask<Object, Object, ImageData> {
         private byte[] datas;
         private int orientation;
         private boolean isFrontCamera;
@@ -31,7 +32,7 @@ public class ImageSaveProcessor {
         }
 
         @Override
-        protected Uri doInBackground(Object... objects) {
+        protected ImageData doInBackground(Object... objects) {
             ZCameraLog.e(TAG, "....Camera...save_process_start..............." + System.currentTimeMillis());
             Uri uri = null;
             try {
@@ -42,18 +43,19 @@ public class ImageSaveProcessor {
                             break;
                     }
                 }
-                uri = mView.saveDatas(orientation, datas,isFrontCamera);
+                uri = mView.saveDatas(orientation, datas, isFrontCamera);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return uri;
+            ImageData data = new ImageData(uri, datas);
+            mView.onSaveResult(data);
+            return data;
         }
 
         @Override
-        protected void onPostExecute(Uri uri) {
-            mView.onSaveResult(uri);
+        protected void onPostExecute(ImageData data) {
             ZCameraLog.e(TAG, "....Camera....ImageSaveProcessor....result..." + System.currentTimeMillis());
-
+            mView.showThumImage(data.getContentUri());
         }
     }
 

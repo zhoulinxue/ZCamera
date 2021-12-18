@@ -73,14 +73,21 @@ public class ImageSearchProcessor {
                 if (!TextUtils.isEmpty(displayName) && !TextUtils.isEmpty(path) && displayName.contains(path))
                     dataList.add(data);
             }
+            try {
+                if (null != dataList && dataList.size() != 0) {
+                    mView.onSearchResult(dataList);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             return dataList;
         }
 
         @Override
         protected void onPostExecute(List<ImageData> datas) {
-            if (null != datas && datas.size() > 0)
-                mView.onSearchResult(datas);
+            if (datas == null || datas.size() == 0)
+                mView.onEmptyFile();
         }
     }
 

@@ -1,9 +1,12 @@
 package org.zhx.common.camera;
 
+import android.graphics.ImageDecoder;
 import android.hardware.Camera;
 import android.net.Uri;
+import android.os.Build;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.exifinterface.media.ExifInterface;
 
@@ -42,14 +45,15 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
 
     public abstract void showImageData(Uri contentUri, boolean b) throws IOException;
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
-    public void onSaveResult(Uri uri) {
+    public void onSaveResult(ImageData data) {
         if (mImageDatas == null) {
             mImageDatas = new ArrayList<>();
         }
-        mImageDatas.add(0, new ImageData(uri));
+        mImageDatas.add(0, data);
         try {
-            showImageData(uri, true);
+            showImageData(data.getContentUri(), true);
         } catch (IOException e) {
             e.printStackTrace();
         }

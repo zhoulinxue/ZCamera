@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
@@ -25,6 +26,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityOptionsCompat;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.CustomViewTarget;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.request.transition.Transition;
+import com.davemorrissey.labs.subscaleview.ImageSource;
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
+
 import org.zhx.common.camera.BaseFragment;
 import org.zhx.common.camera.CameraAction;
 import org.zhx.common.camera.CameraModel;
@@ -41,9 +53,9 @@ import org.zhx.common.util.ImageUtil;
 import org.zhx.common.util.PermissionsUtil;
 import org.zhx.common.util.ZCameraLog;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -95,7 +107,6 @@ public class CameraFrangment extends BaseFragment implements View.OnTouchListene
 
         mShowImage = view.findViewById(R.id.z_base_camera_showImg);
         animateHolder = view.findViewById(R.id.animate_place_holder);
-        showLp = (RelativeLayout.LayoutParams) mShowImage.getLayoutParams();
         mShutterImg = view.findViewById(R.id.z_take_pictrue_img);
         mRootView = view.findViewById(R.id.camera_root_layout);
 
@@ -104,14 +115,14 @@ public class CameraFrangment extends BaseFragment implements View.OnTouchListene
         } else {
             mSurfaceView = new CameraGLSurfaceView(getActivity());
         }
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        lp.addRule(RelativeLayout.CENTER_IN_PARENT);
-        mRootView.addView(mSurfaceView, lp);
+
+        showLp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        showLp.addRule(RelativeLayout.CENTER_IN_PARENT);
+        mRootView.addView(mSurfaceView, showLp);
         view.findViewById(R.id.btn_switch_camera).setOnClickListener(this);
         mFlashImg = view.findViewById(R.id.btn_flash_mode);
         mThumImag = view.findViewById(R.id.z_thumil_img);
         mThumImag.setOnClickListener(this);
-        mFlashImg.setOnClickListener(this);
         mShutterImg.setOnClickListener(this);
         initHolder();
         mImageSearchProcessor.showImags(Constants.FILE_DIR);
@@ -201,33 +212,46 @@ public class CameraFrangment extends BaseFragment implements View.OnTouchListene
         }
     }
 
-    public void showImageData(Uri contentUri, boolean isAnimate) throws IOException {
-        final Bitmap bitmap = ImageUtil.getBitmapFormUri(getActivity(), contentUri);
-        ZCameraLog.e("CameraPresenter", "....Camera...take complete..............." + System.currentTimeMillis());
-        if (isAnimate) {
-            mShowImage.setImageBitmap(bitmap);
-            mShowImage.animate()
-                    .translationX(-(screenP.x / 2 + mThumImag.getX()) + CameraUtil.dip2px(getActivity(), 45))
-                    .translationY(screenP.y / 2 - mThumImag.getY() + mThumImag.getHeight() - CameraUtil.dip2px(getActivity(), 55))
-                    .scaleX(0.01f)
-                    .scaleY(0.01f)
-                    .setDuration(90)
-                    .withLayer()
-                    .withEndAction(new Runnable() {
-                        @Override
-                        public void run() {
+    @Override
+    public void onEmptyFile() {
+        mThumImag.setImageResource(R.mipmap.ic_launcher);
+    }
+
+    public void showImageData(Uri uri) {
+        Glide.with(getActivity()).asBitmap().override(mThumImag.getHeight()).load(uri).into(mThumImag);
+    }
+
+    @Override
+    public void showThumImage(final Uri uri) {
+        ZCameraLog.e("....showThumImage..............." + System.currentTimeMillis());
+        Glide.with(getActivity()).asBitmap().override(mThumImag.getHeight()).load(uri).addListener(new RequestListener<Bitmap>() {
+            @Override
+            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+                return false;
+            }
+
+            @Override
+            public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+                ZCameraLog.e("....Camera...load end...............,width:" + resource.getWidth() + ",height:" + resource.getHeight() + ",  timetemp: " + System.currentTimeMillis());
+                mShowImage.animate()
+                        .translationX(-(screenP.x / 2 + mThumImag.getX()) + CameraUtil.dip2px(getActivity(), 45))
+                        .translationY(screenP.y / 2 - mThumImag.getY() + mThumImag.getHeight() - CameraUtil.dip2px(getActivity(), 55))
+                        .scaleX(0.01f)
+                        .scaleY(0.01f)
+                        .setDuration(90)
+                        .withLayer()
+                        .withEndAction(() -> {
                             mRootView.removeView(mShowImage);
+                            mThumImag.setImageBitmap(resource);
                             mShowImage.setImageBitmap(null);
-                            mThumImag.setImageBitmap(bitmap);
                             mShowImage = new ImageView(getActivity());
                             mShowImage.setId(R.id.z_base_camera_showImg);
                             addView(mRootView.getChildCount(), mShowImage, showLp);
-                            ZCameraLog.e("CameraPresenter", "....Camera...show end..............." + System.currentTimeMillis());
-                        }
-                    }).setInterpolator(new AccelerateInterpolator()).start();
-        } else {
-            mThumImag.setImageBitmap(bitmap);
-        }
+                            ZCameraLog.e("....Camera...show end..............." + System.currentTimeMillis());
+                        }).setInterpolator(new AccelerateInterpolator()).start();
+                return false;
+            }
+        }).into(mShowImage);
     }
 
     @Override
@@ -292,7 +316,7 @@ public class CameraFrangment extends BaseFragment implements View.OnTouchListene
         if (v == mSurfaceView) {
             if (mFocusView == null) {
                 mFocusView = new FocusRectView(getActivity());
-                RelativeLayout.LayoutParams focusLp = new RelativeLayout.LayoutParams(screenP.x, screenP.y);
+                RelativeLayout.LayoutParams focusLp = new RelativeLayout.LayoutParams(mPreviewPoint.x, mPreviewPoint.y);
                 focusLp.addRule(RelativeLayout.CENTER_IN_PARENT);
                 addView(mRootView.getChildCount(), mFocusView, focusLp);
             }

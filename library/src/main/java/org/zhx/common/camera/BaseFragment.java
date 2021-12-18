@@ -1,8 +1,15 @@
 package org.zhx.common.camera;
 
+import android.content.ContentResolver;
+import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.os.Build;
+import android.os.ParcelFileDescriptor;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
 
@@ -13,6 +20,7 @@ import org.zhx.common.util.PermissionsUtil;
 import org.zhx.common.util.ZCameraLog;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,29 +37,32 @@ public abstract class BaseFragment extends Fragment implements BaseView, Pictrue
         });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
-    public void onSearchResult(List<ImageData> imageDatas) {
+    public void onSearchResult(List<ImageData> imageDatas) throws Exception {
         mImageDatas = imageDatas;
-        try {
-            showImageData(imageDatas.get(0).getContentUri(), false);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    showImageData(mImageDatas.get(0).getContentUri());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
     }
 
-    public abstract void showImageData(Uri contentUri, boolean b) throws IOException;
+    public abstract void showImageData(Uri uri) throws IOException;
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
-    public void onSaveResult(Uri uri) {
+    public void onSaveResult(final ImageData data) {
         if (mImageDatas == null) {
             mImageDatas = new ArrayList<>();
         }
-        mImageDatas.add(0, new ImageData(uri));
-        try {
-            showImageData(uri, true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        mImageDatas.add(0, data);
     }
 
     @Override
@@ -71,23 +82,27 @@ public abstract class BaseFragment extends Fragment implements BaseView, Pictrue
 
     @Override
     public int getRotation() {
+        if (getActivity() == null) {
+            return 0;
+        }
         return getActivity().getWindowManager().getDefaultDisplay().getRotation();
     }
 
     @Override
     public Uri saveDatas(int orientation, byte[] datas, boolean isFrontCamera) throws IOException {
-        byte[] finaldata = datas;
-
-        if (isFrontCamera) {
-            finaldata = ImageUtil.flipFrontDatas(getActivity(), datas);
-        }
-
-        Uri uri = CameraUtil.saveImageData(getActivity(), finaldata, Constants.FILE_DIR);
-        ExifInterface exifInterface = new ExifInterface(getActivity().getContentResolver().openFileDescriptor(uri, "rw", null).getFileDescriptor());
+        Uri uri = CameraUtil.saveImageData(getActivity(), datas, Constants.FILE_DIR);
+        ContentResolver provider = getActivity().getContentResolver();
+        ParcelFileDescriptor descriptor = provider.openFileDescriptor(uri, "rw", null);
+        ExifInterface exifInterface = new ExifInterface(descriptor.getFileDescriptor());
         exifInterface.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
         exifInterface.saveAttributes();
-        ZCameraLog.e("saveDatas,uri:" + uri.toString());
+        ZCameraLog.e("saveDatas,uri:" + uri.toString() + "........." + System.currentTimeMillis());
         return uri;
+    }
+
+    @Override
+    public byte[] flipDatas(byte[] datas) {
+        return ImageUtil.flipFrontDatas(getActivity(), datas);
     }
 
     protected void runOnUiThread(Runnable runnable) {

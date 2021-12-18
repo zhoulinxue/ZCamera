@@ -11,12 +11,19 @@ public class ImageData implements Parcelable {
     private String displayName;
     private Date dateAdded;
     private Uri contentUri;
+    private byte[] datas;
 
     public ImageData() {
     }
 
+    public ImageData(Uri contentUri, byte[] datas) {
+        this.contentUri = contentUri;
+        this.datas = datas;
+    }
+
     public ImageData(Uri contentUri) {
         this.contentUri = contentUri;
+
     }
 
     protected ImageData(Parcel in) {

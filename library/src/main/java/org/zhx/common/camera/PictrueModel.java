@@ -10,10 +10,14 @@ import java.util.List;
 
 public interface PictrueModel {
     public interface view extends BaseView {
-        void onSearchResult(List<ImageData> imageDatas);
+        void onSearchResult(List<ImageData> imageDatas) throws Exception;
 
-        void onSaveResult(Uri uri);
+        void onSaveResult(ImageData data) ;
 
         Uri saveDatas(int orientation, byte[] datas,boolean isFrontCamera) throws IOException;
+
+        void onEmptyFile();
+
+        byte[] flipDatas(byte[] datas);
     }
 }

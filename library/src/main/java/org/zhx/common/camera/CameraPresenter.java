@@ -158,7 +158,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         Camera.Size previewSize = mView.getSuitableSize(vSizes);
         ZCameraLog.e(TAG, "SupportedPreviewSize, width: " + previewSize.width + ", height: " + previewSize.height);
         Camera.Size pictureSize = mView.getSuitableSize(pSizes);
-
+        ZCameraLog.e(TAG, "SupportedPictrueSize, width: " + pictureSize.width + ", height: " + pictureSize.height);
 
         parameters.setPreviewSize(previewSize.width, previewSize.height); // 设置预览图像大小
         parameters.setPictureSize(pictureSize.width, pictureSize.height);
@@ -221,7 +221,11 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
             public void onPictureTaken(byte[] data, Camera camera) {
                 ZCameraLog.e(TAG, "....Camera...takePicture......................." + System.currentTimeMillis());
                 mView.onTakeComplete();
-                mImageSaveProcessor.excute(data, degree, isFrontCamera);
+                byte[] finalDatas = data;
+                if (isFrontCamera) {
+                    finalDatas = mView.flipDatas(data);
+                }
+                mImageSaveProcessor.excute(finalDatas, degree, isFrontCamera);
                 mCamera.startPreview();
             }
         });

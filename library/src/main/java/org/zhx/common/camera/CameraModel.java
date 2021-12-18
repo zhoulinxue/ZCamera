@@ -45,5 +45,7 @@ public interface CameraModel {
         int getDegree(boolean isFrontCamera);
 
         Camera.Size getSuitableSize(List<Camera.Size> sizes);
+
+        void showThumImage(Uri uri);
     }
 }
