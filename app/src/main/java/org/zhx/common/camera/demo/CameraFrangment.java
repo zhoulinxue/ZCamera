@@ -129,7 +129,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
         } else {
             mHolder = mSurfaceView.getHolder();
             mHolder.addCallback(this);
-            mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+//            mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         }
     }
 
