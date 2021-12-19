@@ -94,7 +94,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
         super.onViewCreated(view, savedInstanceState);
 
         Bundle bundle = getArguments();
-        if (null != bundle) {
+        if (null != bundle && bundle.containsKey(SURFACE_TYPE)) {
             type = bundle.getInt(SURFACE_TYPE);
         }
 
