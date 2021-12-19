@@ -1,9 +1,6 @@
 package org.zhx.common.camera;
 
 import android.content.ContentResolver;
-import android.graphics.Bitmap;
-import android.graphics.ImageDecoder;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;

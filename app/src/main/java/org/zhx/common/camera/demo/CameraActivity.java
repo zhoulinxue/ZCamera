@@ -7,8 +7,6 @@ import android.view.WindowManager;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.zhx.common.util.ZCameraLog;
-
 public class CameraActivity extends AppCompatActivity {
     private CameraFrangment frangment;
 
