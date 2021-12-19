@@ -118,6 +118,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
         mThumImag = view.findViewById(R.id.z_thumil_img);
         mThumImag.setOnClickListener(this);
         mShutterImg.setOnClickListener(this);
+        mFlashImg.setOnClickListener(this);
         initHolder();
         mImageSearchProcessor.showImags(Constants.FILE_DIR);
     }
@@ -297,7 +298,9 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     GestureDetector mDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
         @Override
         public boolean onSingleTapUp(MotionEvent event) {
+            ZCameraLog.e("onSingleTapUp, event");
             if (isSurfaceView(event)) {
+                ZCameraLog.e("onSingleTapUp, isSurfaceView == true" );
                 if (mFocusView == null) {
                     mFocusView = new FocusRectView(getActivity());
                     RelativeLayout.LayoutParams focusLp = new RelativeLayout.LayoutParams(screenP.x, screenP.y);
