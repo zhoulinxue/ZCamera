@@ -213,12 +213,6 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         }
     }
 
-    @Override
-    public void switchCamera() {
-        releaseCamera(CameraAction.SWITCH_CAMERA);
-        startCamera(CameraAction.SWITCH_CAMERA);
-    }
-
     private void takeRequest() {
         final int degree = mView.getDegree(isFrontCamera);
         mCamera.takePicture(null, null, new Camera.PictureCallback() {

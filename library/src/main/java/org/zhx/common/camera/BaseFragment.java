@@ -6,9 +6,14 @@ import android.graphics.ImageDecoder;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.ParcelFileDescriptor;
+import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
@@ -26,6 +31,13 @@ import java.util.List;
 
 public abstract class BaseFragment extends Fragment implements BaseView, PictrueModel.view {
     protected List<ImageData> mImageDatas;
+    protected Handler mHandler;
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        mHandler = new Handler();
+        super.onViewCreated(view, savedInstanceState);
+    }
 
     @Override
     public void onError(final int msg) {

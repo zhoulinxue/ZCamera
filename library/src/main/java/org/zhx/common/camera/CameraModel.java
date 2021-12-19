@@ -22,8 +22,6 @@ public interface CameraModel {
 
         public void releaseCamera(CameraAction action);
 
-        public void switchCamera();
-
         public void takePictrue();
 
         public int chanageFlashMode();

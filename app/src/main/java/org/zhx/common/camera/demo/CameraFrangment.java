@@ -53,7 +53,7 @@ import java.util.List;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class CameraFrangment extends BaseFragment implements View.OnTouchListener, CameraModel.view<Camera>, View.OnClickListener, GLSurfaceView.Renderer, SurfaceHolder.Callback {
+public class CameraFrangment extends BaseFragment implements CameraModel.view<Camera>, View.OnClickListener, GLSurfaceView.Renderer, SurfaceHolder.Callback {
     public static final int SURFACEVIEW = 1;
     public static final int GL_SURFACEVIEW = 2;
     public static final String SURFACE_TYPE = "preview_type";
@@ -140,34 +140,31 @@ public class CameraFrangment extends BaseFragment implements View.OnTouchListene
 
     @Override
     public void onCameraCreate(final CameraProxy<Camera> proxy) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                final RelativeLayout.LayoutParams preViewLp = (RelativeLayout.LayoutParams) mSurfaceView.getLayoutParams();
-                int previewHeight = 0;
-                int previewWidth = screenP.x;
+        runOnUiThread(() -> {
+            final RelativeLayout.LayoutParams preViewLp = (RelativeLayout.LayoutParams) mSurfaceView.getLayoutParams();
+            int previewHeight = 0;
+            int previewWidth = screenP.x;
 
-                if (proxy.getWidth() < proxy.getHeight()) {
-                    previewHeight = screenP.x * proxy.getHeight() / proxy.getWidth();
+            if (proxy.getWidth() < proxy.getHeight()) {
+                previewHeight = screenP.x * proxy.getHeight() / proxy.getWidth();
+            } else {
+                previewHeight = screenP.x * proxy.getWidth() / proxy.getHeight();
+            }
+
+            mPreviewPoint = new Point(previewWidth, previewHeight);
+            preViewLp.width = previewWidth;
+            preViewLp.height = previewHeight;
+            mSurfaceView.setLayoutParams(preViewLp);
+            try {
+                if (mSurfaceView instanceof CameraGLSurfaceView) {
+                    ((CameraGLSurfaceView) mSurfaceView).setCameraId(proxy.getCameraId());
+                    proxy.getCamera().setPreviewTexture(((CameraGLSurfaceView) mSurfaceView).getSurface());
                 } else {
-                    previewHeight = screenP.x * proxy.getWidth() / proxy.getHeight();
+                    mSurfaceView.setLayoutParams(preViewLp);
+                    proxy.getCamera().setPreviewDisplay(mHolder);
                 }
-
-                mPreviewPoint = new Point(previewWidth, previewHeight);
-                preViewLp.width = previewWidth;
-                preViewLp.height = previewHeight;
-                mSurfaceView.setLayoutParams(preViewLp);
-                try {
-                    if (mSurfaceView instanceof CameraGLSurfaceView) {
-                        ((CameraGLSurfaceView) mSurfaceView).setCameraId(proxy.getCameraId());
-                        proxy.getCamera().setPreviewTexture(((CameraGLSurfaceView) mSurfaceView).getSurface());
-                    } else {
-                        mSurfaceView.setLayoutParams(preViewLp);
-                        proxy.getCamera().setPreviewDisplay(mHolder);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
 
@@ -182,12 +179,7 @@ public class CameraFrangment extends BaseFragment implements View.OnTouchListene
                 break;
             case R.id.btn_switch_camera:
                 mPresenter.releaseCamera(CameraAction.SWITCH_CAMERA);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        mPresenter.startCamera(CameraAction.SWITCH_CAMERA);
-                    }
-                }, SWITCH_DELAY);
+                mHandler.postDelayed(() -> mPresenter.startCamera(CameraAction.SWITCH_CAMERA), SWITCH_DELAY);
                 break;
             case R.id.btn_flash_mode:
                 int position = mPresenter.chanageFlashMode();
@@ -226,8 +218,8 @@ public class CameraFrangment extends BaseFragment implements View.OnTouchListene
             public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
                 ZCameraLog.e("....Camera...load end...............,width:" + resource.getWidth() + ",height:" + resource.getHeight() + ",  timetemp: " + System.currentTimeMillis());
                 mShowImage.animate()
-                        .translationX(-(screenP.x / 2 + mThumImag.getX()) + CameraUtil.dip2px(getActivity(), 45))
-                        .translationY(screenP.y / 2 - mThumImag.getY() + mThumImag.getHeight() - CameraUtil.dip2px(getActivity(), 55))
+                        .translationX(-(screenP.x / 2 + mThumImag.getX()) - mThumImag.getWidth() / 2 + CameraUtil.dip2px(getActivity(), 45))
+                        .translationY(screenP.y / 2 - mThumImag.getY() + mThumImag.getHeight() / 2 - CameraUtil.dip2px(getActivity(), 55))
                         .scaleX(0.01f)
                         .scaleY(0.01f)
                         .setDuration(90)
@@ -318,13 +310,15 @@ public class CameraFrangment extends BaseFragment implements View.OnTouchListene
                     mFocusView.setTouchFoucusRect(event.getX(), event.getY());
                     mPresenter.focusArea(event.getX(), event.getY(), mFocusView);
                 }
+                return true;
             }
-            return true;
+
+            return false;
         }
     });
 
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
+
+    public boolean onTouch(MotionEvent event) {
         return mDetector.onTouchEvent(event);
     }
 

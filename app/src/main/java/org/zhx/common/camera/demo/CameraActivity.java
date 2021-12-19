@@ -27,7 +27,7 @@ public class CameraActivity extends AppCompatActivity {
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (frangment != null) {
-          return  frangment.onTouch(null, ev);
+            frangment.onTouch(ev);
         }
         return super.dispatchTouchEvent(ev);
     }
