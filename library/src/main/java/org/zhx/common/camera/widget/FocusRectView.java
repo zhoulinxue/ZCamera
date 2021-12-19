@@ -40,6 +40,7 @@ public class FocusRectView extends AppCompatImageView {
         touchFocusPaint = new Paint();
         touchFocusPaint.setAntiAlias(false);
         touchFocusPaint.setColor(Color.GREEN);
+        touchFocusPaint.setAntiAlias(true);
         touchFocusPaint.setStyle(Paint.Style.STROKE);
         touchFocusPaint.setStrokeWidth(5);
     }

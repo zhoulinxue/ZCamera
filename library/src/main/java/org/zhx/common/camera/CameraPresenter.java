@@ -191,6 +191,11 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         synchronized (mCameraLock) {
             ZCameraLog.e(TAG, "....release....");
             isSurfaceDestory = CameraAction.SURFACE_CREATE == action;
+            if ((null != mFocusView)
+                    && (View.VISIBLE == mFocusView.getVisibility())) {
+                mFocusView.setVisibility(View.GONE);
+            }
+
             if (previewSuc) {
                 if (autoFocusManager != null) {
                     autoFocusManager.stop();

@@ -5,13 +5,14 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Point;
-import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -30,12 +31,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.CustomViewTarget;
-import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.target.Target;
-import com.bumptech.glide.request.transition.Transition;
-import com.davemorrissey.labs.subscaleview.ImageSource;
-import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import org.zhx.common.camera.BaseFragment;
 import org.zhx.common.camera.CameraAction;
@@ -49,13 +45,11 @@ import org.zhx.common.camera.tasks.SensorProcessor;
 import org.zhx.common.camera.widget.CameraGLSurfaceView;
 import org.zhx.common.camera.widget.FocusRectView;
 import org.zhx.common.util.CameraUtil;
-import org.zhx.common.util.ImageUtil;
 import org.zhx.common.util.PermissionsUtil;
 import org.zhx.common.util.ZCameraLog;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -116,6 +110,7 @@ public class CameraFrangment extends BaseFragment implements View.OnTouchListene
             mSurfaceView = new CameraGLSurfaceView(getActivity());
         }
 
+        mSurfaceView.setId(R.id.z_camera_preview);
         showLp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         showLp.addRule(RelativeLayout.CENTER_IN_PARENT);
         mRootView.addView(mSurfaceView, showLp);
@@ -136,6 +131,7 @@ public class CameraFrangment extends BaseFragment implements View.OnTouchListene
             mHolder.addCallback(this);
             mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         }
+
         mSurfaceView.setOnTouchListener(this);
     }
 
@@ -208,7 +204,6 @@ public class CameraFrangment extends BaseFragment implements View.OnTouchListene
                             ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), animateHolder, "image");
                     startActivity(i, optionsCompat.toBundle());
                 }
-                break;
         }
     }
 

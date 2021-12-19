@@ -1,6 +1,7 @@
 package org.zhx.common.camera.demo;
 
 import android.os.Bundle;
+import android.view.MotionEvent;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,7 +13,7 @@ public class CameraActivity extends AppCompatActivity {
         setContentView(R.layout.camera_activity_layout);
         CameraFrangment frangment = new CameraFrangment();
         Bundle bundle = new Bundle();
-        bundle.putInt(CameraFrangment.SURFACE_TYPE, CameraFrangment.SURFACEVIEW);
+        bundle.putInt(CameraFrangment.SURFACE_TYPE, CameraFrangment.GL_SURFACEVIEW);
         frangment.setArguments(bundle);
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, frangment).commit();
     }

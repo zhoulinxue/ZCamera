@@ -1,4 +1,4 @@
-package org.zhx.common.camera;
+package org.zhx.common.util;
 
 /*
  * Copyright (C) 2018 OpenIntents.org
