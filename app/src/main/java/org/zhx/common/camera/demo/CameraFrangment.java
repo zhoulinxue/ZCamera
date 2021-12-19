@@ -11,6 +11,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -129,8 +130,6 @@ public class CameraFrangment extends BaseFragment implements View.OnTouchListene
             mHolder.addCallback(this);
             mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         }
-
-        mSurfaceView.setOnTouchListener(this);
     }
 
     @Override
@@ -303,23 +302,34 @@ public class CameraFrangment extends BaseFragment implements View.OnTouchListene
         mPresenter.startCamera(action);
     }
 
+    GestureDetector mDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
+        @Override
+        public boolean onSingleTapUp(MotionEvent event) {
+            if (isSurfaceView(event)) {
+                if (mFocusView == null) {
+                    mFocusView = new FocusRectView(getActivity());
+                    RelativeLayout.LayoutParams focusLp = new RelativeLayout.LayoutParams(screenP.x, screenP.y);
+                    focusLp.addRule(RelativeLayout.CENTER_IN_PARENT);
+                    addView(mRootView.getChildCount(), mFocusView, focusLp);
+                }
+
+                if (!mPresenter.isFocusing()) {
+                    mFocusView.setVisibility(View.VISIBLE);
+                    mFocusView.setTouchFoucusRect(event.getX(), event.getY());
+                    mPresenter.focusArea(event.getX(), event.getY(), mFocusView);
+                }
+            }
+            return true;
+        }
+    });
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        if (v == mSurfaceView) {
-            if (mFocusView == null) {
-                mFocusView = new FocusRectView(getActivity());
-                RelativeLayout.LayoutParams focusLp = new RelativeLayout.LayoutParams(mPreviewPoint.x, mPreviewPoint.y);
-                focusLp.addRule(RelativeLayout.CENTER_IN_PARENT);
-                addView(mRootView.getChildCount(), mFocusView, focusLp);
-            }
-            if (!mPresenter.isFocusing()) {
-                mFocusView.setVisibility(View.VISIBLE);
-                mFocusView.setTouchFoucusRect(event.getX(), event.getY());
-                mPresenter.focusArea(event.getX(), event.getY(), mFocusView);
-            }
-        }
-        return false;
+        return mDetector.onTouchEvent(event);
+    }
+
+    private boolean isSurfaceView(MotionEvent event) {
+        return (mSurfaceView != null) ? (event.getY() > mSurfaceView.getTop() && event.getY() < mSurfaceView.getBottom()) : false;
     }
 
     private void addView(int childCount, View view, RelativeLayout.LayoutParams layoutParams) {

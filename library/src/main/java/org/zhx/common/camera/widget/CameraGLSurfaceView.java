@@ -6,6 +6,10 @@ import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+
+import org.zhx.common.util.ZCameraLog;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -94,5 +98,4 @@ public class CameraGLSurfaceView extends GLSurfaceView implements GLSurfaceView.
         //纹理层有新数据，就通知view绘制
         this.requestRender();
     }
-
 }
