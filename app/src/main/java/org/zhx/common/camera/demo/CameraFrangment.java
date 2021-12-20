@@ -256,7 +256,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
             Camera.Size previewSize = sizes.get(i);
             // 找到一个与设置的分辨率差值最小的相机支持的分辨率大小
 //            ZCameraLog.e("getSuitableSize, width:" + previewSize.width + ", height:" + previewSize.height);
-            if (previewSize.width * mRatio.tWidthRatio() / mRatio.getHeightRatio() == previewSize.height) {
+            if (previewSize.width * mRatio.getWidthRatio() / mRatio.getHeightRatio() == previewSize.height) {
                 int delta = Math.abs(screenP.x - previewSize.height);
                 if (minDelta >= delta) {
                     minDelta = delta;
