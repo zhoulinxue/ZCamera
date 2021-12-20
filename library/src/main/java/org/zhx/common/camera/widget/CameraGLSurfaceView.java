@@ -6,10 +6,6 @@ import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
-
-import org.zhx.common.util.ZCameraLog;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -19,7 +15,7 @@ public class CameraGLSurfaceView extends GLSurfaceView implements GLSurfaceView.
     Context mContext;
     //以OpenGL ES纹理的形式从图像流中捕获帧,我把叫做纹理层
     SurfaceTexture mSurface;
-    DirectDrawer mDirectDrawer;
+    PreviewRender mPreviewRender;
     private GLSurfaceView.Renderer mRender;
 
     public CameraGLSurfaceView(Context context) {
@@ -35,15 +31,15 @@ public class CameraGLSurfaceView extends GLSurfaceView implements GLSurfaceView.
 
     private void init(Context context) {
         mContext = context;
-        setEGLContextClientVersion(2);
-        mDirectDrawer = new DirectDrawer(this);
-        setRenderer(mDirectDrawer);
+        setEGLContextClientVersion(3);
+        mPreviewRender = new PreviewRender(this);
+        setRenderer(mPreviewRender);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 
     public void setCameraId(int cameraId) {
-        if (mDirectDrawer != null) {
-            mDirectDrawer.setCameraId(cameraId);
+        if (mPreviewRender != null) {
+            mPreviewRender.setCameraId(cameraId);
         }
     }
 

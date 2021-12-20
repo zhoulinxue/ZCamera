@@ -1,12 +1,8 @@
 package org.zhx.common.camera.widget;
 
-import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -14,7 +10,7 @@ import java.nio.FloatBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class DirectDrawer implements GLSurfaceView.Renderer {
+public class PreviewRender implements GLSurfaceView.Renderer {
     private final String vertexShaderCode =
             "attribute vec4 vPosition;" +
                     "attribute vec2 inputTextureCoordinate;" +
@@ -46,7 +42,7 @@ public class DirectDrawer implements GLSurfaceView.Renderer {
     private GLSurfaceView.Renderer mCallback;
     private int mCameraId;
 
-    public DirectDrawer(GLSurfaceView.Renderer callback) {
+    public PreviewRender(GLSurfaceView.Renderer callback) {
         this.mCallback = callback;
         Matrix.setIdentityM(mProjectMatrix, 0);
         Matrix.setIdentityM(mCameraMatrix, 0);
