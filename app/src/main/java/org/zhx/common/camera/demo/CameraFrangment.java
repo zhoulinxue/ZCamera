@@ -72,7 +72,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     FocusRectView mFocusView;
     private ImageSearchProcessor mImageSearchProcessor;
     private SensorProcessor mSensorProcessor;
-    protected CameraRatio mRatio = CameraRatio.SCANLE_1_1;
+    protected CameraRatio mRatio = CameraRatio.SCANLE_16_9;
     private int type = SURFACEVIEW;
     private SurfaceHolder mHolder;
 
@@ -298,7 +298,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
         @Override
         public boolean onSingleTapUp(MotionEvent event) {
             ZCameraLog.e("onSingleTapUp, event");
-            if (isSurfaceView(event)) {
+             if(isSurfaceView(event)) {
                 ZCameraLog.e("onSingleTapUp, isSurfaceView == true" );
                 if (mFocusView == null) {
                     mFocusView = new FocusRectView(getActivity());
