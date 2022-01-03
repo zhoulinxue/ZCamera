@@ -364,7 +364,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     }
 
     @Override
-    public void onPreviewFrame(byte[] data, Camera camera) {
-        ((CustomGLSurfaceView) mSurfaceView).onPreviewFrame(data, camera);
+    public void onPreviewFrame(byte[] data, int width, int height) {
+        ((CustomGLSurfaceView) mSurfaceView).onPreviewFrame(data, width,height);
     }
 }

@@ -84,10 +84,9 @@ public class CustomGLSurfaceView extends GLSurfaceView implements GLSurfaceView.
         this.mViewCallback = callback;
     }
 
-    public void onPreviewFrame(byte[] data, Camera camera) {
-       Camera.Size size= camera.getParameters().getPreviewSize();
+    public void onPreviewFrame(byte[] data,int width, int height) {
         if(mPreviewRender!=null) {
-            mPreviewRender.onPreviewFram(data,size.width,size.height);
+            mPreviewRender.onPreviewFram(data,width,height);
         }
     }
 
