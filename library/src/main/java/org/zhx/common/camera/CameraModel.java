@@ -45,5 +45,7 @@ public interface CameraModel {
         Camera.Size getSuitableSize(List<Camera.Size> sizes);
 
         void showThumImage(Uri uri);
+
+        void onPreviewFrame(byte[] data, Camera camera);
     }
 }

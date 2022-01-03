@@ -105,6 +105,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 @Override
                 public void onPreviewFrame(byte[] data, Camera camera) {
                     previewSuc = true;
+                    mView.onPreviewFrame(data,camera);
                 }
             });
             setParamiters();

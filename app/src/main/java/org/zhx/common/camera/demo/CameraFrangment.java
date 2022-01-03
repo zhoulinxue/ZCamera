@@ -41,6 +41,7 @@ import org.zhx.common.camera.Constants;
 import org.zhx.common.camera.tasks.ImageSearchProcessor;
 import org.zhx.common.camera.tasks.SensorProcessor;
 import org.zhx.common.camera.widget.CameraGLSurfaceView;
+import org.zhx.common.camera.widget.CustomGLSurfaceView;
 import org.zhx.common.camera.widget.FocusRectView;
 import org.zhx.common.util.CameraUtil;
 import org.zhx.common.util.PermissionsUtil;
@@ -105,7 +106,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
         if (SURFACEVIEW == type) {
             mSurfaceView = new SurfaceView(getActivity());
         } else {
-            mSurfaceView = new CameraGLSurfaceView(getActivity());
+            mSurfaceView = new CustomGLSurfaceView(getActivity());
         }
 
         mSurfaceView.setId(R.id.z_camera_preview);
@@ -124,7 +125,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
 
     private void initHolder() {
         if (mSurfaceView instanceof CameraGLSurfaceView) {
-            ((CameraGLSurfaceView) mSurfaceView).setViewRender(this);
+            ((CustomGLSurfaceView) mSurfaceView).setViewRender(this);
         } else {
             mHolder = mSurfaceView.getHolder();
             mHolder.addCallback(this);
@@ -156,9 +157,9 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
             preViewLp.height = previewHeight;
             mSurfaceView.setLayoutParams(preViewLp);
             try {
-                if (mSurfaceView instanceof CameraGLSurfaceView) {
-                    ((CameraGLSurfaceView) mSurfaceView).setCameraId(proxy.getCameraId());
-                    proxy.getCamera().setPreviewTexture(((CameraGLSurfaceView) mSurfaceView).getSurface());
+                if (mSurfaceView instanceof CustomGLSurfaceView) {
+                    ((CustomGLSurfaceView) mSurfaceView).setRotation(getRotation(getCameraOrientation(proxy.getCameraId() != 0)));
+                    proxy.getCamera().setPreviewTexture(((CustomGLSurfaceView) mSurfaceView).getSurface());
                 } else {
                     mSurfaceView.setLayoutParams(preViewLp);
                     proxy.getCamera().setPreviewDisplay(mHolder);
@@ -298,8 +299,8 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
         @Override
         public boolean onSingleTapUp(MotionEvent event) {
             ZCameraLog.e("onSingleTapUp, event");
-             if(isSurfaceView(event)) {
-                ZCameraLog.e("onSingleTapUp, isSurfaceView == true" );
+            if (isSurfaceView(event)) {
+                ZCameraLog.e("onSingleTapUp, isSurfaceView == true");
                 if (mFocusView == null) {
                     mFocusView = new FocusRectView(getActivity());
                     RelativeLayout.LayoutParams focusLp = new RelativeLayout.LayoutParams(screenP.x, screenP.y);
@@ -360,5 +361,10 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
 
+    }
+
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+        ((CustomGLSurfaceView) mSurfaceView).onPreviewFrame(data, camera);
     }
 }

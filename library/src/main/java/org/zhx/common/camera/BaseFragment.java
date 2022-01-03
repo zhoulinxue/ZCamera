@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
+import android.view.Surface;
 import android.view.View;
 import android.widget.Toast;
 
@@ -15,6 +16,7 @@ import androidx.annotation.RequiresApi;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
 
+import org.zhx.common.camera.widget.Rotation;
 import org.zhx.common.mvp.BaseView;
 import org.zhx.common.util.CameraUtil;
 import org.zhx.common.util.ImageUtil;
@@ -95,6 +97,46 @@ public abstract class BaseFragment extends Fragment implements BaseView, Pictrue
             return 0;
         }
         return getActivity().getWindowManager().getDefaultDisplay().getRotation();
+    }
+
+    protected int getCameraOrientation(boolean isFrontCamera) {
+        int degree = getActivity().getWindowManager().getDefaultDisplay().getRotation();
+        switch (degree) {
+            case Surface.ROTATION_0:
+                degree =0;
+                break;
+            case Surface.ROTATION_90:
+                degree =90;
+                break;
+            case Surface.ROTATION_180:
+                degree =180;
+                break;
+            case Surface.ROTATION_270:
+                degree =270;
+                break;
+        }
+
+        if(isFrontCamera) {
+            return (90 + degree) % 360;
+        }
+
+        return  (90 - degree) % 360;
+    }
+
+    protected Rotation getRotation(int orientation) {
+        Rotation rotation = Rotation.NORMAL;
+        switch (orientation) {
+            case 90:
+                rotation = Rotation.ROTATION_90;
+                break;
+            case 180:
+                rotation = Rotation.ROTATION_180;
+                break;
+            case 270:
+                rotation = Rotation.ROTATION_270;
+                break;
+        }
+        return rotation;
     }
 
     @Override
