@@ -124,7 +124,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     }
 
     private void initHolder() {
-        if (mSurfaceView instanceof CameraGLSurfaceView) {
+        if (mSurfaceView instanceof CustomGLSurfaceView) {
             ((CustomGLSurfaceView) mSurfaceView).setViewRender(this);
         } else {
             mHolder = mSurfaceView.getHolder();
@@ -158,7 +158,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
             mSurfaceView.setLayoutParams(preViewLp);
             try {
                 if (mSurfaceView instanceof CustomGLSurfaceView) {
-                    ((CustomGLSurfaceView) mSurfaceView).setRotation(getRotation(getCameraOrientation(proxy.getCameraId() != 0)));
+                    ((CustomGLSurfaceView) mSurfaceView).setRotation(getRotation(getCameraOrientation(proxy.getCameraId() != 0)),proxy.getCameraId() != 0);
                     proxy.getCamera().setPreviewTexture(((CustomGLSurfaceView) mSurfaceView).getSurface());
                 } else {
                     mSurfaceView.setLayoutParams(preViewLp);
@@ -364,7 +364,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     }
 
     @Override
-    public void onPreviewFrame(byte[] data, int width, int height) {
-        ((CustomGLSurfaceView) mSurfaceView).onPreviewFrame(data, width,height);
+    public void onPreviewFrame(byte[] data, int width, int height,boolean isFirstFrame) {
+        ((CustomGLSurfaceView) mSurfaceView).onPreviewFrame(data, width,height,isFirstFrame);
     }
 }

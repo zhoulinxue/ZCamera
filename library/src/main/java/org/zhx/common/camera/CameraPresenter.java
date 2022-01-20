@@ -104,8 +104,9 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
             setParamiters();
             setOrientation();
             mCamera.setPreviewCallback((data, camera) -> {
+                boolean isFirstFram = !previewSuc;
                 previewSuc = true;
-                mView.onPreviewFrame(data,mProxy.getWidth(),mProxy.getHeight());
+                mView.onPreviewFrame(data,mProxy.getWidth(),mProxy.getHeight(),isFirstFram);
             });
             List<String> supportedFocusModes = mCamera.getParameters().getSupportedFocusModes();
             hasAutoFocus = supportedFocusModes != null && supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO);

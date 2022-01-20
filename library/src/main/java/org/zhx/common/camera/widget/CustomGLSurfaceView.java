@@ -40,8 +40,8 @@ public class CustomGLSurfaceView extends GLSurfaceView implements GLSurfaceView.
         mSurface = new SurfaceTexture(textures[0]);
     }
 
-    public void setRotation(Rotation rotation) {
-        mPreviewRender.setRotation(rotation);
+    public void setRotation(Rotation rotation,boolean isFrontCamera) {
+        mPreviewRender.setRotation(rotation,isFrontCamera);
         requestRender();
     }
 
@@ -84,9 +84,9 @@ public class CustomGLSurfaceView extends GLSurfaceView implements GLSurfaceView.
         this.mViewCallback = callback;
     }
 
-    public void onPreviewFrame(byte[] data,int width, int height) {
+    public void onPreviewFrame(byte[] data,int width, int height,boolean isFirstFrame) {
         if(mPreviewRender!=null) {
-            mPreviewRender.onPreviewFram(data,width,height);
+            mPreviewRender.onPreviewFram(data,width,height,isFirstFrame);
         }
     }
 

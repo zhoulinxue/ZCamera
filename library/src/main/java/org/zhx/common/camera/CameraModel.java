@@ -46,6 +46,6 @@ public interface CameraModel {
 
         void showThumImage(Uri uri);
 
-        void onPreviewFrame(byte[] data,int width,int height);
+        void onPreviewFrame(byte[] data,int width,int height,boolean isFirstFrame);
     }
 }

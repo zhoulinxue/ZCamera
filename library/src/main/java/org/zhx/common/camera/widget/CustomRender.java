@@ -78,7 +78,7 @@ public class CustomRender implements GLSurfaceView.Renderer {
     public CustomRender(final String vertexShader, final String fragmentShader) {
         runOnDraw = new LinkedList<>();
         runOnDrawEnd = new LinkedList<>();
-        runOnDrawList= new LinkedList<>();
+        runOnDrawList = new LinkedList<>();
         this.vertexShader = vertexShader;
         this.fragmentShader = fragmentShader;
 
@@ -105,12 +105,11 @@ public class CustomRender implements GLSurfaceView.Renderer {
                             final boolean flipHorizontal, final boolean flipVertical) {
         this.flipHorizontal = flipHorizontal;
         this.flipVertical = flipVertical;
-        setRotation(rotation);
+        this.rotation = rotation;
     }
 
-    public void setRotation(final Rotation rotation) {
-        this.rotation = rotation;
-        adjustImageScaling();
+    public void setRotation(final Rotation rotation, boolean isFrontCamera) {
+        setRotation(rotation, isFrontCamera, false);
     }
 
     public static int loadProgram(final String strVSource, final String strFSource) {
@@ -250,9 +249,13 @@ public class CustomRender implements GLSurfaceView.Renderer {
         }
     }
 
-    public void onPreviewFram(byte[] yuvData, int width, int height) {
+    public void onPreviewFram(byte[] yuvData, int width, int height, boolean isFirstFrame) {
         if (glRgbBuffer == null) {
             glRgbBuffer = IntBuffer.allocate(width * height);
+        }
+
+        if (isFirstFrame) {
+            adjustImageScaling();
         }
 
         if (runOnDraw.isEmpty()) {
