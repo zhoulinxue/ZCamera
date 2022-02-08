@@ -11,7 +11,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 
-public class CustomGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener {
+public class CustomGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Renderer {
     Context mContext;
     //以OpenGL ES纹理的形式从图像流中捕获帧,我把叫做纹理层
     SurfaceTexture mSurface;
@@ -42,13 +42,10 @@ public class CustomGLSurfaceView extends GLSurfaceView implements GLSurfaceView.
 
     public void setRotation(Rotation rotation,boolean isFrontCamera) {
         mPreviewRender.setRotation(rotation,isFrontCamera);
-        requestRender();
     }
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        //监听纹理层
-        mSurface.setOnFrameAvailableListener(this);
         if (mViewCallback != null) {
             mViewCallback.onSurfaceCreated(gl, config);
         }
@@ -69,13 +66,6 @@ public class CustomGLSurfaceView extends GLSurfaceView implements GLSurfaceView.
         }
     }
 
-
-    @Override
-    public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-        //纹理层有新数据，就通知view绘制
-        this.requestRender();
-    }
-
     public SurfaceTexture getSurface() {
         return mSurface;
     }
@@ -87,6 +77,7 @@ public class CustomGLSurfaceView extends GLSurfaceView implements GLSurfaceView.
     public void onPreviewFrame(byte[] data,int width, int height,boolean isFirstFrame) {
         if(mPreviewRender!=null) {
             mPreviewRender.onPreviewFram(data,width,height,isFirstFrame);
+            this.requestRender();
         }
     }
 

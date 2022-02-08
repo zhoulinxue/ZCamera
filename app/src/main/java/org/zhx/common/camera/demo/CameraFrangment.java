@@ -73,7 +73,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     FocusRectView mFocusView;
     private ImageSearchProcessor mImageSearchProcessor;
     private SensorProcessor mSensorProcessor;
-    protected CameraRatio mRatio = CameraRatio.SCANLE_16_9;
+    protected CameraRatio mRatio = CameraRatio.SCANLE_4_3;
     private int type = SURFACEVIEW;
     private SurfaceHolder mHolder;
 
@@ -111,7 +111,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
 
         mSurfaceView.setId(R.id.z_camera_preview);
         showLp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        showLp.addRule(RelativeLayout.CENTER_IN_PARENT);
+        showLp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         mRootView.addView(mSurfaceView, showLp);
         view.findViewById(R.id.btn_switch_camera).setOnClickListener(this);
         mFlashImg = view.findViewById(R.id.btn_flash_mode);
@@ -142,7 +142,6 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     @Override
     public void onCameraCreate(final CameraProxy<Camera> proxy) {
         runOnUiThread(() -> {
-            final RelativeLayout.LayoutParams preViewLp = (RelativeLayout.LayoutParams) mSurfaceView.getLayoutParams();
             int previewHeight = 0;
             int previewWidth = screenP.x;
 
@@ -153,15 +152,11 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
             }
 
             mPreviewPoint = new Point(previewWidth, previewHeight);
-            preViewLp.width = previewWidth;
-            preViewLp.height = previewHeight;
-            mSurfaceView.setLayoutParams(preViewLp);
             try {
                 if (mSurfaceView instanceof CustomGLSurfaceView) {
                     ((CustomGLSurfaceView) mSurfaceView).setRotation(getRotation(getCameraOrientation(proxy.getCameraId() != 0)),proxy.getCameraId() != 0);
                     proxy.getCamera().setPreviewTexture(((CustomGLSurfaceView) mSurfaceView).getSurface());
                 } else {
-                    mSurfaceView.setLayoutParams(preViewLp);
                     proxy.getCamera().setPreviewDisplay(mHolder);
                 }
             } catch (Exception e) {

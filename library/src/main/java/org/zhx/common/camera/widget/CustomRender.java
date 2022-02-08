@@ -197,7 +197,6 @@ public class CustomRender implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        ZCameraLog.e("onDrawFrame");
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
         runAll(runOnDraw);
         onDraw(glTextureId, glCubeBuffer, glTextureBuffer);
@@ -329,25 +328,16 @@ public class CustomRender implements GLSurfaceView.Renderer {
         float ratioWidth = imageWidthNew / outputWidth;
         float ratioHeight = imageHeightNew / outputHeight;
 
-        float[] cube = CUBE;
+
+        ZCameraLog.e("ratioWidth:" + ratioWidth + ", ratioHeight:" + ratioHeight);
         float[] textureCords = TextureRotationUtil.getRotation(rotation, flipHorizontal, flipVertical);
-        if (scaleType == ScaleType.CENTER_CROP) {
-            float distHorizontal = (1 - 1 / ratioWidth) / 2;
-            float distVertical = (1 - 1 / ratioHeight) / 2;
-            textureCords = new float[]{
-                    addDistance(textureCords[0], distHorizontal), addDistance(textureCords[1], distVertical),
-                    addDistance(textureCords[2], distHorizontal), addDistance(textureCords[3], distVertical),
-                    addDistance(textureCords[4], distHorizontal), addDistance(textureCords[5], distVertical),
-                    addDistance(textureCords[6], distHorizontal), addDistance(textureCords[7], distVertical),
-            };
-        } else {
-            cube = new float[]{
-                    CUBE[0] / ratioHeight, CUBE[1] / ratioWidth,
-                    CUBE[2] / ratioHeight, CUBE[3] / ratioWidth,
-                    CUBE[4] / ratioHeight, CUBE[5] / ratioWidth,
-                    CUBE[6] / ratioHeight, CUBE[7] / ratioWidth,
-            };
-        }
+
+        float[] cube = new float[]{
+                CUBE[0] / ratioWidth, CUBE[1] / ratioHeight + 200/outputHeight,
+                CUBE[2] / ratioWidth, CUBE[3] / ratioHeight + 200/outputHeight,
+                CUBE[4] / ratioWidth, CUBE[5] / ratioHeight + 200/outputHeight,
+                CUBE[6] / ratioWidth, CUBE[7] / ratioHeight + 200/outputHeight,
+        };
 
         glCubeBuffer.clear();
         glCubeBuffer.put(cube).position(0);
