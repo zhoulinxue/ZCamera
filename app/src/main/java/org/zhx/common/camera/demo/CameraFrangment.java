@@ -73,7 +73,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     FocusRectView mFocusView;
     private ImageSearchProcessor mImageSearchProcessor;
     private SensorProcessor mSensorProcessor;
-    protected CameraRatio mRatio = CameraRatio.SCANLE_4_3;
+    protected CameraRatio mRatio = CameraRatio.SCANLE_1_1;
     private int type = SURFACEVIEW;
     private SurfaceHolder mHolder;
 
@@ -247,20 +247,40 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     @Override
     public Camera.Size getSuitableSize(List<Camera.Size> sizes) {
         int minDelta = Integer.MAX_VALUE; // 最小的差值，初始值应该设置大点保证之后的计算中会被重置
-        int index = 0; // 最小的差值对应的索引坐标
+        // camera的宽度是大于高度的，这里要保证expectWidth > expectHeight
+        int expectWidth = Math.max(screenP.x, screenP.y);
+        int expectHeight = Math.min(screenP.x, screenP.y);
+
+        Camera.Size result = sizes.get(0);
+
+        boolean hasSuitableSize = false;
         for (int i = 0; i < sizes.size(); i++) {
             Camera.Size previewSize = sizes.get(i);
             // 找到一个与设置的分辨率差值最小的相机支持的分辨率大小
-//            ZCameraLog.e("getSuitableSize, width:" + previewSize.width + ", height:" + previewSize.height);
             if (previewSize.width * mRatio.getWidthRatio() / mRatio.getHeightRatio() == previewSize.height) {
+                hasSuitableSize = true;
                 int delta = Math.abs(screenP.x - previewSize.height);
                 if (minDelta >= delta) {
                     minDelta = delta;
-                    index = i;
+                    result = previewSize;
+                }
+            } else if (!hasSuitableSize) {
+                if (previewSize.width == expectWidth) {
+                    if (Math.abs(result.height - expectHeight)
+                            > Math.abs(previewSize.height - expectHeight)) {
+                        result = previewSize;
+                    }
+                } else if (previewSize.height == expectHeight) {
+                    // 高度相等，则计算宽度最接近的Size
+                    if (Math.abs(result.width - expectWidth)
+                            > Math.abs(previewSize.width - expectWidth)) {
+                        result = previewSize;
+                    }
                 }
             }
         }
-        return sizes.get(index); // 默认返回与设置的分辨率最接近的预览尺寸
+
+        return result; // 默认返回与设置的分辨率最接近的预览尺寸
     }
 
     @Override
