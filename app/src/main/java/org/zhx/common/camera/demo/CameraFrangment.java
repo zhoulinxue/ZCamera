@@ -106,7 +106,9 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
         if (SURFACEVIEW == type) {
             mSurfaceView = new SurfaceView(getActivity());
         } else {
+            float topmargin = getResources().getDimension(R.dimen.topbar_height);
             mSurfaceView = new CustomGLSurfaceView(getActivity());
+            ((CustomGLSurfaceView) mSurfaceView).setCanvasTopmargin(topmargin);
         }
 
         mSurfaceView.setId(R.id.z_camera_preview);
@@ -154,7 +156,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
             mPreviewPoint = new Point(previewWidth, previewHeight);
             try {
                 if (mSurfaceView instanceof CustomGLSurfaceView) {
-                    ((CustomGLSurfaceView) mSurfaceView).setRotation(getRotation(getCameraOrientation(proxy.getCameraId() != 0)),proxy.getCameraId() != 0);
+                    ((CustomGLSurfaceView) mSurfaceView).setRotation(getRotation(getCameraOrientation(proxy.getCameraId() != 0)), proxy.getCameraId() != 0);
                     proxy.getCamera().setPreviewTexture(((CustomGLSurfaceView) mSurfaceView).getSurface());
                 } else {
                     proxy.getCamera().setPreviewDisplay(mHolder);
@@ -379,7 +381,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     }
 
     @Override
-    public void onPreviewFrame(byte[] data, int width, int height,boolean isFirstFrame) {
-        ((CustomGLSurfaceView) mSurfaceView).onPreviewFrame(data, width,height,isFirstFrame);
+    public void onPreviewFrame(byte[] data, int width, int height, boolean isFirstFrame) {
+        ((CustomGLSurfaceView) mSurfaceView).onPreviewFrame(data, width, height, isFirstFrame);
     }
 }
