@@ -31,11 +31,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     private int modelIndex = 0;
     private AutoFocusManager autoFocusManager;
     private boolean isSurfaceDestory = false;
-    private boolean isFocus = false;
     private View mFocusView;
-    private int mPreviewWidth = 1920;
-    private int mPreviewHeight = 1080;
-    private float mPreviewScale = mPreviewHeight * 1f / mPreviewWidth;
     private ImageSaveProcessor mImageSaveProcessor;
     private boolean hasAutoFocus = true;
     private int mCameraId;
@@ -263,7 +259,6 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     @Override
     public void focusArea(float x, float y, View focusView) {
         if (!previewSuc || mCamera == null || autoFocusManager == null || !hasAutoFocus) {
-            isFocus = true;
             ZCameraLog.e(TAG, "...hasAutoFocus." + hasAutoFocus);
             if (focusView != null) {
                 focusView.setVisibility(View.GONE);
@@ -298,7 +293,6 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     @Override
     public void onAutoFocus(boolean success, Camera camera) {
         ZCameraLog.e(TAG, "....Camera...onAutoFocus......." + success);
-        isFocus = success;
         if (mFocusView != null) {
             mFocusView.setVisibility(View.GONE);
         }

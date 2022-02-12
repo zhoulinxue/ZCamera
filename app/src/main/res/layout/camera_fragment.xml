@@ -33,7 +33,7 @@
     <LinearLayout
         android:id="@+id/z_base_camera_top_layout"
         android:layout_width="match_parent"
-        android:layout_height="45dp"
+        android:layout_height="@dimen/topbar_height"
         android:layout_alignParentTop="true"
         android:background="@color/trans_color"
         android:gravity="bottom"

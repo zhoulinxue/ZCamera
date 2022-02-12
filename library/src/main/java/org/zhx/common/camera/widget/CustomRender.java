@@ -68,6 +68,8 @@ public class CustomRender implements GLSurfaceView.Renderer {
     private boolean flipHorizontal;
     private boolean flipVertical;
     private GLSurfaceView.Renderer mCallback;
+    private float mTopMargin;
+    private Rotation rotation = Rotation.NORMAL;
 
 
     public CustomRender(GLSurfaceView.Renderer callback) {
@@ -254,6 +256,11 @@ public class CustomRender implements GLSurfaceView.Renderer {
         }
 
         if (isFirstFrame) {
+            if (imageWidth != width) {
+                imageWidth = width;
+                imageHeight = height;
+            }
+            
             adjustImageScaling();
         }
 
@@ -261,11 +268,6 @@ public class CustomRender implements GLSurfaceView.Renderer {
             runOnDraw(() -> {
                 YUVTorgb.YUVtoRBGA(yuvData, width, height, glRgbBuffer.array());
                 glTextureId = createTextureIfNeeded(glRgbBuffer, width, height, glTextureId);
-                if (imageWidth != width) {
-                    imageWidth = width;
-                    imageHeight = height;
-                    adjustImageScaling();
-                }
             });
         }
     }
@@ -307,10 +309,6 @@ public class CustomRender implements GLSurfaceView.Renderer {
         }
     }
 
-    private Rotation rotation = Rotation.NORMAL;
-
-    private ScaleType scaleType = ScaleType.CENTER_CROP;
-
     private void adjustImageScaling() {
         float outputWidth = this.outputWidth;
         float outputHeight = this.outputHeight;
@@ -333,10 +331,10 @@ public class CustomRender implements GLSurfaceView.Renderer {
         float[] textureCords = TextureRotationUtil.getRotation(rotation, flipHorizontal, flipVertical);
 
         float[] cube = new float[]{
-                CUBE[0] / ratioWidth, CUBE[1] / ratioHeight + 200/outputHeight,
-                CUBE[2] / ratioWidth, CUBE[3] / ratioHeight + 200/outputHeight,
-                CUBE[4] / ratioWidth, CUBE[5] / ratioHeight + 200/outputHeight,
-                CUBE[6] / ratioWidth, CUBE[7] / ratioHeight + 200/outputHeight,
+                CUBE[0] / ratioWidth, CUBE[1] / ratioHeight + mTopMargin / outputHeight,
+                CUBE[2] / ratioWidth, CUBE[3] / ratioHeight + mTopMargin / outputHeight,
+                CUBE[4] / ratioWidth, CUBE[5] / ratioHeight + mTopMargin / outputHeight,
+                CUBE[6] / ratioWidth, CUBE[7] / ratioHeight + mTopMargin / outputHeight,
         };
 
         glCubeBuffer.clear();
@@ -347,6 +345,10 @@ public class CustomRender implements GLSurfaceView.Renderer {
 
     private float addDistance(float coordinate, float distance) {
         return coordinate == 0.0f ? distance : 1 - distance;
+    }
+
+    public void setTopMargin(float topMargin) {
+        this.mTopMargin = topMargin;
     }
 
     public int getGlTextureId() {

@@ -1,11 +1,13 @@
 package org.zhx.common.camera.widget;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+
+import org.zhx.common.camera.R;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -17,22 +19,31 @@ public class CustomGLSurfaceView extends GLSurfaceView implements GLSurfaceView.
     SurfaceTexture mSurface;
     CustomRender mPreviewRender;
     private Renderer mViewCallback;
+    private float mTopmargin = 0;
 
     public CustomGLSurfaceView(Context context) {
         super(context);
-        init(context);
+        init(context, null);
     }
 
     public CustomGLSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
+        init(context, attrs);
     }
 
 
-    private void init(Context context) {
+    private void init(Context context, AttributeSet attrs) {
         mContext = context;
         setEGLContextClientVersion(2);
         mPreviewRender = new CustomRender(this);
+
+        if (null != attrs) {
+            TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.CustomGLSurfaceView);
+            mTopmargin = ta.getDimension(R.styleable.CustomGLSurfaceView_gl_top_margin, 0);
+            ta.recycle();
+        }
+
+        mPreviewRender.setTopMargin(mTopmargin);
         setRenderer(mPreviewRender);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         int[] textures = new int[1];
@@ -40,8 +51,8 @@ public class CustomGLSurfaceView extends GLSurfaceView implements GLSurfaceView.
         mSurface = new SurfaceTexture(textures[0]);
     }
 
-    public void setRotation(Rotation rotation,boolean isFrontCamera) {
-        mPreviewRender.setRotation(rotation,isFrontCamera);
+    public void setRotation(Rotation rotation, boolean isFrontCamera) {
+        mPreviewRender.setRotation(rotation, isFrontCamera);
     }
 
     @Override
@@ -74,11 +85,17 @@ public class CustomGLSurfaceView extends GLSurfaceView implements GLSurfaceView.
         this.mViewCallback = callback;
     }
 
-    public void onPreviewFrame(byte[] data,int width, int height,boolean isFirstFrame) {
-        if(mPreviewRender!=null) {
-            mPreviewRender.onPreviewFram(data,width,height,isFirstFrame);
+    public void onPreviewFrame(byte[] data, int width, int height, boolean isFirstFrame) {
+        if (mPreviewRender != null) {
+            mPreviewRender.onPreviewFram(data, width, height, isFirstFrame);
             this.requestRender();
         }
     }
 
+    public void setCanvasTopmargin(float topmargin) {
+        this.mTopmargin = topmargin;
+        if (null != mPreviewRender) {
+            mPreviewRender.setTopMargin(topmargin);
+        }
+    }
 }
