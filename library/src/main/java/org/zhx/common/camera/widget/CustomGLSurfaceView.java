@@ -8,17 +8,18 @@ import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 
 import org.zhx.common.camera.R;
+import org.zhx.common.camera.renders.RenderCallback;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 
-public class CustomGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Renderer {
+public class CustomGLSurfaceView extends GLSurfaceView implements RenderCallback {
     Context mContext;
     //以OpenGL ES纹理的形式从图像流中捕获帧,我把叫做纹理层
     SurfaceTexture mSurface;
     CustomRender mPreviewRender;
-    private Renderer mViewCallback;
+    private RenderCallback mViewCallback;
     private float mTopmargin = 0;
 
     public CustomGLSurfaceView(Context context) {
@@ -77,11 +78,18 @@ public class CustomGLSurfaceView extends GLSurfaceView implements GLSurfaceView.
         }
     }
 
+    @Override
+    public void onCanvasReuslt(float start) {
+        if (mViewCallback != null) {
+            mViewCallback.onCanvasReuslt(start);
+        }
+    }
+
     public SurfaceTexture getSurface() {
         return mSurface;
     }
 
-    public void setViewRender(GLSurfaceView.Renderer callback) {
+    public void setViewRender(RenderCallback callback) {
         this.mViewCallback = callback;
     }
 

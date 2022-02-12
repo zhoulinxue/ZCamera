@@ -5,6 +5,8 @@ import android.opengl.GLSurfaceView;
 import android.util.Log;
 
 import org.zhx.common.camera.YUVTorgb;
+import org.zhx.common.camera.renders.BaseRender;
+import org.zhx.common.camera.renders.RenderCallback;
 import org.zhx.common.util.ZCameraLog;
 
 import java.nio.ByteBuffer;
@@ -17,7 +19,7 @@ import java.util.Queue;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class CustomRender implements GLSurfaceView.Renderer {
+public class CustomRender extends BaseRender {
     public static final String NO_FILTER_VERTEX_SHADER = "" +
             "attribute vec4 position;\n" +
             "attribute vec4 inputTextureCoordinate;\n" +
@@ -43,10 +45,9 @@ public class CustomRender implements GLSurfaceView.Renderer {
 
     private IntBuffer glRgbBuffer;
     private int glTextureId = -1;
-    private final String vertexShader;
-    private final String fragmentShader;
 
-    private final LinkedList<Runnable> runOnDrawList;
+
+    private LinkedList<Runnable> runOnDrawList;
 
     private int glProgId;
     private int glAttribPosition;
@@ -57,33 +58,20 @@ public class CustomRender implements GLSurfaceView.Renderer {
     private boolean isInitialized;
     private int imageWidth;
     private int imageHeight;
-    public static final float CUBE[] = {
-            -1.0f, -1.0f,
-            1.0f, -1.0f,
-            -1.0f, 1.0f,
-            1.0f, 1.0f,
-    };
     private FloatBuffer glCubeBuffer;
     private FloatBuffer glTextureBuffer;
     private boolean flipHorizontal;
     private boolean flipVertical;
-    private GLSurfaceView.Renderer mCallback;
+
     private float mTopMargin;
     private Rotation rotation = Rotation.NORMAL;
 
 
-    public CustomRender(GLSurfaceView.Renderer callback) {
-        this(NO_FILTER_VERTEX_SHADER, NO_FILTER_FRAGMENT_SHADER);
-        this.mCallback = callback;
-    }
-
-    public CustomRender(final String vertexShader, final String fragmentShader) {
+    public CustomRender(RenderCallback callback) {
+        super(callback);
         runOnDraw = new LinkedList<>();
         runOnDrawEnd = new LinkedList<>();
         runOnDrawList = new LinkedList<>();
-        this.vertexShader = vertexShader;
-        this.fragmentShader = fragmentShader;
-
         glCubeBuffer = ByteBuffer.allocateDirect(CUBE.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
@@ -93,6 +81,16 @@ public class CustomRender implements GLSurfaceView.Renderer {
         glTextureBuffer = ByteBuffer.allocateDirect(TextureRotationUtil.TEXTURE_NO_ROTATION.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
+    }
+
+    @Override
+    protected String getFragmentShader() {
+        return NO_FILTER_FRAGMENT_SHADER;
+    }
+
+    @Override
+    protected String getVerTexShader() {
+        return NO_FILTER_VERTEX_SHADER;
     }
 
     public void onInit() {
@@ -326,8 +324,13 @@ public class CustomRender implements GLSurfaceView.Renderer {
         float ratioWidth = imageWidthNew / outputWidth;
         float ratioHeight = imageHeightNew / outputHeight;
 
-        ZCameraLog.e("ratioWidth:" + ratioWidth + ", ratioHeight:" + ratioHeight + ", topMargin:" + mTopMargin / outputWidth);
+
         float[] textureCords = TextureRotationUtil.getRotation(rotation, flipHorizontal, flipVertical);
+
+        ZCameraLog.e("startleftY:" + (((1 - CUBE[5] / ratioHeight) - mTopMargin / outputHeight) * outputHeight) +
+                "ratioWidth:" + ratioWidth +
+                ", ratioHeight:" + ratioHeight +
+                ", topMargin:" + mTopMargin / outputWidth);
 
         float[] cube = new float[]{
                 CUBE[0] / ratioWidth, CUBE[1] / ratioHeight + (1 - CUBE[5] / ratioHeight) - mTopMargin / outputHeight,
@@ -335,6 +338,8 @@ public class CustomRender implements GLSurfaceView.Renderer {
                 CUBE[4] / ratioWidth, CUBE[5] - mTopMargin / outputHeight,
                 CUBE[6] / ratioWidth, CUBE[7] - mTopMargin / outputHeight,
         };
+        
+        mCallback.onCanvasReuslt(((1 - CUBE[5] / ratioHeight) - mTopMargin / outputHeight) * outputHeight);
 
         glCubeBuffer.clear();
         glCubeBuffer.put(cube).position(0);

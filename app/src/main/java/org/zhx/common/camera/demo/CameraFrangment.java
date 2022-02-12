@@ -38,6 +38,7 @@ import org.zhx.common.camera.CameraPresenter;
 import org.zhx.common.camera.CameraProxy;
 import org.zhx.common.camera.CameraRatio;
 import org.zhx.common.camera.Constants;
+import org.zhx.common.camera.renders.RenderCallback;
 import org.zhx.common.camera.tasks.ImageSearchProcessor;
 import org.zhx.common.camera.tasks.SensorProcessor;
 import org.zhx.common.camera.widget.CameraGLSurfaceView;
@@ -53,7 +54,7 @@ import java.util.List;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class CameraFrangment extends BaseFragment implements CameraModel.view<Camera>, View.OnClickListener, GLSurfaceView.Renderer, SurfaceHolder.Callback {
+public class CameraFrangment extends BaseFragment implements CameraModel.view<Camera>, View.OnClickListener, RenderCallback, SurfaceHolder.Callback {
     public static final int SURFACEVIEW = 1;
     public static final int GL_SURFACEVIEW = 2;
     public static final String SURFACE_TYPE = "preview_type";
@@ -76,6 +77,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     protected CameraRatio mRatio = CameraRatio.SCANLE_1_1;
     private int type = SURFACEVIEW;
     private SurfaceHolder mHolder;
+    private float renderStartY;
 
     @Nullable
     @Override
@@ -328,7 +330,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
                 if (!mPresenter.isFocusing()) {
                     mFocusView.setVisibility(View.VISIBLE);
                     mFocusView.setTouchFoucusRect(event.getX(), event.getY());
-                    mPresenter.focusArea(event.getX(), event.getY(), mFocusView);
+                    mPresenter.focusArea(event.getX(), event.getY() - renderStartY, mFocusView);
                 }
                 return true;
             }
@@ -363,6 +365,11 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     @Override
     public void onDrawFrame(GL10 gl) {
 
+    }
+
+    @Override
+    public void onCanvasReuslt(float start) {
+        renderStartY = start;
     }
 
     @Override
