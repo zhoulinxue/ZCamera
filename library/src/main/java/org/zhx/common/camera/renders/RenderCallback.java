@@ -10,5 +10,5 @@ public interface RenderCallback {
 
     void onDrawFrame(GL10 gl);
 
-    void onCanvasReuslt(float start);
+    void onCanvasReuslt(float start,float bottom,float right);
 }

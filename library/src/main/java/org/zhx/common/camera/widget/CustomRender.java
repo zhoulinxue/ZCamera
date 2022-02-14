@@ -338,8 +338,8 @@ public class CustomRender extends BaseRender {
                 CUBE[4] / ratioWidth, CUBE[5] - mTopMargin / outputHeight,
                 CUBE[6] / ratioWidth, CUBE[7] - mTopMargin / outputHeight,
         };
-        
-        mCallback.onCanvasReuslt(((1 - CUBE[5] / ratioHeight) - mTopMargin / outputHeight) * outputHeight);
+
+        mCallback.onCanvasReuslt(mTopMargin, (CUBE[5] - mTopMargin / outputHeight - (CUBE[1] / ratioHeight + (1 - CUBE[5] / ratioHeight) - mTopMargin / outputHeight)) * outputHeight, outputHeight);
 
         glCubeBuffer.clear();
         glCubeBuffer.put(cube).position(0);

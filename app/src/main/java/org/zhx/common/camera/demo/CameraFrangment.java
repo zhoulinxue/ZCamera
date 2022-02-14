@@ -74,10 +74,13 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     FocusRectView mFocusView;
     private ImageSearchProcessor mImageSearchProcessor;
     private SensorProcessor mSensorProcessor;
-    protected CameraRatio mRatio = CameraRatio.SCANLE_1_1;
+    protected CameraRatio mRatio = CameraRatio.SCANLE_4_3;
     private int type = SURFACEVIEW;
     private SurfaceHolder mHolder;
     private float renderStartY;
+    private float renderBottom;
+    private float renderRight;
+    private CameraProxy proxy;
 
     @Nullable
     @Override
@@ -145,28 +148,27 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
 
     @Override
     public void onCameraCreate(final CameraProxy<Camera> proxy) {
-        runOnUiThread(() -> {
-            int previewHeight = 0;
-            int previewWidth = screenP.x;
+        this.proxy = proxy;
+        int previewHeight = 0;
+        int previewWidth = screenP.x;
 
-            if (proxy.getWidth() < proxy.getHeight()) {
-                previewHeight = screenP.x * proxy.getHeight() / proxy.getWidth();
+        if (proxy.getWidth() < proxy.getHeight()) {
+            previewHeight = screenP.x * proxy.getHeight() / proxy.getWidth();
+        } else {
+            previewHeight = screenP.x * proxy.getWidth() / proxy.getHeight();
+        }
+
+        mPreviewPoint = new Point(previewWidth, previewHeight);
+        try {
+            if (mSurfaceView instanceof CustomGLSurfaceView) {
+                ((CustomGLSurfaceView) mSurfaceView).setRotation(getRotation(getCameraOrientation(proxy.getCameraId() != 0)), proxy.getCameraId() != 0);
+                proxy.getCamera().setPreviewTexture(((CustomGLSurfaceView) mSurfaceView).getSurface());
             } else {
-                previewHeight = screenP.x * proxy.getWidth() / proxy.getHeight();
+                proxy.getCamera().setPreviewDisplay(mHolder);
             }
-
-            mPreviewPoint = new Point(previewWidth, previewHeight);
-            try {
-                if (mSurfaceView instanceof CustomGLSurfaceView) {
-                    ((CustomGLSurfaceView) mSurfaceView).setRotation(getRotation(getCameraOrientation(proxy.getCameraId() != 0)), proxy.getCameraId() != 0);
-                    proxy.getCamera().setPreviewTexture(((CustomGLSurfaceView) mSurfaceView).getSurface());
-                } else {
-                    proxy.getCamera().setPreviewDisplay(mHolder);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -329,8 +331,8 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
 
                 if (!mPresenter.isFocusing()) {
                     mFocusView.setVisibility(View.VISIBLE);
-                    mFocusView.setTouchFoucusRect(event.getX(), event.getY());
-                    mPresenter.focusArea(event.getX(), event.getY() - renderStartY, mFocusView);
+                    mFocusView.setTouchFoucusRect(event.getX(), event.getY(), renderRight, renderBottom, renderStartY);
+                    mPresenter.focusArea(event.getX(), event.getY(), mFocusView, proxy.getWidth(), proxy.getHeight());
                 }
                 return true;
             }
@@ -345,7 +347,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     }
 
     private boolean isSurfaceView(MotionEvent event) {
-        return (mSurfaceView != null) ? (event.getY() > mSurfaceView.getTop() && event.getY() < mSurfaceView.getBottom()) : false;
+        return event.getY() > renderStartY && event.getY() < (renderBottom + renderStartY);
     }
 
     private void addView(int childCount, View view, RelativeLayout.LayoutParams layoutParams) {
@@ -368,8 +370,11 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     }
 
     @Override
-    public void onCanvasReuslt(float start) {
+    public void onCanvasReuslt(float start, float bottom, float right) {
+        ZCameraLog.e("start:" + start + ", bottom:" + bottom + ", right:" + right);
         renderStartY = start;
+        renderBottom = bottom;
+        renderRight = right;
     }
 
     @Override

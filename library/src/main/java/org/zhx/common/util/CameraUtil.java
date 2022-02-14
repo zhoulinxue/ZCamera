@@ -216,13 +216,13 @@ public class CameraUtil {
      * @param coefficient
      * @return
      */
-    public static Rect calculateTapArea(Context context, float x, float y, float coefficient) {
+    public static Rect calculateTapArea(float x, float y, float coefficient,float dirtX,float dirtY) {
         float focusAreaSize = 300;
         int areaSize = Float.valueOf(focusAreaSize * coefficient).intValue();
         int centerY = 0;
         int centerX = 0;
-        centerY = (int) (x / CameraUtil.getScreenMetrics(context).x * 2000 - 1000);
-        centerX = (int) (y / CameraUtil.getScreenMetrics(context).y * 2000 - 1000);
+        centerY = (int) (x / dirtX * 2000 - 1000);
+        centerX = (int) (y / dirtY * 2000 - 1000);
         int left = clamp(centerX - areaSize / 2, -1000, 1000);
         int top = clamp(centerY - areaSize / 2, -1000, 1000);
 

@@ -79,9 +79,9 @@ public class CustomGLSurfaceView extends GLSurfaceView implements RenderCallback
     }
 
     @Override
-    public void onCanvasReuslt(float start) {
+    public void onCanvasReuslt(float start,float bottom,float right) {
         if (mViewCallback != null) {
-            mViewCallback.onCanvasReuslt(start);
+            mViewCallback.onCanvasReuslt(start,bottom,right);
         }
     }
 

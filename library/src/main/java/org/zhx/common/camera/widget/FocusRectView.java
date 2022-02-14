@@ -1,5 +1,6 @@
 package org.zhx.common.camera.widget;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -9,7 +10,9 @@ import android.util.AttributeSet;
 
 import androidx.appcompat.widget.AppCompatImageView;
 
+import org.zhx.common.util.CameraUtil;
 import org.zhx.common.util.ImageUtil;
+import org.zhx.common.util.ZCameraLog;
 
 /**
  * 对焦 区域
@@ -21,6 +24,8 @@ public class FocusRectView extends AppCompatImageView {
     private float radius;
     private float x, y;
     private int maxWidth;
+    private ValueAnimator mValueAnimator;
+    private long ANIMATION_DURATION = 250;
 
     public FocusRectView(Context context) {
         this(context, null, 0);
@@ -46,16 +51,41 @@ public class FocusRectView extends AppCompatImageView {
     }
 
     //对焦并绘制对焦矩形框
-    public void setTouchFoucusRect(float x, float y) {
+    public void setTouchFoucusRect(float x, float y, float distX, float distY, float starty) {
+        if (mValueAnimator != null && mValueAnimator.isRunning()) {
+            return;
+        }
+
         this.x = x;
         this.y = y;
-        maxWidth = 80;
-        //以焦点为中心，宽度为200的矩形框
-        touchFocusRect = new Rect((int) (x - maxWidth), (int) (y - maxWidth), (int) (x + maxWidth), (int) (y + maxWidth));
-        maxWidth = (touchFocusRect.right - touchFocusRect.left);
-        isScal = false;
-        radius = maxWidth / 2;
-        loop(0);
+        radius = 80;
+
+        ZCameraLog.e(",x:" + x + ", y:" + y + "distX：" + distX + ", distY:" + distY + ", starty:" + starty);
+
+        if (x < radius) {
+            this.x = radius;
+        } else if (x + radius > distX) {
+            this.x = distX - radius;
+        }
+
+        if (y < starty + radius) {
+            this.y = starty + radius;
+        } else if (y + radius > distY + starty) {
+            this.y = distY + starty - radius;
+        }
+
+        if (null == mValueAnimator) {
+            mValueAnimator = new ValueAnimator();
+            mValueAnimator.setFloatValues(radius, 1.2f * radius, radius);
+            mValueAnimator.setDuration(ANIMATION_DURATION);
+            mValueAnimator.addUpdateListener(animation -> {
+                radius = (float) animation.getAnimatedValue();
+
+                touchFocusRect = new Rect((int) (this.x - radius), (int) (this.y - radius), (int) (this.x + radius), (int) (this.y + radius));
+                invalidate();
+            });
+        }
+        mValueAnimator.start();
     }
 
     @Override
@@ -78,8 +108,9 @@ public class FocusRectView extends AppCompatImageView {
     @Override
     public void setVisibility(int visibility) {
         if (visibility == GONE) {
-            removeCallbacks(cicleRunable);
-            postInvalidate();
+            if (mValueAnimator != null && mValueAnimator.isRunning()) {
+                mValueAnimator.cancel();
+            }
         }
         super.setVisibility(visibility);
     }

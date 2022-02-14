@@ -102,7 +102,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
             mCamera.setPreviewCallback((data, camera) -> {
                 boolean isFirstFram = !previewSuc;
                 previewSuc = true;
-                mView.onPreviewFrame(data,mProxy.getWidth(),mProxy.getHeight(),isFirstFram);
+                mView.onPreviewFrame(data, mProxy.getWidth(), mProxy.getHeight(), isFirstFram);
             });
             List<String> supportedFocusModes = mCamera.getParameters().getSupportedFocusModes();
             hasAutoFocus = supportedFocusModes != null && supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO);
@@ -257,7 +257,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
     }
 
     @Override
-    public void focusArea(float x, float y, View focusView) {
+    public void focusArea(float x, float y, View focusView, float dirtY, float dirtX) {
         if (!previewSuc || mCamera == null || autoFocusManager == null || !hasAutoFocus) {
             ZCameraLog.e(TAG, "...hasAutoFocus." + hasAutoFocus);
             if (focusView != null) {
@@ -269,8 +269,8 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         Camera.Parameters parameters = mCamera.getParameters();
         List<Camera.Area> areas = new ArrayList<Camera.Area>();
         List<Camera.Area> areasMetrix = new ArrayList<Camera.Area>();
-        Rect focusRect = CameraUtil.calculateTapArea(focusView.getContext(), x, y, 1.0f);
-        Rect metrixRect = CameraUtil.calculateTapArea(focusView.getContext(), x, y, 1.5f);
+        Rect focusRect = CameraUtil.calculateTapArea(x, y, 1.0f, dirtX, dirtY);
+        Rect metrixRect = CameraUtil.calculateTapArea(x, y, 1.5f, dirtX, dirtY);
         areas.add(new Camera.Area(focusRect, 1000));
         areasMetrix.add(new Camera.Area(metrixRect, 1000));
         parameters.setMeteringAreas(areasMetrix);
