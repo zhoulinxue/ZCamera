@@ -16,6 +16,8 @@ android {
         externalNativeBuild {
             cmake { cppFlags "" }
         }
+        ndkPath 'C\\:\\Users\\Administrator\\AppData\\Local\\Android\\Sdk\\ndk'  // Point to your own NDK
+        ndkVersion '23.1.7779620'
     }
     externalNativeBuild {
         cmake { path "src/main/cpp/CMakeLists.txt" }
