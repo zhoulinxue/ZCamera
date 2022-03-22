@@ -2,12 +2,15 @@ package org.zhx.common.camera.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 
 import org.zhx.common.camera.R;
+import org.zhx.common.camera.renders.CustomRender;
 import org.zhx.common.camera.renders.RenderCallback;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -21,6 +24,7 @@ public class CustomGLSurfaceView extends GLSurfaceView implements RenderCallback
     CustomRender mPreviewRender;
     private RenderCallback mViewCallback;
     private float mTopmargin = 0;
+    private Bitmap bitmap;
 
     public CustomGLSurfaceView(Context context) {
         super(context);
@@ -37,6 +41,7 @@ public class CustomGLSurfaceView extends GLSurfaceView implements RenderCallback
         mContext = context;
         setEGLContextClientVersion(2);
         mPreviewRender = new CustomRender(this);
+        mPreviewRender.setBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.btn_add));
 
         if (null != attrs) {
             TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.CustomGLSurfaceView);
@@ -79,9 +84,9 @@ public class CustomGLSurfaceView extends GLSurfaceView implements RenderCallback
     }
 
     @Override
-    public void onCanvasReuslt(float start,float bottom,float right) {
+    public void onCanvasReuslt(float start, float bottom, float right) {
         if (mViewCallback != null) {
-            mViewCallback.onCanvasReuslt(start,bottom,right);
+            mViewCallback.onCanvasReuslt(start, bottom, right);
         }
     }
 

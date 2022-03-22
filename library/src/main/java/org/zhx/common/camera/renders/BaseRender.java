@@ -2,8 +2,8 @@ package org.zhx.common.camera.renders;
 
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.util.Log;
 
+import org.zhx.common.camera.widget.GLHelper;
 import org.zhx.common.camera.widget.TextureRotationUtil;
 import org.zhx.common.util.ZCameraLog;
 
@@ -13,6 +13,27 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 public abstract class BaseRender implements GLSurfaceView.Renderer {
+    private final String NO_FILTER_VERTEX_SHADER = "" +
+            "attribute vec4 position;\n" +
+            "attribute vec4 inputTextureCoordinate;\n" +
+            " \n" +
+            "varying vec2 textureCoordinate;\n" +
+            " \n" +
+            "void main()\n" +
+            "{\n" +
+            "    gl_Position = position;\n" +
+            "    textureCoordinate = inputTextureCoordinate.xy;\n" +
+            "}";
+    private final String NO_FILTER_FRAGMENT_SHADER = "" +
+            "varying highp vec2 textureCoordinate;\n" +
+            " \n" +
+            "uniform sampler2D inputImageTexture;\n" +
+            " \n" +
+            "void main()\n" +
+            "{\n" +
+            "     gl_FragColor = texture2D(inputImageTexture, textureCoordinate);\n" +
+            "}";
+
     protected IntBuffer glRgbBuffer;
 
     protected int glProgId;
@@ -42,13 +63,8 @@ public abstract class BaseRender implements GLSurfaceView.Renderer {
         this.mCallback = mCallback;
     }
 
-
-    protected abstract String getFragmentShader();
-
-    protected abstract String getVerTexShader();
-
     protected void onInit() {
-        glProgId = loadProgram(getVerTexShader(), getFragmentShader());
+        glProgId = GLHelper.loadProgram(getVerTexShader(), getFragmentShader());
         glCubeBuffer = ByteBuffer.allocateDirect(CUBE.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
@@ -61,51 +77,16 @@ public abstract class BaseRender implements GLSurfaceView.Renderer {
         isInitialized = true;
     }
 
-    private int loadProgram(final String strVSource, final String strFSource) {
-        int iVShader;
-        int iFShader;
-        int iProgId;
-        int[] link = new int[1];
-        iVShader = loadShader(strVSource, GLES20.GL_VERTEX_SHADER);
-        if (iVShader == 0) {
-            ZCameraLog.d("Load Program", "Vertex Shader Failed");
-            return 0;
-        }
-        iFShader = loadShader(strFSource, GLES20.GL_FRAGMENT_SHADER);
-        if (iFShader == 0) {
-            ZCameraLog.d("Load Program", "Fragment Shader Failed");
-            return 0;
-        }
+    protected abstract void onDrawArraysPre();
 
-        iProgId = GLES20.glCreateProgram();
-
-        GLES20.glAttachShader(iProgId, iVShader);
-        GLES20.glAttachShader(iProgId, iFShader);
-
-        GLES20.glLinkProgram(iProgId);
-
-        GLES20.glGetProgramiv(iProgId, GLES20.GL_LINK_STATUS, link, 0);
-        if (link[0] <= 0) {
-            ZCameraLog.d("Load Program", "Linking Failed");
-            return 0;
-        }
-        GLES20.glDeleteShader(iVShader);
-        GLES20.glDeleteShader(iFShader);
-        return iProgId;
+    protected String getFragmentShader() {
+        return NO_FILTER_FRAGMENT_SHADER;
     }
 
-    private int loadShader(final String strSource, final int iType) {
-        int[] compiled = new int[1];
-        int iShader = GLES20.glCreateShader(iType);
-        GLES20.glShaderSource(iShader, strSource);
-        GLES20.glCompileShader(iShader);
-        GLES20.glGetShaderiv(iShader, GLES20.GL_COMPILE_STATUS, compiled, 0);
-        if (compiled[0] == 0) {
-            ZCameraLog.d("Load Shader Failed", "Compilation\n" + GLES20.glGetShaderInfoLog(iShader));
-            return 0;
-        }
-        return iShader;
+    protected String getVerTexShader() {
+        return NO_FILTER_VERTEX_SHADER;
     }
+
 
     public boolean isInitialized() {
         return isInitialized;

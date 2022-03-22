@@ -1,12 +1,12 @@
-package org.zhx.common.camera.widget;
+package org.zhx.common.camera.renders;
 
+import android.graphics.Bitmap;
 import android.opengl.GLES20;
-import android.opengl.GLSurfaceView;
-import android.util.Log;
 
 import org.zhx.common.camera.YUVTorgb;
-import org.zhx.common.camera.renders.BaseRender;
-import org.zhx.common.camera.renders.RenderCallback;
+import org.zhx.common.camera.widget.GLHelper;
+import org.zhx.common.camera.widget.Rotation;
+import org.zhx.common.camera.widget.TextureRotationUtil;
 import org.zhx.common.util.ZCameraLog;
 
 import java.nio.ByteBuffer;
@@ -20,26 +20,21 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 public class CustomRender extends BaseRender {
-    public static final String NO_FILTER_VERTEX_SHADER = "" +
-            "attribute vec4 position;\n" +
+
+    private final String VERTEX_SHADER = "attribute vec4 position;\n" +
             "attribute vec4 inputTextureCoordinate;\n" +
+            "attribute vec4 inputTextureCoordinate2;\n" +
             " \n" +
             "varying vec2 textureCoordinate;\n" +
+            "varying vec2 textureCoordinate2;\n" +
             " \n" +
             "void main()\n" +
             "{\n" +
             "    gl_Position = position;\n" +
             "    textureCoordinate = inputTextureCoordinate.xy;\n" +
+            "    textureCoordinate2 = inputTextureCoordinate2.xy;\n" +
             "}";
-    public static final String NO_FILTER_FRAGMENT_SHADER = "" +
-            "varying highp vec2 textureCoordinate;\n" +
-            " \n" +
-            "uniform sampler2D inputImageTexture;\n" +
-            " \n" +
-            "void main()\n" +
-            "{\n" +
-            "     gl_FragColor = texture2D(inputImageTexture, textureCoordinate);\n" +
-            "}";
+
     private Queue<Runnable> runOnDraw;
     private Queue<Runnable> runOnDrawEnd;
 
@@ -83,15 +78,11 @@ public class CustomRender extends BaseRender {
                 .asFloatBuffer();
     }
 
-    @Override
-    protected String getFragmentShader() {
-        return NO_FILTER_FRAGMENT_SHADER;
-    }
-
-    @Override
-    protected String getVerTexShader() {
-        return NO_FILTER_VERTEX_SHADER;
-    }
+    private int filterSecondTextureCoordinateAttribute;
+    private int filterInputTextureUniform2;
+    private int filterSourceTexture2 = -1;
+    private ByteBuffer texture2CoordinatesBuffer;
+    private Bitmap bitmap;
 
     public void onInit() {
         glProgId = GLHelper.loadProgram(vertexShader, fragmentShader);
@@ -99,6 +90,22 @@ public class CustomRender extends BaseRender {
         glUniformTexture = GLES20.glGetUniformLocation(glProgId, "inputImageTexture");
         glAttribTextureCoordinate = GLES20.glGetAttribLocation(glProgId, "inputTextureCoordinate");
         isInitialized = true;
+
+        filterSecondTextureCoordinateAttribute = GLES20.glGetAttribLocation(glProgId, "inputTextureCoordinate2");
+        filterInputTextureUniform2 = GLES20.glGetUniformLocation(glProgId, "inputImageTexture2"); // This does assume a name of "inputImageTexture2" for second input texture in the fragment shader
+        GLES20.glEnableVertexAttribArray(filterSecondTextureCoordinateAttribute);
+
+    }
+
+    @Override
+    protected void onDrawArraysPre() {
+        GLES20.glEnableVertexAttribArray(filterSecondTextureCoordinateAttribute);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, filterSourceTexture2);
+        GLES20.glUniform1i(filterInputTextureUniform2, 3);
+
+        texture2CoordinatesBuffer.position(0);
+        GLES20.glVertexAttribPointer(filterSecondTextureCoordinateAttribute, 2, GLES20.GL_FLOAT, false, 0, texture2CoordinatesBuffer);
     }
 
     public void setRotation(final Rotation rotation,
@@ -106,6 +113,15 @@ public class CustomRender extends BaseRender {
         this.flipHorizontal = flipHorizontal;
         this.flipVertical = flipVertical;
         this.rotation = rotation;
+
+        float[] buffer = TextureRotationUtil.getRotation(rotation, flipHorizontal, flipVertical);
+
+        ByteBuffer bBuffer = ByteBuffer.allocateDirect(32).order(ByteOrder.nativeOrder());
+        FloatBuffer fBuffer = bBuffer.asFloatBuffer();
+        fBuffer.put(buffer);
+        fBuffer.flip();
+
+        texture2CoordinatesBuffer = bBuffer;
     }
 
     public void setRotation(final Rotation rotation, boolean isFrontCamera) {
@@ -117,6 +133,39 @@ public class CustomRender extends BaseRender {
             onInit();
         }
     }
+
+    public void setBitmap(final Bitmap bitmap) {
+        if (bitmap != null && bitmap.isRecycled()) {
+            return;
+        }
+
+        if (this.bitmap == null) {
+            return;
+        }
+        runOnDraw(new Runnable() {
+            public void run() {
+                if (filterSourceTexture2 == -1) {
+                    if (bitmap == null || bitmap.isRecycled()) {
+                        return;
+                    }
+                    GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
+                    filterSourceTexture2 = GLHelper.loadTexture(bitmap, -1, false);
+                }
+            }
+        });
+    }
+
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
+    public void recycleBitmap() {
+        if (bitmap != null && !bitmap.isRecycled()) {
+            bitmap.recycle();
+            bitmap = null;
+        }
+    }
+
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -177,13 +226,15 @@ public class CustomRender extends BaseRender {
 
         GLES20.glVertexAttribPointer(glAttribPosition, 2, GLES20.GL_FLOAT, false, 0, cubeBuffer);
         GLES20.glEnableVertexAttribArray(glAttribPosition);
-        GLES20.glVertexAttribPointer(glAttribTextureCoordinate, 2, GLES20.GL_FLOAT, false, 0,textureBuffer);
+        GLES20.glVertexAttribPointer(glAttribTextureCoordinate, 2, GLES20.GL_FLOAT, false, 0, textureBuffer);
         GLES20.glEnableVertexAttribArray(glAttribTextureCoordinate);
         if (textureId != -1) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
             GLES20.glUniform1i(glUniformTexture, 0);
         }
+        onDrawArraysPre();
+
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLES20.glDisableVertexAttribArray(glAttribPosition);
         GLES20.glDisableVertexAttribArray(glAttribTextureCoordinate);
@@ -270,6 +321,11 @@ public class CustomRender extends BaseRender {
         glCubeBuffer.put(cube).position(0);
         glTextureBuffer.clear();
         glTextureBuffer.put(textureCords).position(0);
+    }
+
+    @Override
+    protected String getVerTexShader() {
+        return VERTEX_SHADER;
     }
 
     private float addDistance(float coordinate, float distance) {
