@@ -28,14 +28,14 @@ public class RotationProcessor extends AsyncTask<Object, Object, Bitmap> {
     protected void onPostExecute(Bitmap bytes) {
         super.onPostExecute(bytes);
         if (mCallback != null) {
-            ZCameraLog.e("CameraPresenter", "....Camera...rotation_process_callback......................." + System.currentTimeMillis());
+            ZCameraLog.e("CameraPresenter", "....Camera...rotation_process_callback.......................");
             mCallback.onData(bytes);
         }
     }
 
     @Override
     protected Bitmap doInBackground(Object... objects) {
-        ZCameraLog.e("CameraPresenter", "....Camera...rotation_process_start......................." + System.currentTimeMillis());
+        ZCameraLog.e("CameraPresenter", "....Camera...rotation_process_start.......................");
         Bitmap bitmap = ImageUtil.getBitmap(mContext, data, false);
         Bitmap bm = bitmap;
         if (mContext.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {

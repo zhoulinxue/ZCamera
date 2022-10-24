@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 public class ImageSearchProcessor {
     private Context mContext;
     private PictrueModel.view mView;
+    private String TAG = ImageSearchProcessor.class.getSimpleName();
 
     public ImageSearchProcessor(Context context, PictrueModel.view mView) {
         this.mContext = context;
@@ -41,7 +42,7 @@ public class ImageSearchProcessor {
 
         @Override
         protected List<ImageData> doInBackground(Object... objects) {
-            ZCameraLog.e("CameraPresenter", "....Camera...search_start..............." + System.currentTimeMillis());
+            ZCameraLog.e(TAG, "....Camera...search_start...............");
             List<ImageData> dataList = new ArrayList<>();
             String[] projection = {MediaStore.Images.Media._ID,
                     MediaStore.Images.Media.DISPLAY_NAME,
@@ -70,15 +71,15 @@ public class ImageSearchProcessor {
                 data.setDateAdded(dateModified);
                 data.setDisplayName(displayName);
                 data.setId(id);
-                if (!TextUtils.isEmpty(displayName) && !TextUtils.isEmpty(path) && displayName.contains(path))
+                if (!TextUtils.isEmpty(displayName)
+                        && !TextUtils.isEmpty(path)
+                        && displayName.contains(path)) {
                     dataList.add(data);
-            }
-            try {
-                if (null != dataList && dataList.size() != 0) {
-                    mView.onSearchResult(dataList);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+            }
+
+            if (null != dataList && dataList.size() != 0) {
+                mView.onSearchResult(dataList);
             }
 
             return dataList;

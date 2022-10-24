@@ -48,7 +48,7 @@ public abstract class BaseFragment extends Fragment implements BaseView, Pictrue
 
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
-    public void onSearchResult(List<ImageData> imageDatas) throws Exception {
+    public void onSearchResult(List<ImageData> imageDatas) {
         mImageDatas = imageDatas;
         runOnUiThread(new Runnable() {
             @Override

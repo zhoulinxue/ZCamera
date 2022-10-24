@@ -218,7 +218,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
         mCamera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
-                ZCameraLog.e(TAG, "....Camera...takePicture......................." + System.currentTimeMillis());
+                ZCameraLog.e(TAG, "....Camera...takePicture.......................");
                 mView.onTakeComplete();
                 byte[] finalDatas = data;
                 if (isFrontCamera) {

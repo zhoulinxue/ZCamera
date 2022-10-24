@@ -16,7 +16,7 @@ public class ZCameraLog {
     }
 
     public static void d(String tag, String msg) {
-        Log.d(TAG, tag + "__" + msg);
+        Log.d(TAG, tag + "__" + msg + " tempTime: " + System.currentTimeMillis());
     }
 
     public static void i(String msg) {
@@ -32,11 +32,11 @@ public class ZCameraLog {
     }
 
     public static void e(String tag, String msg) {
-        Log.e(TAG, tag + "__" + msg);
+        Log.e(TAG, tag + "__" + msg + " tempTime: ");
     }
 
     public static void e(String msg) {
-        e("", msg);
+        e("", msg + System.currentTimeMillis());
     }
 
     public static void e(String msg, Throwable throwable) {

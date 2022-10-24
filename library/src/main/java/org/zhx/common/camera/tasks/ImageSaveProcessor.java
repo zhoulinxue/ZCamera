@@ -33,7 +33,7 @@ public class ImageSaveProcessor {
 
         @Override
         protected ImageData doInBackground(Object... objects) {
-            ZCameraLog.e(TAG, "....Camera...save_process_start..............." + System.currentTimeMillis());
+            ZCameraLog.d(TAG, "....Camera...save_process_start...............");
             Uri uri = null;
             try {
                 if (isFrontCamera) {
@@ -54,7 +54,7 @@ public class ImageSaveProcessor {
 
         @Override
         protected void onPostExecute(ImageData data) {
-            ZCameraLog.e(TAG, "....Camera....ImageSaveProcessor....result..." + System.currentTimeMillis());
+            ZCameraLog.d(TAG, "....Camera....ImageSaveProcessor....result...");
             mView.showThumImage(data.getContentUri());
         }
     }
