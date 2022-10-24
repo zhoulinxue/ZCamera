@@ -56,9 +56,4 @@ public class ZCameraLog {
     public static void e(String msg, Throwable throwable) {
         Log.e("",msg,throwable);
     }
-
-    public static void e(String msg, Throwable throwable) {
-        Log.e("",msg,throwable);
-    }
-
 }
