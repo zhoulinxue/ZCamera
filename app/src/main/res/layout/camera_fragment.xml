@@ -70,7 +70,7 @@
     </LinearLayout>
 
 
-    <ImageView
+    <org.zhx.common.camera.demo.ThumbImageView
         android:id="@+id/z_base_camera_showImg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -101,14 +101,14 @@
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true" />
 
-            <de.hdodenhof.circleimageview.CircleImageView
+            <org.zhx.common.camera.demo.ThumbImageView
                 android:id="@+id/z_thumil_img"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_centerInParent="true"
                 android:scaleType="centerCrop"
                 app:civ_border_color="#FFFFFFFF"
-                app:civ_border_width="2dp" />
+                app:civ_border_width="@dimen/borderWidth" />
         </RelativeLayout>
 
         <ImageView
