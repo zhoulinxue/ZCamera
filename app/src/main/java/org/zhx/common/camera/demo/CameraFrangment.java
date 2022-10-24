@@ -1,10 +1,14 @@
 package org.zhx.common.camera.demo;
 
 import android.Manifest;
+import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
@@ -57,7 +61,8 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     public static final int GL_SURFACEVIEW = 2;
     public static final String SURFACE_TYPE = "preview_type";
     private static final long SWITCH_DELAY = 25;
-    private ImageView mShowImage, mShutterImg, mFlashImg, mThumImag;
+    private ImageView mShutterImg, mFlashImg;
+    private ThumbImageView mThumImag,mShowImage;
     private View animateHolder;
     private SurfaceView mSurfaceView;
     private CameraPresenter mPresenter;
@@ -75,6 +80,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     protected CameraRatio mRatio = CameraRatio.SCANLE_16_9;
     private int type = SURFACEVIEW;
     private SurfaceHolder mHolder;
+    private long DURATION = 90;
 
     @Nullable
     @Override
@@ -98,6 +104,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
         }
 
         mShowImage = view.findViewById(R.id.z_base_camera_showImg);
+        mShowImage.setDisableCircularTransformation(true);
         animateHolder = view.findViewById(R.id.animate_place_holder);
         mShutterImg = view.findViewById(R.id.z_take_pictrue_img);
         mRootView = view.findViewById(R.id.camera_root_layout);
@@ -198,40 +205,57 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
 
     @Override
     public void onEmptyFile() {
-        mThumImag.setImageResource(R.mipmap.ic_launcher);
+        ZCameraLog.e("....onEmptyFile..............."+ System.currentTimeMillis());
+        showImageData(null);
     }
 
     public void showImageData(Uri uri) {
-        Glide.with(getActivity()).asBitmap().override(mThumImag.getHeight()).load(uri).into(mThumImag);
+        Glide.with(getActivity()).asBitmap().error(new ColorDrawable(0)).override(mThumImag.getHeight()).load(uri).into(mThumImag);
     }
 
     @Override
     public void showThumImage(final Uri uri) {
-        ZCameraLog.e("....showThumImage..............." + System.currentTimeMillis());
+        ZCameraLog.e("....showThumImage...............uri: "+ uri + System.currentTimeMillis() +",  "+ mThumImag.hashCode());
         Glide.with(getActivity()).asBitmap().override(mThumImag.getHeight()).load(uri).addListener(new RequestListener<Bitmap>() {
             @Override
             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+                ZCameraLog.e("....showThumImage...............onLoadFailed "+ System.currentTimeMillis());
                 return false;
             }
 
             @Override
             public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                ZCameraLog.e("....Camera...load end...............,width:" + resource.getWidth() + ",height:" + resource.getHeight() + ",  timetemp: " + System.currentTimeMillis());
+                ZCameraLog.e("....showThumImage...............onResourceReady "+ System.currentTimeMillis());
                 mShowImage.animate()
-                        .translationX(-(screenP.x / 2 + mThumImag.getX()) - mThumImag.getWidth() / 2 + CameraUtil.dip2px(getActivity(), 45))
-                        .translationY(screenP.y / 2 - mThumImag.getY() + mThumImag.getHeight() / 2 - CameraUtil.dip2px(getActivity(), 55))
+                        .translationX(CameraUtil.dip2px(getActivity(), 47) -(screenP.x + mThumImag.getWidth()/2) / 2 )
+                        .translationY(screenP.y / 2 - CameraUtil.dip2px(getActivity(), 55))
                         .scaleX(0.01f)
-                        .scaleY(0.01f)
-                        .setDuration(90)
+                        .scaleY(0.01f).setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                            @Override
+                            public void onAnimationUpdate(ValueAnimator animation) {
+                                long value = animation.getCurrentPlayTime();
+                                float process = value*1f / DURATION;
+                                float ratio = 1 - mThumImag.getWidth()*2f / screenP.x;
+
+                                if (process > ratio) {
+                                    mThumImag.setVisibility(View.VISIBLE);
+                                }
+
+                                ZCameraLog.e("....Camera...showing update...............process: " + process +", ratio: "+ ratio);
+                            }
+                        })
+                        .setDuration(DURATION)
                         .withLayer()
+                        .withStartAction(() -> mThumImag.setVisibility(View.GONE))
                         .withEndAction(() -> {
                             mRootView.removeView(mShowImage);
                             mThumImag.setImageBitmap(resource);
                             mShowImage.setImageBitmap(null);
-                            mShowImage = new ImageView(getActivity());
+                            mShowImage = new ThumbImageView(getActivity());
+                            mShowImage.setDisableCircularTransformation(true);
                             mShowImage.setId(R.id.z_base_camera_showImg);
                             addView(mRootView.getChildCount(), mShowImage, showLp);
-                            ZCameraLog.e("....Camera...show end..............." + System.currentTimeMillis());
+                            ZCameraLog.e("....Camera...show end...............resource: " + resource.getHeight() + System.currentTimeMillis());
                         }).setInterpolator(new AccelerateInterpolator()).start();
                 return false;
             }
