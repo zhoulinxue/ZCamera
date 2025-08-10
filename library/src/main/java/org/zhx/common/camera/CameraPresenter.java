@@ -51,8 +51,10 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 isFrontCamera = !isFrontCamera;
             }
 
-            if (mView.hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            if (mView.hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    && mView.hasPermission(Manifest.permission.CAMERA)) {
                 ZCameraLog.e(TAG, action + "....Camera....start.......................");
+
                 if (openCamera()) {
                     boolean setCamera = setCamera();
                     if (setCamera) {
@@ -64,6 +66,7 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
                 } else {
                     mView.onError(R.string.open_error);
                 }
+
             } else {
                 mView.requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, Constants.STORAGE);
             }

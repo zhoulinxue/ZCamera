@@ -104,8 +104,10 @@ public class CustomRender extends BaseRender {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, filterSourceTexture2);
         GLES20.glUniform1i(filterInputTextureUniform2, 3);
 
-        texture2CoordinatesBuffer.position(0);
-        GLES20.glVertexAttribPointer(filterSecondTextureCoordinateAttribute, 2, GLES20.GL_FLOAT, false, 0, texture2CoordinatesBuffer);
+        if (null != texture2CoordinatesBuffer) {
+            texture2CoordinatesBuffer.position(0);
+            GLES20.glVertexAttribPointer(filterSecondTextureCoordinateAttribute, 2, GLES20.GL_FLOAT, false, 0, texture2CoordinatesBuffer);
+        }
     }
 
     public void setRotation(final Rotation rotation,
@@ -228,11 +230,13 @@ public class CustomRender extends BaseRender {
         GLES20.glEnableVertexAttribArray(glAttribPosition);
         GLES20.glVertexAttribPointer(glAttribTextureCoordinate, 2, GLES20.GL_FLOAT, false, 0, textureBuffer);
         GLES20.glEnableVertexAttribArray(glAttribTextureCoordinate);
+
         if (textureId != -1) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
             GLES20.glUniform1i(glUniformTexture, 0);
         }
+
         onDrawArraysPre();
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);

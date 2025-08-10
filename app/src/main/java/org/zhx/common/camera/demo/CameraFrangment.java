@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
 import android.net.Uri;
@@ -58,13 +59,13 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 public class CameraFrangment extends BaseFragment implements CameraModel.view<Camera>, View.OnClickListener, RenderCallback, SurfaceHolder.Callback {
+    private String TAG = CameraFrangment.class.getSimpleName();
     public static final int SURFACEVIEW = 1;
     public static final int GL_SURFACEVIEW = 2;
     public static final String SURFACE_TYPE = "preview_type";
     private static final long SWITCH_DELAY = 25;
-    private ImageView mShutterImg, mFlashImg;
-    private ThumbImageView mThumImag,mShowImage;
-    private View animateHolder;
+    private ImageView mShutterImg, mFlashImg,mShowImage;
+    private ThumbImageView mThumImag;
     private SurfaceView mSurfaceView;
     private CameraPresenter mPresenter;
     private int[] modelResId = {
@@ -85,7 +86,10 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     private float renderBottom;
     private float renderRight;
     private CameraProxy proxy;
-    private long DURATION = 90;
+    private long DURATION = 100;
+    float topmargin = 0;
+    int[] thumbLocation = new int[2];
+    Rect showRect = new Rect();
 
     @Nullable
     @Override
@@ -109,14 +113,13 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
         }
 
         mShowImage = view.findViewById(R.id.z_base_camera_showImg);
-        animateHolder = view.findViewById(R.id.animate_place_holder);
+        topmargin = getResources().getDimension(R.dimen.topbar_height);
         mShutterImg = view.findViewById(R.id.z_take_pictrue_img);
         mRootView = view.findViewById(R.id.camera_root_layout);
 
         if (SURFACEVIEW == type) {
             mSurfaceView = new SurfaceView(getActivity());
         } else {
-            float topmargin = getResources().getDimension(R.dimen.topbar_height);
             mSurfaceView = new CustomGLSurfaceView(getActivity());
             ((CustomGLSurfaceView) mSurfaceView).setCanvasTopmargin(topmargin);
         }
@@ -131,6 +134,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
         mThumImag.setOnClickListener(this);
         mShutterImg.setOnClickListener(this);
         mFlashImg.setOnClickListener(this);
+
         initHolder();
         mImageSearchProcessor.showImags(Constants.FILE_DIR);
     }
@@ -163,7 +167,13 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
             previewHeight = screenP.x * proxy.getWidth() / proxy.getHeight();
         }
 
+        ZCameraLog.e(TAG,"onCameraCreate, previewWidth:" + previewWidth +", previewHeight:" + previewHeight);
+
         mPreviewPoint = new Point(previewWidth, previewHeight);
+        RelativeLayout.LayoutParams lp= new RelativeLayout.LayoutParams(previewWidth,previewHeight);
+        lp.topMargin = (int) topmargin;
+        runOnUiThread(() -> mShowImage.setLayoutParams(lp));
+
         try {
             if (mSurfaceView instanceof CustomGLSurfaceView) {
                 ((CustomGLSurfaceView) mSurfaceView).setRotation(getRotation(getCameraOrientation(proxy.getCameraId() != 0)), proxy.getCameraId() != 0);
@@ -197,7 +207,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
                     Intent i = new Intent(getActivity(), ShowImageActivity.class);
                     i.putParcelableArrayListExtra(Constants.HISTORE_PICTRUE, (ArrayList<? extends Parcelable>) mImageDatas);
                     ActivityOptionsCompat optionsCompat =
-                            ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), animateHolder, "image");
+                            ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), mThumImag, "image");
                     startActivity(i, optionsCompat.toBundle());
                 }
         }
@@ -216,6 +226,7 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     @Override
     public void showThumImage(final Uri uri) {
         ZCameraLog.e("....showThumImage...............uri: "+ uri + System.currentTimeMillis() +",  "+ mThumImag.hashCode());
+        mThumImag.getLocationOnScreen(thumbLocation);
         Glide.with(getActivity()).asBitmap().override(mThumImag.getHeight()).load(uri).addListener(new RequestListener<Bitmap>() {
             @Override
             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
@@ -226,11 +237,12 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
             @Override
             public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
                 ZCameraLog.e("....showThumImage...............onResourceReady "+ System.currentTimeMillis());
+                mShowImage.getGlobalVisibleRect(showRect);
                 mShowImage.animate()
-                        .translationX(CameraUtil.dip2px(getActivity(), 47) -(screenP.x + mThumImag.getWidth()/2) / 2 )
-                        .translationY(screenP.y / 2 - CameraUtil.dip2px(getActivity(), 55))
-                        .scaleX(0.01f)
-                        .scaleY(0.01f).setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                        .translationXBy((thumbLocation[0] + mThumImag.getWidth()/2)- showRect.centerX())
+                        .translationYBy((thumbLocation[1] + mThumImag.getHeight()/2) - showRect.centerY())
+                        .scaleX(mThumImag.getWidth() / (mPreviewPoint.x * 1f))
+                        .scaleY(mThumImag.getHeight() / (mPreviewPoint.y * 1f)).setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                             @Override
                             public void onAnimationUpdate(ValueAnimator animation) {
                                 long value = animation.getCurrentPlayTime();
@@ -248,13 +260,14 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
                         .withLayer()
                         .withStartAction(() -> mThumImag.setVisibility(View.GONE))
                         .withEndAction(() -> {
-                            mRootView.removeView(mShowImage);
+                            mThumImag.setVisibility(View.VISIBLE);
                             mThumImag.setImageBitmap(resource);
+                            mShowImage.setTranslationX(0f);
+                            mShowImage.setTranslationY(0f);
+                            mShowImage.setScaleX(1f);
+                            mShowImage.setScaleY(1f);
                             mShowImage.setImageBitmap(null);
-                            mShowImage = new ThumbImageView(getActivity());
-                            mShowImage.setDisableCircularTransformation(true);
-                            mShowImage.setId(R.id.z_base_camera_showImg);
-                            addView(mRootView.getChildCount(), mShowImage, showLp);
+
                             ZCameraLog.e("....Camera...show end...............resource: " + resource.getHeight() + System.currentTimeMillis());
                         }).setInterpolator(new AccelerateInterpolator()).start();
                 return false;
@@ -314,6 +327,8 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        ZCameraLog.e(TAG,"onRequestPermissionsResult, requestCode: " + requestCode);
+
         switch (requestCode) {
             case Constants.CAMERA:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -322,11 +337,17 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
                 break;
             case Constants.STORAGE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    boolean hasCameraPermission = PermissionsUtil.hasPermission(getActivity(), Manifest.permission.CAMERA);
+                    ZCameraLog.e(TAG,"onRequestPermissionsResult, hasCameraPermission :" + hasCameraPermission);
+
                     if (PermissionsUtil.hasPermission(getActivity(), Manifest.permission.CAMERA)) {
                         startCamera(CameraAction.PERMISSITON_GRANTED);
                     } else {
                         PermissionsUtil.requestPermission(this, Manifest.permission.CAMERA, Constants.CAMERA);
                     }
+                } else {
+                    ZCameraLog.e(TAG,"onRequestPermissionsResult, grantResults.length :" + grantResults.length
+                            +", grantResults: " + grantResults);
                 }
                 break;
 

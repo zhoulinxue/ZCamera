@@ -69,8 +69,19 @@
             android:src="@drawable/ic_camera_top_bar_setting" />
     </LinearLayout>
 
-
     <org.zhx.common.camera.demo.ThumbImageView
+        android:id="@+id/z_thumil_img"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="20dp"
+        android:scaleType="centerCrop"
+        app:civ_border_color="#FFFFFFFF"
+        app:civ_border_width="@dimen/borderWidth"
+        android:layout_marginBottom="30dp"/>
+
+    <ImageView
         android:id="@+id/z_base_camera_showImg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -87,29 +98,17 @@
         android:paddingTop="30dp"
         android:paddingBottom="30dp">
 
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+
+        <org.zhx.common.camera.demo.ThumbImageView
+            android:id="@+id/z_thumil_img"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_alignParentLeft="true"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="20dp">
-
-            <View
-                android:id="@+id/animate_place_holder"
-                android:layout_width="1dp"
-                android:layout_height="1dp"
-                android:layout_alignParentTop="true"
-                android:layout_centerHorizontal="true" />
-
-            <org.zhx.common.camera.demo.ThumbImageView
-                android:id="@+id/z_thumil_img"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_centerInParent="true"
-                android:scaleType="centerCrop"
-                app:civ_border_color="#FFFFFFFF"
-                app:civ_border_width="@dimen/borderWidth" />
-        </RelativeLayout>
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="20dp"
+            android:scaleType="centerCrop"
+            app:civ_border_color="#FFFFFFFF"
+            app:civ_border_width="@dimen/borderWidth" />
 
         <ImageView
             android:id="@+id/z_take_pictrue_img"
