@@ -134,9 +134,15 @@ public class CameraFrangment extends BaseFragment implements CameraModel.view<Ca
         mThumImag.setOnClickListener(this);
         mShutterImg.setOnClickListener(this);
         mFlashImg.setOnClickListener(this);
-
         initHolder();
-        mImageSearchProcessor.showImags(Constants.FILE_DIR);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (null != mImageSearchProcessor) {
+            mImageSearchProcessor.showImags(Constants.FILE_DIR);
+        }
     }
 
     private void initHolder() {

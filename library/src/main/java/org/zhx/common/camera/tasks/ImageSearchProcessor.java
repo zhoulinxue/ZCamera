@@ -55,7 +55,6 @@ public class ImageSearchProcessor {
                     cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
 
             while (cursor.moveToNext()) {
-
                 // Here we'll use the column indexs that we found above.
                 long id = cursor.getLong(idColumn);
                 Date dateModified = new Date(TimeUnit.SECONDS.toMillis(cursor.getLong(dateModifiedColumn)));
