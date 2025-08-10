@@ -33,7 +33,7 @@ public class ImageSaveProcessor {
 
         @Override
         protected ImageData doInBackground(Object... objects) {
-            ZCameraLog.e(TAG, "....Camera...save_process_start..............." + System.currentTimeMillis());
+            ZCameraLog.e(TAG, "takePicture_save_process_start..............." + System.currentTimeMillis());
             Uri uri = null;
             try {
                 if (isFrontCamera) {

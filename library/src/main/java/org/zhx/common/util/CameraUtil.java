@@ -172,6 +172,7 @@ public class CameraUtil {
         } else {
             degree = isFrontCamera ? ExifInterface.ORIENTATION_ROTATE_90 : ExifInterface.ORIENTATION_ROTATE_270;
         }
+
         return degree;
     }
 

@@ -18,6 +18,6 @@ public interface PictrueModel {
 
         void onEmptyFile();
 
-        byte[] flipDatas(byte[] datas);
+        byte[] flipAndMirrorDatas(byte[] datas);
     }
 }

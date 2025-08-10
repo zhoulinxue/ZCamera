@@ -152,7 +152,7 @@ public abstract class BaseFragment extends Fragment implements BaseView, Pictrue
     }
 
     @Override
-    public byte[] flipDatas(byte[] datas) {
+    public byte[] flipAndMirrorDatas(byte[] datas) {
         return ImageUtil.flipFrontDatas(getActivity(), datas);
     }
 

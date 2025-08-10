@@ -91,7 +91,7 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
         ExifInterface exifInterface = new ExifInterface(getContentResolver().openFileDescriptor(uri, "rw", null).getFileDescriptor());
         exifInterface.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
         exifInterface.saveAttributes();
-        ZCameraLog.e("saveDatas,uri:" + uri.toString());
+        ZCameraLog.e("takePicture_saveDatas,uri:" + uri.toString());
         return uri;
     }
 

@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.hardware.Camera;
+import android.os.SystemClock;
 import android.view.View;
 
 import androidx.lifecycle.Lifecycle;
@@ -211,18 +212,17 @@ public class CameraPresenter implements CameraModel.presenter, Camera.AutoFocusC
 
     private void takeRequest() {
         final int degree = mView.getDegree(isFrontCamera);
-        mCamera.takePicture(null, null, new Camera.PictureCallback() {
-            @Override
-            public void onPictureTaken(byte[] data, Camera camera) {
-                ZCameraLog.e(TAG, "....Camera...takePicture......................." + System.currentTimeMillis());
-                mView.onTakeComplete();
-                byte[] finalDatas = data;
-                if (isFrontCamera) {
-                    finalDatas = mView.flipDatas(data);
-                }
-                mImageSaveProcessor.excute(finalDatas, degree, isFrontCamera);
-                mCamera.startPreview();
+        mCamera.takePicture(null, null, (data, camera) -> {
+            ZCameraLog.e(TAG, "Camera_takePicture_" + SystemClock.elapsedRealtimeNanos()
+                    + ", degree: " + degree +", isFrontCamera: " + isFrontCamera);
+            mView.onTakeComplete();
+
+            if (isFrontCamera) {
+               mView.flipAndMirrorDatas(data);
             }
+
+            mImageSaveProcessor.excute(data, degree, isFrontCamera);
+            mCamera.startPreview();
         });
 
     }

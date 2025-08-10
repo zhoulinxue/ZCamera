@@ -144,15 +144,14 @@ public class CustomRender extends BaseRender {
         if (this.bitmap == null) {
             return;
         }
-        runOnDraw(new Runnable() {
-            public void run() {
-                if (filterSourceTexture2 == -1) {
-                    if (bitmap == null || bitmap.isRecycled()) {
-                        return;
-                    }
-                    GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-                    filterSourceTexture2 = GLHelper.loadTexture(bitmap, -1, false);
+
+        runOnDraw(() -> {
+            if (filterSourceTexture2 == -1) {
+                if (bitmap == null || bitmap.isRecycled()) {
+                    return;
                 }
+                GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
+                filterSourceTexture2 = GLHelper.loadTexture(bitmap, -1, false);
             }
         });
     }
@@ -160,14 +159,6 @@ public class CustomRender extends BaseRender {
     public Bitmap getBitmap() {
         return bitmap;
     }
-
-    public void recycleBitmap() {
-        if (bitmap != null && !bitmap.isRecycled()) {
-            bitmap.recycle();
-            bitmap = null;
-        }
-    }
-
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -222,6 +213,7 @@ public class CustomRender extends BaseRender {
     public void onDraw(final int textureId, final FloatBuffer cubeBuffer,
                        final FloatBuffer textureBuffer) {
         GLES20.glUseProgram(glProgId);
+
         if (!isInitialized) {
             return;
         }

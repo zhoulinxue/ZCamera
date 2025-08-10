@@ -246,17 +246,20 @@ public class ImageUtil {
 
     public static byte[] flipFrontDatas(Context context, byte[] datas) {
         Bitmap bitmap = null;
+        Bitmap bm = null;
         try {
             bitmap = getBitmap(context, datas, false);
             Matrix matrix = new Matrix();
-            matrix.postScale(1, -1);
-            Bitmap bm = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
+            matrix.preScale(-1, 1);
+            matrix.setTranslate(bitmap.getWidth(),0);
+            bm = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
                     bitmap.getHeight(), matrix, false);
-            return bitmap2Bytes(bm, true);
+            return bitmap2Bytes(bitmap, true);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             recycleBitmap(bitmap);
+            recycleBitmap(bm);
         }
         return datas;
     }
