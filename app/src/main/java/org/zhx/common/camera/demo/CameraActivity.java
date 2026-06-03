@@ -1,7 +1,10 @@
 package org.zhx.common.camera.demo;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 
 import androidx.annotation.Nullable;
@@ -12,13 +15,16 @@ public class CameraActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        // Android 15 (API 35) enforces edge-to-edge display.
+        // Ensure content draws behind system bars with FULLSCREEN.
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            getWindow().setDecorFitsSystemWindows(false);
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.camera_activity_layout);
-        getWindow().addFlags((WindowManager.LayoutParams.FLAG_FULLSCREEN));
+
         frangment = new CameraFrangment();
-        Bundle bundle = new Bundle();
-        bundle.putInt(CameraFrangment.SURFACE_TYPE, CameraFrangment.GL_SURFACEVIEW);
-        frangment.setArguments(bundle);
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, frangment).commit();
     }
 

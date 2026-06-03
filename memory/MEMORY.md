@@ -1,0 +1,2 @@
+- [android-10-storage-permission](android-10-storage-permission.md) — Android 10+ 存储权限适配
+- [black-screen-on-resume-fix](black-screen-on-resume-fix.md) — 修复 App 从后台回到前台时相机黑屏

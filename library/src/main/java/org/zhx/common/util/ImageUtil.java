@@ -17,14 +17,12 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.exifinterface.media.ExifInterface;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -41,9 +39,8 @@ public class ImageUtil {
      * @author zhx
      */
     public static void recycleBitmap(Bitmap bitmap) {
-        if ((null != bitmap) && !bitmap.isRecycled()) {
-            bitmap.recycle();
-        }
+        // Bitmap.recycle() is deprecated since API 34 (Android 14).
+        // Let the garbage collector handle bitmap memory reclamation.
     }
 
     public static Bitmap getBitmap(Context context, byte[] data, boolean isScal) {
@@ -122,30 +119,6 @@ public class ImageUtil {
         return null;
     }
 
-    /**
-     * 质量压缩方法
-     *
-     * @param image
-     * @return
-     */
-    private static Bitmap compressImage(Bitmap image) {
-        int quality = 100;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        image.compress(Bitmap.CompressFormat.JPEG, quality, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
-
-        while ((baos.toByteArray().length / 1024) > 1024) {  //循环判断如果压缩后图片是否大于100kb,大于继续压缩
-            ZCameraLog.e("compressImage, quality: " + quality + ", byteSize:" + (baos.toByteArray().length / 1024));
-            quality -= quality / 2;//每次都减少5
-            baos.reset();//重置baos即清空baos
-            //第一个参数 ：图片格式 ，第二个参数： 图片质量，100为最高，0为最差  ，第三个参数：保存压缩后的数据的流
-            image.compress(Bitmap.CompressFormat.JPEG, quality, baos);//这里压缩options%，把压缩后的数据存放到baos中
-        }
-
-        ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());//把压缩后的数据baos存放到ByteArrayInputStream中
-        Bitmap bitmap = BitmapFactory.decodeStream(isBm, null, null);//把ByteArrayInputStream数据生成图片
-        return bitmap;
-    }
-
     private static Bitmap adjustPhotoRotation(Bitmap bm, final int orientationDegree) {
         Matrix m = new Matrix();
         m.setRotate(orientationDegree, (float) bm.getWidth() / 2, (float) bm.getHeight() / 2);
@@ -153,8 +126,7 @@ public class ImageUtil {
             Bitmap bm1 = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), m, true);
             return bm1;
         } catch (OutOfMemoryError ex) {
-        } finally {
-            recycleBitmap(bm);
+            ex.printStackTrace();
         }
         return null;
     }
@@ -189,17 +161,6 @@ public class ImageUtil {
 
         }
         return degree;
-    }
-
-    public static byte[] bitmap2Bytes(Bitmap bm, boolean isRecycl) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] data = baos.toByteArray();
-        if (isRecycl) {
-            bm.recycle();
-            bm = null;
-        }
-        return data;
     }
 
     /**
@@ -243,23 +204,5 @@ public class ImageUtil {
         canvas.drawRect(mCenterRect.right + stroke, (height - mCenterRect.height()) / 2 - stroke,
                 width, (height + mCenterRect.height()) / 2 + stroke, mAreaPaint);
     }
-
-    public static byte[] flipFrontDatas(Context context, byte[] datas) {
-        Bitmap bitmap = null;
-        try {
-            bitmap = getBitmap(context, datas, false);
-            Matrix matrix = new Matrix();
-            matrix.postScale(1, -1);
-            Bitmap bm = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-                    bitmap.getHeight(), matrix, false);
-            return bitmap2Bytes(bm, true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            recycleBitmap(bitmap);
-        }
-        return datas;
-    }
-
 
 }

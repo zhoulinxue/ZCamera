@@ -4,12 +4,11 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.util.Date;
 
 public class ImageData implements Parcelable {
     private long id;
     private String displayName;
-    private Date dateAdded;
+    private long dateAdded;
     private Uri contentUri;
     private byte[] datas;
 
@@ -29,6 +28,8 @@ public class ImageData implements Parcelable {
     protected ImageData(Parcel in) {
         id = in.readLong();
         displayName = in.readString();
+        dateAdded = in.readLong();
+        datas = in.createByteArray();
         contentUri = in.readParcelable(Uri.class.getClassLoader());
     }
 
@@ -36,6 +37,8 @@ public class ImageData implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(id);
         dest.writeString(displayName);
+        dest.writeLong(dateAdded);
+        dest.writeByteArray(datas);
         dest.writeParcelable(contentUri, flags);
     }
 
@@ -72,11 +75,11 @@ public class ImageData implements Parcelable {
         this.displayName = displayName;
     }
 
-    public Date getDateAdded() {
+    public long getDateAdded() {
         return dateAdded;
     }
 
-    public void setDateAdded(Date dateAdded) {
+    public void setDateAdded(long dateAdded) {
         this.dateAdded = dateAdded;
     }
 

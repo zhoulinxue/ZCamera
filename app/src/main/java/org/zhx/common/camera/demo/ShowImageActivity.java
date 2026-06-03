@@ -1,5 +1,6 @@
 package org.zhx.common.camera.demo;
 
+import android.os.Build;
 import android.os.Bundle;
 
 import android.view.WindowManager;
@@ -21,9 +22,13 @@ public class ShowImageActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        // Android 15 (API 35) enforces edge-to-edge display
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            getWindow().setDecorFitsSystemWindows(false);
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_image);
-        getWindow().addFlags((WindowManager.LayoutParams.FLAG_FULLSCREEN));
 
         RecyclerView recyclerView = findViewById(R.id.pictrue_group);
         LinearLayoutManager manager = new LinearLayoutManager(this);

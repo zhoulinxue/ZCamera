@@ -3,49 +3,33 @@ package org.zhx.common.camera.tasks;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 
 import org.zhx.common.camera.ImageLoaderModel;
 import org.zhx.common.util.ImageUtil;
 
-import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ImageloaderProcessor {
     private Context mContext;
+    private ExecutorService mExecutor = Executors.newFixedThreadPool(2);
+    private Handler mMainHandler = new Handler(Looper.getMainLooper());
 
     public ImageloaderProcessor(Context context) {
         this.mContext = context;
     }
 
     public void loadImags(Uri uri, int position, ImageLoaderModel.view view) {
-        new LoadImageImageTask(uri, position, view).execute(AsyncTask.THREAD_POOL_EXECUTOR);
+        mExecutor.execute(() -> {
+            Bitmap bitmap = ImageUtil.getBitmapFormUri(mContext, uri);
+            mMainHandler.post(() -> {
+                if (null != view) {
+                    view.onBitmapLoadSuc(bitmap, position);
+                }
+            });
+        });
     }
-
-
-    private class LoadImageImageTask extends AsyncTask<Object, Object, Bitmap> {
-        private Uri uri;
-        private int position;
-        ImageLoaderModel.view mView;
-
-
-        public LoadImageImageTask(Uri uri, int position, ImageLoaderModel.view view) {
-            this.uri = uri;
-            this.position = position;
-            this.mView = view;
-        }
-
-        @Override
-        protected Bitmap doInBackground(Object... objects) {
-            return ImageUtil.getBitmapFormUri(mContext, uri);
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            if (null != mView) {
-                mView.onBitmapLoadSuc(bitmap, position);
-            }
-        }
-    }
-
 
 }
